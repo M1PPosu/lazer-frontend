@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { FiMapPin, FiCalendar, FiTrendingUp, FiAward, FiClock } from 'react-icons/fi';
+import { FiMapPin, FiCalendar, FiAward, FiClock } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import GameModeSelector from '../components/UI/GameModeSelector';
 import Avatar from '../components/UI/Avatar';
 import type { GameMode } from '../types';
-import { GAME_MODE_NAMES, GAME_MODE_COLORS } from '../types';
+import { GAME_MODE_COLORS } from '../types';
 
 const ProfilePage: React.FC = () => {
   const { user, isAuthenticated, isLoading, updateUserMode } = useAuth();
