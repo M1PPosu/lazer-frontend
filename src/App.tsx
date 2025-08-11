@@ -1,0 +1,27 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout/Layout';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">设置（即将推出）</h1></div>} />
+          <Route path="rankings" element={<div className="p-8"><h1 className="text-2xl font-bold">排行榜（即将推出）</h1></div>} />
+          <Route path="beatmaps" element={<div className="p-8"><h1 className="text-2xl font-bold">谱面（即将推出）</h1></div>} />
+        </Route>
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
