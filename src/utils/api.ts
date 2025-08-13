@@ -69,10 +69,12 @@ export const authAPI = {
   register: async (username: string, email: string, password: string) => {
     console.log('Register attempt with:', { username, email }); // Debug log
     
-    const formData = new FormData();
-    formData.append('user_username', username);
-    formData.append('user_email', email);
-    formData.append('user_password', password);
+    // 使用 URLSearchParams 来确保正确的 application/x-www-form-urlencoded 格式
+    // 后端期望的字段名格式是 user[fieldname]
+    const formData = new URLSearchParams();
+    formData.append('user[username]', username);
+    formData.append('user[user_email]', email);
+    formData.append('user[password]', password);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/users`, formData, {
