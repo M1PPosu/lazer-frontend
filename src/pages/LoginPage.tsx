@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { FiUser, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
@@ -44,21 +43,20 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <motion.div 
-        className="max-w-md w-full space-y-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+      <div className="max-w-md w-full space-y-6">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
-            <span className="text-white font-bold text-xl">o!</span>
+          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-pink-400 to-teal-400 rounded-full flex items-center justify-center mb-4">
+            <img 
+              src="/image/logo.svg" 
+              alt="Logo" 
+              className="w-10 h-10 object-contain"
+            />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             登录
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            登录到你的 GuSou! 账户
+            登录到你的 咕哦！ 账户
           </p>
         </div>
 
@@ -123,7 +121,7 @@ const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading || !formData.username || !formData.password}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-pink-400 to-teal-400 hover:from-pink-500 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 {isLoading ? (
                   <LoadingSpinner size="sm" />
@@ -152,7 +150,7 @@ const LoginPage: React.FC = () => {
             登录即表示你同意我们的服务条款和隐私政策
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

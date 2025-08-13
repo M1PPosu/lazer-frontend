@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import { authAPI, userAPI, handleApiError, CLIENT_CONFIG } from '../utils/api';
 import type { User, TokenResponse } from '../types';
 import toast from 'react-hot-toast';
@@ -11,6 +12,7 @@ interface AuthContextType {
   register: (username: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUserMode: (mode?: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -145,7 +147,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsAuthenticated(true);
   };
 
-  const updateUserMode = async (mode?: string) => {
+  const updateUserMode = useCallback(async (mode?: string) => {
     if (!isAuthenticated) return;
     
     try {
@@ -154,7 +156,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       handleApiError(error);
     }
-  };
+  }, [isAuthenticated]);
+
+  const refreshUser = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const userData = await userAPI.getMe();
+      setUser(userData);
+    } catch (error) {
+      handleApiError(error);
+    }
+  }, [isAuthenticated]);
 
   const value: AuthContextType = {
     user,
@@ -164,6 +177,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     updateUserMode,
+    refreshUser,
   };
 
   return (
