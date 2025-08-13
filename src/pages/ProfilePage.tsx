@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
 import { FiMapPin, FiCalendar, FiAward, FiClock } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import GameModeSelector from '../components/UI/GameModeSelector';
-import Avatar from '../components/UI/Avatar';
+import EditableAvatar from '../components/UI/EditableAvatar';
 import type { GameMode } from '../types';
 import { GAME_MODE_COLORS } from '../types';
 
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated, isLoading, updateUserMode } = useAuth();
+  const { user, isAuthenticated, isLoading, updateUserMode, refreshUser } = useAuth();
   const [selectedMode, setSelectedMode] = useState<GameMode>('osu');
 
-  // 初始加载时设置默认模式，不要在每次模式改变时都重新获取用户数据
+  // 当选择的模式改变时，获取对应模式的用户数据
   useEffect(() => {
-    if (user && !user.statistics) {
+    if (isAuthenticated && selectedMode) {
       updateUserMode(selectedMode);
     }
-  }, [user, updateUserMode]); // 移除selectedMode依赖
+  }, [selectedMode, isAuthenticated, updateUserMode]);
 
   if (isLoading) {
     return (
@@ -73,23 +72,24 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 section-spacing">
+      <div className="max-w-7xl mx-auto container-padding">
         {/* Profile Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="card mb-8"
-        >
-          <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+        <div className="card mb-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* Avatar */}
-            <Avatar
+            <EditableAvatar
               userId={user.id}
               username={user.username}
               avatarUrl={user.avatar_url}
-              size="xl"
-              className="md:w-32 md:h-32"
+              size="2xl"
+              className="flex-shrink-0"
+              editable={true}
+              onAvatarUpdate={async (newAvatarUrl) => {
+                // 头像更新后刷新用户信息
+                await refreshUser();
+                console.log('头像已更新:', newAvatarUrl);
+              }}
             />
 
             {/* User Info */}
@@ -99,108 +99,95 @@ const ProfilePage: React.FC = () => {
               </h1>
               
               <div className="flex flex-wrap justify-center md:justify-start gap-4 text-gray-600 dark:text-gray-300 mb-4">
-                              <div className="flex items-center">
-                <FiMapPin className="mr-2" />
-                {user.country_code}
-              </div>
-              <div className="flex items-center">
-                <FiCalendar className="mr-2" />
-                加入于 {formatDate(user.join_date)}
-              </div>
-              <div className="flex items-center">
-                <FiClock className="mr-2" />
-                最后上线 {formatDate(user.last_visit)}
-              </div>
+                <div className="flex items-center gap-2">
+                  <FiMapPin className="w-4 h-4" />
+                  <span>{user.country_code}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiCalendar className="w-4 h-4" />
+                  <span>加入于 {formatDate(user.join_date)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FiClock className="w-4 h-4" />
+                  <span>最后上线 {formatDate(user.last_visit)}</span>
+                </div>
               </div>
 
               {user.is_supporter && (
-                              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-                <FiAward className="mr-1" />
-                支持者
-              </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
+                  <FiAward className="w-4 h-4" />
+                  <span>支持者</span>
+                </div>
               )}
             </div>
 
             {/* Global Rank */}
             {stats?.global_rank && (
-              <div className="text-center">
-                              <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                #{formatNumber(stats.global_rank)}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">全球排名</div>
+              <div className="text-center md:text-right">
+                <div className="text-4xl font-bold bg-gradient-to-r from-osu-pink to-osu-purple bg-clip-text text-transparent">
+                  #{formatNumber(stats.global_rank)}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">全球排名</div>
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Game Mode Selector */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="mb-8"
-        >
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            游戏模式
-          </h2>
+        <div className="card mb-8">
+          <div className="card-header">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              游戏模式
+            </h2>
+          </div>
           <GameModeSelector
             selectedMode={selectedMode}
             onModeChange={setSelectedMode}
           />
-        </motion.div>
+        </div>
 
-        {/* Statistics */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
+        {/* Statistics Grid */}
+        <div className="stats-grid mb-8">
           {/* Performance Points */}
-          <div className="card text-center">
+          <div className="stat-item">
             <div 
-              className="text-3xl font-bold mb-2"
+              className="stat-value"
               style={{ color: GAME_MODE_COLORS[selectedMode] }}
             >
               {formatNumber(stats?.pp)}pp
             </div>
-            <div className="text-gray-600 dark:text-gray-300">表现分</div>
+            <div className="stat-label">表现分</div>
           </div>
 
           {/* Accuracy */}
-          <div className="card text-center">
-            <div className={`text-3xl font-bold mb-2 ${getAccuracyColor(stats?.accuracy)}`}>
-              {stats?.accuracy?.toFixed(2)}%
+          <div className="stat-item">
+            <div className={`stat-value ${getAccuracyColor(stats?.hit_accuracy)}`}>
+              {stats?.hit_accuracy?.toFixed(2)}%
             </div>
-            <div className="text-gray-600 dark:text-gray-300">准确率</div>
+            <div className="stat-label">准确率</div>
           </div>
 
           {/* Play Count */}
-          <div className="card text-center">
-            <div className="text-3xl font-bold text-blue-500 mb-2">
+          <div className="stat-item">
+            <div className="stat-value text-blue-500">
               {formatNumber(stats?.play_count)}
             </div>
-            <div className="text-gray-600 dark:text-gray-300">游戏次数</div>
+            <div className="stat-label">游戏次数</div>
           </div>
 
           {/* Play Time */}
-          <div className="card text-center">
-            <div className="text-3xl font-bold text-green-500 mb-2">
+          <div className="stat-item">
+            <div className="stat-value text-green-500">
               {formatTime(stats?.play_time)}
             </div>
-            <div className="text-gray-600 dark:text-gray-300">游戏时间</div>
+            <div className="stat-label">游戏时间</div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Detailed Statistics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Score Statistics */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="card"
-          >
+          <div className="card">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
               分数统计
             </h3>
@@ -226,15 +213,10 @@ const ProfilePage: React.FC = () => {
                 <span className="font-semibold">{formatNumber(stats?.replays_watched)}</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Hit Statistics */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="card"
-          >
+          <div className="card">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
               命中统计
             </h3>
@@ -256,16 +238,11 @@ const ProfilePage: React.FC = () => {
                 <span className="font-semibold text-red-500">{formatNumber(stats?.count_miss)}</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Grade Statistics */}
           {stats?.grade_counts && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="card lg:col-span-2"
-            >
+            <div className="card lg:col-span-2">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                 等级统计
               </h3>
@@ -301,7 +278,7 @@ const ProfilePage: React.FC = () => {
                   <div className="text-sm text-gray-600 dark:text-gray-300">A</div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>

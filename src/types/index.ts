@@ -27,7 +27,7 @@ export interface UserStatistics {
   total_score?: number;
   ranked_score?: number;
   pp?: number;
-  accuracy?: number;
+  hit_accuracy?: number;
   play_count?: number;
   play_time?: number;
   total_hits?: number;
@@ -110,10 +110,10 @@ export const GAME_MODE_NAMES: Record<GameMode, string> = {
 };
 
 export const GAME_MODE_COLORS: Record<GameMode, string> = {
-  osu: '#ff66aa',
-  taiko: '#ff6600',
-  fruits: '#66ccff',
-  mania: '#8866ee',
-  osurx: '#9966ff',
-  osuap: '#33ff66',
+  osu: '#ED8EA6',
+  taiko: '#7DD5D4',
+  fruits: '#7DD5D4',
+  mania: '#ED8EA6',
+  osurx: '#ED8EA6',
+  osuap: '#7DD5D4',
 };

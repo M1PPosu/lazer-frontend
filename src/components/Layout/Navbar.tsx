@@ -35,12 +35,12 @@ const Navbar: React.FC = () => {
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center space-x-3">
                 <img 
-                  src="/logo.png" 
+                  src="/image/logo.svg" 
                   alt="GuSou Logo" 
                   className="w-8 h-8 object-contain"
                 />
                 <span className="text-xl font-bold gradient-text">
-                  GuSou! 
+                  咕哦！
                 </span>
               </Link>
             </div>
@@ -107,11 +107,11 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <img 
-              src="/logo.png" 
+              src="/image/logo.svg" 
               alt="GuSou Logo" 
               className="w-8 h-8 object-contain"
             />
-            <span className="text-lg font-bold gradient-text">GuSou!</span>
+            <span className="text-lg font-bold gradient-text">咕哦！</span>
           </Link>
 
           {/* Mobile actions */}

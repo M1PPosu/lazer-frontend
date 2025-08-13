@@ -5,7 +5,7 @@ interface AvatarProps {
   userId?: number;
   username: string;
   avatarUrl?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
 }
 
@@ -20,12 +20,13 @@ const Avatar: React.FC<AvatarProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
 
-  // 尺寸映射
+  // 尺寸映射 - 更精确的尺寸定义
   const sizeClasses = {
-    sm: 'w-8 h-8 text-sm',
-    md: 'w-10 h-10 text-base',
-    lg: 'w-16 h-16 text-lg',
-    xl: 'w-24 h-24 text-xl',
+    sm: 'w-8 h-8 min-w-8 min-h-8 text-sm',
+    md: 'w-12 h-12 min-w-12 min-h-12 text-base',
+    lg: 'w-16 h-16 min-w-16 min-h-16 text-lg',
+    xl: 'w-24 h-24 min-w-24 min-h-24 text-xl',
+    '2xl': 'w-32 h-32 min-w-32 min-h-32 text-2xl',
   };
 
   // 当参数变化时，重置状态并设置新的图片URL
@@ -35,18 +36,25 @@ const Avatar: React.FC<AvatarProps> = ({
     // 2. 通过userId构建的API头像URL
     // 3. 默认头像 /default.jpg
     const getImageUrl = () => {
+      console.log('Avatar getImageUrl - avatarUrl:', avatarUrl, 'userId:', userId, 'username:', username);
       if (avatarUrl && avatarUrl.trim() !== '') {
+        console.log('使用提供的 avatarUrl:', avatarUrl);
         return avatarUrl;
       }
       if (userId) {
-        return userAPI.getAvatarUrl(userId);
+        const apiUrl = userAPI.getAvatarUrl(userId);
+        console.log('使用 API 构建的头像 URL:', apiUrl);
+        return apiUrl;
       }
+      console.log('使用默认头像');
       return '/default.jpg'; // 使用默认头像
     };
 
     setImageError(false);
     setIsLoading(true);
-    setCurrentImageUrl(getImageUrl());
+    const newUrl = getImageUrl();
+    console.log('Avatar 设置新的图片 URL:', newUrl);
+    setCurrentImageUrl(newUrl);
   }, [userId, username, avatarUrl]);
 
   const shouldShowImage = currentImageUrl && !imageError;
@@ -70,7 +78,7 @@ const Avatar: React.FC<AvatarProps> = ({
   };
 
   return (
-    <div className={`${sizeClasses[size]} rounded-full overflow-hidden flex-shrink-0 ${className}`}>
+    <div className={`${sizeClasses[size]} rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200 dark:border-gray-600 shadow-md ${className}`}>
       {shouldShowImage ? (
         <div className="relative w-full h-full">
           {isLoading && (

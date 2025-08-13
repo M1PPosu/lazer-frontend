@@ -111,8 +111,8 @@ export const userAPI = {
     return response.data;
   },
 
-  getUser: async (userId: number, ruleset?: string) => {
-    const url = ruleset ? `/api/v2/users/${userId}/${ruleset}` : `/api/v2/users/${userId}`;
+  getUser: async (userIdOrName: string | number, ruleset?: string) => {
+    const url = ruleset ? `/api/v2/users/${userIdOrName}/${ruleset}` : `/api/v2/users/${userIdOrName}`;
     const response = await api.get(url);
     return response.data;
   },
@@ -122,6 +122,56 @@ export const userAPI = {
     // 根据osu_lazer_api-main的实现，构建头像URL
     // 如果用户有自定义头像，会返回完整URL；否则返回默认头像
     return `${API_BASE_URL}/users/${userId}/avatar`;
+  },
+
+  // 上传用户头像
+  uploadAvatar: async (imageFile: File | Blob) => {
+    console.log('开始上传头像，文件类型:', imageFile.type, '文件大小:', imageFile.size);
+    
+    const formData = new FormData();
+    // 根据blob类型确定文件扩展名
+    const isJpeg = imageFile.type === 'image/jpeg';
+    const fileName = isJpeg ? 'avatar.jpg' : 'avatar.png';
+    formData.append('content', imageFile, fileName);
+    
+    // 验证FormData内容
+    console.log('FormData内容:');
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+      if (value && typeof value === 'object' && ('size' in value) && ('type' in value)) {
+        console.log(`  类型: ${(value as any).type}, 大小: ${(value as any).size}`);
+      }
+    }
+
+    // 获取token
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      throw new Error('未找到访问令牌，请重新登录');
+    }
+
+    console.log('准备发送请求到:', `${API_BASE_URL}/api/private/avatar/upload`);
+
+    // 直接使用fetch来避免axios的content-type处理问题
+    const response = await fetch(`${API_BASE_URL}/api/private/avatar/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        // 不设置Content-Type，让浏览器自动设置
+      },
+      body: formData,
+    });
+
+    console.log('响应状态:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error('上传失败响应:', errorData);
+      throw new Error(errorData?.detail || errorData?.message || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('上传响应:', result);
+    return result;
   },
 };
 

@@ -21,7 +21,7 @@ const Layout: React.FC = () => {
           },
           success: {
             iconTheme: {
-              primary: '#ff66aa',
+              primary: '#ED8EA6',
               secondary: 'white',
             },
           },
