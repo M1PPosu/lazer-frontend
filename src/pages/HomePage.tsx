@@ -105,7 +105,7 @@ const HomePage: React.FC = () => {
           >
             <div className="relative">
               {/* Main circle avatar with lazer image */}
-              <div className="w-80 h-80 mx-auto bg-gradient-to-br from-pink-300 via-teal-300 to-cyan-300 rounded-full flex items-center justify-center shadow-2xl shadow-pink-300/20 p-4">
+       {/*        <div className="w-80 h-80 mx-auto bg-gradient-to-br from-pink-300 via-teal-300 to-cyan-300 rounded-full flex items-center justify-center shadow-2xl shadow-pink-300/20 p-4">
                 <div className="w-72 h-72 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center overflow-hidden">
                   <img 
                     src="/image/lazer.png" 
@@ -113,7 +113,7 @@ const HomePage: React.FC = () => {
                     className="w-60 h-60 object-contain"
                   />
                 </div>
-              </div>
+              </div> */}
               
 
             </div>
