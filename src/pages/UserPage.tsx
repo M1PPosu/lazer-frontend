@@ -68,21 +68,22 @@ const UserPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
+    <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 overflow-x-hidden">
       {/* 用户基本信息 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-full"
       >
         <ProfileCover
           coverUrl={user.cover_url || user.cover?.url}
           className="rounded-2xl shadow-lg"
         >
-          <div className="p-6 md:p-8">
-            <div className="flex flex-col lg:flex-row gap-8">
+          <div className="p-4 sm:p-6 md:p-8 w-full max-w-full">
+            <div className="flex mt-[13px] flex-col lg:flex-row gap-6 lg:gap-8 w-full max-w-full">
               {/* 左侧：头像、用户名、国家 */}
-              <div className="flex-1">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+              <div className="flex-1 min-w-0 max-w-full">
+                <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6 w-full max-w-full">
                   {/* 头像 */}
                   <div className="flex-shrink-0">
                     <div className="relative">
@@ -98,16 +99,16 @@ const UserPage: React.FC = () => {
                   </div>
 
                   {/* 用户基本信息 */}
-                  <div className="flex-1 text-center sm:text-left">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 mb-3">
-                      <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-white text-shadow-lg leading-tight">
-                        <span className="inline-block break-all">{user.username}</span>
+                  <div className="flex-1 text-center sm:text-left min-w-0 max-w-full">
+                    <div className="flex flex-col items-center gap-3 mb-3 sm:flex-row sm:items-end w-full max-w-full">
+                      <h1 className="text-xl sm:text-2xl md:text-3xl xl:text-4xl font-bold text-white text-shadow-lg leading-tight min-w-0 max-w-full">
+                        <span className="inline-block break-all word-wrap break-words">{user.username}</span>
                       </h1>
 
                       {/* 等级信息 - 与用户名并排 */}
                       {user.statistics && user.statistics.level && (
                         <div 
-                          className="relative top-[8px] left-[10px] h-8 w-16 rounded-full border-2 border-white/30 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0"
+                          className="relative h-8 w-16 rounded-full border-2 border-white/30 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0 sm:top-[8px] sm:left-[10px]"
                           data-tooltip-id="level-tooltip"
                           data-tooltip-content={`等级进度: ${Math.round((user.statistics.level.progress || 0) * 100)}%`}
                         >
@@ -194,18 +195,18 @@ const UserPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 游戏模式选择器 - 移到左侧下方 */}
-                <div className="mt-8">
+                {/* 游戏模式选择器 - 响应式布局优化 */}
+                <div className="mt-6 sm:mt-8">
                   <h2 className="text-lg font-semibold text-white mb-4 text-shadow text-center sm:text-left">
                     游戏模式
                   </h2>
-                  <div className="bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-4 -mt-[2px]">
-                    <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-3 sm:p-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                       {(['osu', 'taiko', 'fruits', 'mania', 'osurx', 'osuap'] as const).map((mode) => (
                         <button
                           key={mode}
                           onClick={() => handleModeChange(mode)}
-                          className={`px-3 py-2.5 rounded-lg font-medium transition-all duration-300 text-sm ${
+                          className={`px-2 py-2 sm:px-3 sm:py-2.5 rounded-lg font-medium transition-all duration-300 text-xs sm:text-sm ${
                             selectedMode === mode
                               ? 'text-white shadow-lg'
                               : 'text-white/70 hover:text-white hover:bg-white/10'
@@ -228,20 +229,20 @@ const UserPage: React.FC = () => {
               </div>
 
               {/* 右侧：用户详细信息 */}
-              <div className="flex-shrink-0 lg:w-80">
-                <div className="space-y-4">
+              <div className="flex-shrink-0 lg:w-80 w-full lg:max-w-none max-w-md mx-auto min-w-0">
+                <div className="space-y-3 sm:space-y-4 w-full max-w-full">
                   {/* 用户基本信息 */}
-                  <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <div className="space-y-3">
+                  <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-white/70 text-sm font-medium">用户 ID</span>
-                        <span className="text-white font-bold text-lg">{user.id}</span>
+                        <span className="text-white/70 text-xs sm:text-sm font-medium">用户 ID</span>
+                        <span className="text-white font-bold text-sm sm:text-lg">{user.id}</span>
                       </div>
                       
                       {user.join_date && (
                         <div className="flex justify-between items-center">
-                          <span className="text-white/70 text-sm font-medium">加入时间</span>
-                          <span className="text-white font-medium">
+                          <span className="text-white/70 text-xs sm:text-sm font-medium">加入时间</span>
+                          <span className="text-white font-medium text-xs sm:text-base">
                             {new Date(user.join_date).toLocaleDateString('zh-CN', {
                               year: 'numeric',
                               month: 'short',
@@ -253,8 +254,8 @@ const UserPage: React.FC = () => {
                       
                       {user.last_visit && (
                         <div className="flex justify-between items-center">
-                          <span className="text-white/70 text-sm font-medium">最后访问</span>
-                          <span className="text-white font-medium">
+                          <span className="text-white/70 text-xs sm:text-sm font-medium">最后访问</span>
+                          <span className="text-white font-medium text-xs sm:text-base">
                             {new Date(user.last_visit).toLocaleDateString('zh-CN', {
                               year: 'numeric',
                               month: 'short',
@@ -268,14 +269,14 @@ const UserPage: React.FC = () => {
 
                   {/* 核心统计 */}
                   {user.statistics && (
-                    <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <h4 className="text-white font-medium mb-3 text-center">核心统计</h4>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
+                      <h4 className="text-white font-medium mb-3 text-center text-sm sm:text-base">核心统计</h4>
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
                         <div className="text-center">
-                          <div className="text-white font-bold text-lg">
+                          <div className="text-white font-bold text-sm sm:text-lg">
                             {user.statistics.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : 'N/A'}
                           </div>
-                          <div className="text-white/70">全球排名</div>
+                          <div className="text-white/70 text-xs sm:text-sm">全球排名</div>
                         </div>
                         <div className="text-center">
                           <div className="text-white font-bold text-lg">
@@ -311,12 +312,12 @@ const UserPage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 w-full max-w-full"
         >
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
             游戏统计
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 w-full max-w-full">
             <div className="text-center">
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {user.statistics.play_count?.toLocaleString() || '0'}

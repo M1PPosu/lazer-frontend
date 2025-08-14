@@ -24,9 +24,9 @@ const ProfileCover: React.FC<ProfileCoverProps> = ({
   };
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      {/* 固定宽高比容器 */}
-      <div className="relative w-full aspect-[16/6]">
+    <div className={`relative overflow-hidden w-full max-w-full ${className}`}>
+      {/* 响应式固定宽高比容器 */}
+      <div className="relative w-full max-w-full aspect-[4/3] sm:aspect-[16/6]">
         {/* 背景图片 */}
         <div 
           className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-300 ${
@@ -36,14 +36,14 @@ const ProfileCover: React.FC<ProfileCoverProps> = ({
             backgroundImage: backgroundImage()
           }}
         >
-          {/* 渐变遮罩 */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30"></div>
+          {/* 渐变遮罩 - 手机端更强的遮罩 */}
+          <div className="absolute inset-0 bg-gradient-to-b sm:bg-gradient-to-r from-black/80 via-black/60 to-black/40 sm:from-black/70 sm:via-black/50 sm:to-black/30"></div>
         </div>
 
         {/* 加载状态背景 */}
         {!imageLoaded && (coverUrl || fallbackUrl) && (
           <div className="absolute inset-0 cover-loading">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-400/70 via-gray-400/50 to-gray-400/30"></div>
+            <div className="absolute inset-0 bg-gradient-to-b sm:bg-gradient-to-r from-gray-400/80 via-gray-400/60 to-gray-400/40 sm:from-gray-400/70 sm:via-gray-400/50 sm:to-gray-400/30"></div>
           </div>
         )}
 
@@ -59,7 +59,7 @@ const ProfileCover: React.FC<ProfileCoverProps> = ({
         )}
 
         {/* 内容 */}
-        <div className="absolute inset-0 z-10">
+        <div className="absolute inset-0 z-10 w-full max-w-full overflow-hidden">
           {children}
         </div>
       </div>
