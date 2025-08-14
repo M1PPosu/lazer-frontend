@@ -200,7 +200,7 @@ const UserPage: React.FC = () => {
                   <h2 className="text-lg font-semibold text-white mb-4 text-shadow text-center sm:text-left">
                     游戏模式
                   </h2>
-                  <div className="bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl p-3 sm:p-4">
+                  <div className="bg-black/20 -mt-[2px] backdrop-blur-sm border border-white/20 rounded-xl p-3 sm:p-4">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                       {(['osu', 'taiko', 'fruits', 'mania', 'osurx', 'osuap'] as const).map((mode) => (
                         <button

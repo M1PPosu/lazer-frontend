@@ -140,11 +140,6 @@ const Navbar: React.FC = () => {
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-16 truncate leading-tight">
                       {user.username}
                     </span>
-                    {user.is_supporter && (
-                      <span className="text-xs text-yellow-600 dark:text-yellow-400 leading-tight">
-                        ⭐
-                      </span>
-                    )}
                   </div>
                 </Link>
                 

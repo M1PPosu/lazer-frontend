@@ -67,14 +67,6 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) => {
             <p className="font-medium text-gray-900 dark:text-white truncate">
               {user.username}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-              {user.email || '邮箱未设置'}
-            </p>
-            {user.is_supporter && (
-              <span className="inline-flex items-center px-2 py-1 mt-1 text-xs font-medium rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-                支持者
-              </span>
-            )}
           </div>
 
           {/* Menu Items */}
