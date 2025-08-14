@@ -217,18 +217,16 @@ const ProfilePage: React.FC = () => {
             </div>
             <div className="flex mt-[13px] flex-col lg:flex-row gap-6 lg:gap-8 w-full max-w-full">
               {/* 左侧：头像、用户名、国家 */}
-              <div className="flex-1 lg:flex-[2] min-w-0 max-w-full">
-                <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6 w-full max-w-full">
+              <div className="flex-1 lg:flex-[2] min-w-0 max-w-full mt-20 ml-10 sm:mt-0 lg:mt-0">
+                <div className="flex items-center gap-4 w-full max-w-full">
                   {/* 可编辑头像 */}
                   <div className="flex-shrink-0">
                     <div className="relative">
-                      {/* 头像边框 - 放在底层 */}
-                      <div className="absolute inset-0 rounded-full border-4 border-white/20 pointer-events-none"></div>
                       <EditableAvatar
                         userId={user.id}
                         username={user.username}
                         avatarUrl={user.avatar_url}
-                        size="2xl"
+                        size="xl"
                         editable={true}
                         className="relative z-10"
                         onAvatarUpdate={async (newAvatarUrl) => {
@@ -239,59 +237,61 @@ const ProfilePage: React.FC = () => {
                           }
                         }}
                       />
+                      {/* 头像边框 */}
+                      <div className="absolute inset-0 rounded-full border-4 border-white/20"></div>
                     </div>
                   </div>
 
                   {/* 用户基本信息 */}
-                  <div className="flex-1 text-center sm:text-left min-w-0 max-w-full">
-                    <div className="flex flex-col items-center gap-3 mb-3 sm:flex-row sm:items-end w-full max-w-full">
-                      <h1 className="text-xl sm:text-2xl md:text-3xl xl:text-4xl font-bold text-white text-shadow-lg leading-tight min-w-0 max-w-full">
-                        <span className="inline-block break-all word-wrap break-words">{user.username}</span>
-                      </h1>
+                  <div className="flex-1 text-left min-w-0 max-w-full">
+                    <div className="flex flex-col gap-2 mb-3">
+                      <div className="flex items-center gap-3">
+                        <h1 className="text-lg sm:text-xl md:text-2xl xl:text-3xl font-bold text-white text-shadow-lg leading-tight min-w-0 max-w-full">
+                          <span className="inline-block break-all word-wrap break-words">{user.username}</span>
+                        </h1>
 
-                      {/* 等级信息 - 与用户名并排 */}
-                      {isUpdatingMode || !user.statistics?.level ? (
-                        <div className="relative h-8 w-16 rounded-full border-2 border-white/20 overflow-hidden flex-shrink-0 sm:top-[4px] sm:left-[10px]">
-                          <div className="absolute inset-0 animate-pulse bg-gray-300/50 dark:bg-gray-600/50 rounded-full"></div>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-white/50 font-bold text-sm">
-                              {user.statistics?.level?.current || '--'}
-                            </span>
+                        {/* 等级信息 - 与用户名并排 */}
+                        {isUpdatingMode || !user.statistics?.level ? (
+                          <div className="relative h-6 w-12 rounded-full border-2 border-white/20 overflow-hidden flex-shrink-0">
+                            <div className="absolute inset-0 animate-pulse bg-gray-300/50 dark:bg-gray-600/50 rounded-full"></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-white/50 font-bold text-xs">
+                                {user.statistics?.level?.current || '--'}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div 
-                          className="relative h-8 w-16 rounded-full border-2 border-white/30 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0 sm:top-[4px] sm:left-[10px]"
-                          data-tooltip-id="level-tooltip"
-                          data-tooltip-content={`等级进度: ${user.statistics.level.progress || 0}%`}
-                        >
-                          {/* 背景进度条 */}
+                        ) : (
                           <div 
-                            className="absolute inset-0 transition-all duration-500"
-                            style={{
-                              background: `linear-gradient(90deg, ${GAME_MODE_COLORS[selectedMode]}40 0%, ${GAME_MODE_COLORS[selectedMode]} ${user.statistics.level.progress || 0}%, rgba(255,255,255,0.1) ${user.statistics.level.progress || 0}%)`
-                            }}
-                          />
-                          
-                          {/* 等级数字叠加 */}
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-white font-bold text-sm drop-shadow-lg">
-                              {user.statistics.level.current || 0}
-                            </span>
+                            className="relative h-6 w-12 rounded-full border-2 border-white/30 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0"
+                            data-tooltip-id="level-tooltip"
+                            data-tooltip-content={`等级进度: ${user.statistics.level.progress || 0}%`}
+                          >
+                            {/* 背景进度条 */}
+                            <div 
+                              className="absolute inset-0 transition-all duration-500"
+                              style={{
+                                background: `linear-gradient(90deg, ${GAME_MODE_COLORS[selectedMode]}40 0%, ${GAME_MODE_COLORS[selectedMode]} ${user.statistics.level.progress || 0}%, rgba(255,255,255,0.1) ${user.statistics.level.progress || 0}%)`
+                              }}
+                            />
+                            
+                            {/* 等级数字叠加 */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-white font-bold text-xs drop-shadow-lg">
+                                {user.statistics.level.current || 0}
+                              </span>
+                            </div>
+                            
+                            {/* 发光效果 */}
+                            <div 
+                              className="absolute inset-0 rounded-full opacity-30"
+                              style={{
+                                background: `radial-gradient(circle at center, ${GAME_MODE_COLORS[selectedMode]}20 0%, transparent 70%)`
+                              }}
+                            />
                           </div>
-                          
-                          {/* 发光效果 */}
-                          <div 
-                            className="absolute inset-0 rounded-full opacity-30"
-                            style={{
-                              background: `radial-gradient(circle at center, ${GAME_MODE_COLORS[selectedMode]}20 0%, transparent 70%)`
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* React Tooltip */}
+                        )}
+                      </div>
+                    </div>                    {/* React Tooltip */}
                     {user.statistics && user.statistics.level && (
                       <ReactTooltip
                         id="level-tooltip"
@@ -316,20 +316,20 @@ const ProfilePage: React.FC = () => {
                     )}
 
                     {user.country && (
-                      <div className="flex items-center justify-center sm:justify-start gap-2 mb-4">
+                      <div className="flex items-center gap-2 mb-3">
                         <img
                           src={`https://flagcdn.com/w20/${user.country.code.toLowerCase()}.png`}
                           alt={user.country.code}
-                          className="w-6 h-auto drop-shadow-sm"
+                          className="w-5 h-auto drop-shadow-sm"
                         />
-                        <span className="text-white/90 text-shadow font-medium text-lg">
+                        <span className="text-white/90 text-shadow font-medium text-base">
                           {user.country.name}
                         </span>
                       </div>
                     )}
 
                     {/* 用户状态信息 */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 text-sm">
+                    <div className="flex flex-wrap items-center gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full ${user.is_online ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
                         <span className="text-white/90 text-shadow font-medium">
@@ -339,14 +339,14 @@ const ProfilePage: React.FC = () => {
                       
                       {user.follower_count > 0 && (
                         <div className="flex items-center gap-1">
-                          <span className="text-white font-bold text-lg">{user.follower_count.toLocaleString()}</span>
+                          <span className="text-white font-bold text-base">{user.follower_count.toLocaleString()}</span>
                           <span className="text-white/80 text-shadow">关注者</span>
                         </div>
                       )}
                       
                       {user.scores_best_count > 0 && (
                         <div className="flex items-center gap-1">
-                          <span className="text-white font-bold text-lg">{user.scores_best_count.toLocaleString()}</span>
+                          <span className="text-white font-bold text-base">{user.scores_best_count.toLocaleString()}</span>
                           <span className="text-white/80 text-shadow">最佳成绩</span>
                         </div>
                       )}
@@ -356,8 +356,8 @@ const ProfilePage: React.FC = () => {
 
               </div>
 
-              {/* 右侧：用户详细信息 */}
-              <div className="flex-1 lg:flex-[1] lg:max-w-sm w-full min-w-0">
+              {/* 右侧：用户详细信息 - 桌面端显示 */}
+              <div className="hidden lg:block flex-1 lg:flex-[1] lg:max-w-sm w-full min-w-0">
                 <div className="space-y-3 sm:space-y-4 w-full max-w-full mt-6 sm:mt-5">
                   {/* 用户基本信息 */}
                   <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
@@ -511,6 +511,171 @@ const ProfilePage: React.FC = () => {
           </div>
         </ProfileCover>
       </motion.div>
+
+      {/* 手机端用户详细信息卡片 */}
+      <div className="lg:hidden space-y-4">
+        {/* 用户基本信息 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4"
+        >
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">用户 ID</span>
+              <span className="text-gray-900 dark:text-white font-bold text-lg">{user.id}</span>
+            </div>
+            
+            {user.join_date && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">加入时间</span>
+                <span className="text-gray-900 dark:text-white font-medium text-base">
+                  {new Date(user.join_date).toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </span>
+              </div>
+            )}
+            
+            {user.last_visit && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">最后访问</span>
+                <span className="text-gray-900 dark:text-white font-medium text-base">
+                  {new Date(user.last_visit).toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </span>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* 游戏统计 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4"
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {isUpdatingMode || !user.statistics ? (
+                  <TextSkeleton>
+                    {user.statistics?.play_count?.toLocaleString() || '999,999'}
+                  </TextSkeleton>
+                ) : (
+                  user.statistics.play_count?.toLocaleString() || '0'
+                )}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">游戏次数</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {isUpdatingMode || !user.statistics ? (
+                  <TextSkeleton>
+                    {user.statistics?.total_score?.toLocaleString() || '99,999,999'}
+                  </TextSkeleton>
+                ) : (
+                  user.statistics.total_score?.toLocaleString() || '0'
+                )}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">总分</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {isUpdatingMode || !user.statistics ? (
+                  <TextSkeleton>
+                    {user.statistics?.ranked_score?.toLocaleString() || '99,999,999'}
+                  </TextSkeleton>
+                ) : (
+                  user.statistics.ranked_score?.toLocaleString() || '0'
+                )}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">排名分数</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {isUpdatingMode || !user.statistics ? (
+                  <TextSkeleton>
+                    {user.statistics?.play_time ? `${Math.round(user.statistics.play_time / 3600).toLocaleString()}h` : '999h'}
+                  </TextSkeleton>
+                ) : (
+                  `${Math.round((user.statistics.play_time || 0) / 3600).toLocaleString()}h`
+                )}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">游戏时间</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* 核心统计 */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4"
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                {isUpdatingMode || !user.statistics ? (
+                  <TextSkeleton>
+                    {user.statistics?.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : '#999,999'}
+                  </TextSkeleton>
+                ) : (
+                  user.statistics.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : 'N/A'
+                )}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">全球排名</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                {isUpdatingMode || !user.statistics ? (
+                  <TextSkeleton>
+                    {user.statistics?.country_rank ? `#${user.statistics.country_rank.toLocaleString()}` : '#999,999'}
+                  </TextSkeleton>
+                ) : (
+                  user.statistics.country_rank ? `#${user.statistics.country_rank.toLocaleString()}` : 'N/A'
+                )}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">国家排名</div>
+            </div>
+            <div className="text-center">
+              <div 
+                className="text-lg font-bold"
+                style={{ color: GAME_MODE_COLORS[selectedMode] }}
+              >
+                {isUpdatingMode || !user.statistics ? (
+                  <TextSkeleton>
+                    {user.statistics?.pp ? `${Math.round(user.statistics.pp).toLocaleString()}pp` : '9,999pp'}
+                  </TextSkeleton>
+                ) : (
+                  `${Math.round(user.statistics.pp || 0).toLocaleString()}pp`
+                )}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">表现分数</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                {isUpdatingMode || !user.statistics ? (
+                  <TextSkeleton>
+                    {user.statistics?.hit_accuracy ? `${user.statistics.hit_accuracy.toFixed(1)}%` : '99.9%'}
+                  </TextSkeleton>
+                ) : (
+                  `${(user.statistics.hit_accuracy || 0).toFixed(1)}%`
+                )}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">准确率</div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
 
       {/* 排名历史图表 */}
       <motion.div
