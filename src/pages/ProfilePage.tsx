@@ -1,28 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import type { GameMode } from '../types';
-import { GAME_MODE_COLORS } from '../types';
+import type { GameMode, MainGameMode } from '../types';
+import { GAME_MODE_COLORS, GAME_MODE_GROUPS, GAME_MODE_NAMES, MAIN_MODE_ICONS } from '../types';
 import EditableAvatar from '../components/UI/EditableAvatar';
 import ProfileCover from '../components/UI/ProfileCover';
 
+// 文本骨架屏 - 精确匹配文本尺寸
+const TextSkeleton: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+  <div className={`relative ${className}`}>
+    <div className="invisible">{children}</div>
+    <div className="absolute inset-0 animate-pulse bg-gray-300/70 dark:bg-gray-600/70 rounded"></div>
+  </div>
+);
+
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated, isLoading, updateUserMode, refreshUser } = useAuth();
+  const { user, isAuthenticated, isLoading, updateUserMode } = useAuth();
   const [selectedMode, setSelectedMode] = useState<GameMode>('osu');
+  const [selectedMainMode, setSelectedMainMode] = useState<MainGameMode>('osu');
+  const [showSubModes, setShowSubModes] = useState<MainGameMode | null>(null);
+  const [isUpdatingMode, setIsUpdatingMode] = useState(false);
+  const modeSelectRef = useRef<HTMLDivElement>(null);
+
+  // 点击外部关闭子模式菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modeSelectRef.current && !modeSelectRef.current.contains(event.target as Node)) {
+        setShowSubModes(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // 当选择的模式改变时，获取对应模式的用户数据
   useEffect(() => {
     if (isAuthenticated && selectedMode) {
-      updateUserMode(selectedMode);
+      setIsUpdatingMode(true);
+      updateUserMode(selectedMode).finally(() => {
+        setIsUpdatingMode(false);
+      });
     }
   }, [selectedMode, isAuthenticated, updateUserMode]);
 
-  // 处理模式切换
-  const handleModeChange = (mode: GameMode) => {
+  // 处理主模式切换
+  const handleMainModeChange = (mainMode: MainGameMode) => {
+    if (selectedMainMode === mainMode) {
+      // 如果点击的是当前选中的模式，切换子模式显示状态
+      setShowSubModes(showSubModes === mainMode ? null : mainMode);
+    } else {
+      // 如果点击的是不同的模式，选择该模式并显示其子模式
+      setSelectedMainMode(mainMode);
+      setShowSubModes(mainMode);
+      // 默认选择该主模式的第一个子模式
+      const firstSubMode = GAME_MODE_GROUPS[mainMode][0];
+      setSelectedMode(firstSubMode);
+    }
+  };
+
+  // 处理子模式选择
+  const handleSubModeSelect = (mode: GameMode) => {
     setSelectedMode(mode);
+    setShowSubModes(null); // 选择后隐藏子模式选项
   };
 
   if (isLoading) {
@@ -63,10 +108,116 @@ const ProfilePage: React.FC = () => {
           coverUrl={user.cover_url || user.cover?.url}
           className="rounded-2xl shadow-lg"
         >
-          <div className="p-4 sm:p-6 md:p-8 w-full max-w-full">
+          <div className="p-4 sm:p-6 md:p-8 w-full max-w-full relative">
+            {/* 游戏模式选择器 - 位于卡片右上角 */}
+            <div className="absolute top-3 mr-[10px] right-4 sm:right-[100px] z-20" ref={modeSelectRef}>
+              {/* 主模式图标 */}
+              <div className="flex gap-1 sm:gap-2">
+                {(Object.keys(GAME_MODE_GROUPS) as MainGameMode[]).map((mainMode) => (
+                  <div key={mainMode} className="relative">
+                    <button
+                      onClick={() => handleMainModeChange(mainMode)}
+                      className={`relative p-1.5 sm:p-2 rounded-lg transition-all duration-300 group overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-black/30 ${
+                        selectedMainMode === mainMode
+                          ? 'scale-110 shadow-lg'
+                          : 'hover:scale-105 opacity-80 hover:opacity-100'
+                      }`}
+                      data-tooltip-id={`main-mode-${mainMode}`}
+                      data-tooltip-content={mainMode === 'osu' ? 'osu!' : 
+                                          mainMode === 'taiko' ? 'osu!taiko' :
+                                          mainMode === 'fruits' ? 'osu!catch' :
+                                          'osu!mania'}
+                      style={{
+                        WebkitTapHighlightColor: 'transparent'
+                      }}
+                    >
+                      <span
+                        className="absolute inset-0 rounded-lg transition-all duration-300"
+                        style={{
+                          background: selectedMainMode === mainMode
+                            ? `linear-gradient(135deg, ${GAME_MODE_COLORS[GAME_MODE_GROUPS[mainMode][0]]} 0%, ${GAME_MODE_COLORS[GAME_MODE_GROUPS[mainMode][0]]}CC 100%)`
+                            : 'rgba(255,255,255,0.07)',
+                          boxShadow: selectedMainMode === mainMode ? '0 4px 14px rgba(0,0,0,0.35)' : '0 2px 6px rgba(0,0,0,0.25)'
+                        }}
+                      />
+                      <span
+                        className="pointer-events-none absolute inset-0 rounded-lg opacity-0 group-hover:opacity-40 transition-opacity"
+                        style={{
+                          background: 'radial-gradient(circle at 30% 20%, rgba(255,255,255,0.35), transparent 70%)'
+                        }}
+                      />
+                      {selectedMainMode === mainMode && (
+                        <span
+                          className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-white/50 ring-offset-2 ring-offset-black/30 animate-[pulse_2.4s_ease-in-out_infinite]"
+                          style={{ boxShadow: '0 0 0 3px rgba(255,255,255,0.08)' }}
+                        />
+                      )}
+                      <i
+                        className={`${MAIN_MODE_ICONS[mainMode]} relative z-10 text-lg sm:text-xl transition-colors duration-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.45)]`}
+                        style={{
+                          color: selectedMainMode === mainMode ? '#fff' : 'rgba(255,255,255,0.85)'
+                        }}
+                      />
+                    </button>
+
+                    {/* 子模式弹出选项 */}
+                    {showSubModes === mainMode && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                        className="absolute top-full mt-2 right-0 bg-black/90 backdrop-blur-md border border-white/20 rounded-lg p-2 min-w-28 sm:min-w-32 shadow-xl z-30"
+                      >
+                        {GAME_MODE_GROUPS[mainMode].map((mode) => (
+                          <button
+                            key={mode}
+                            onClick={() => handleSubModeSelect(mode)}
+                            className={`w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-md font-medium transition-all duration-200 text-xs sm:text-sm block ${
+                              selectedMode === mode
+                                ? 'text-white shadow-md'
+                                : 'text-white/70 hover:text-white hover:bg-white/10'
+                            }`}
+                            style={{
+                              backgroundColor: selectedMode === mode ? GAME_MODE_COLORS[mode] : 'transparent',
+                            }}
+                          >
+                            {GAME_MODE_NAMES[mode]}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* 模式图标的 Tooltip */}
+              {(Object.keys(GAME_MODE_GROUPS) as MainGameMode[]).map((mainMode) => (
+                <ReactTooltip
+                  key={`tooltip-${mainMode}`}
+                  id={`main-mode-${mainMode}`}
+                  place="top"
+                  variant="dark"
+                  offset={10}
+                  delayShow={300}
+                  style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    color: 'white',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    padding: '8px 12px',
+                    backdropFilter: 'blur(4px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    zIndex: 99999,
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  }}
+                  classNameArrow="!border-t-black/90"
+                />
+              ))}
+            </div>
             <div className="flex mt-[13px] flex-col lg:flex-row gap-6 lg:gap-8 w-full max-w-full">
               {/* 左侧：头像、用户名、国家 */}
-              <div className="flex-1 min-w-0 max-w-full">
+              <div className="flex-1 lg:flex-[2] min-w-0 max-w-full">
                 <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6 w-full max-w-full">
                   {/* 可编辑头像 */}
                   <div className="flex-shrink-0">
@@ -81,9 +232,11 @@ const ProfilePage: React.FC = () => {
                         editable={true}
                         className="relative z-10"
                         onAvatarUpdate={async (newAvatarUrl) => {
-                          // 头像更新后刷新用户信息
-                          await refreshUser();
-                          console.log('头像已更新:', newAvatarUrl);
+                          // 头像更新后，不立即刷新用户信息，避免造成头像闪烁
+                          // EditableAvatar 组件会自动处理新的头像 URL
+                          if (import.meta.env.DEV) {
+                            console.log('头像已更新:', newAvatarUrl);
+                          }
                         }}
                       />
                     </div>
@@ -97,9 +250,18 @@ const ProfilePage: React.FC = () => {
                       </h1>
 
                       {/* 等级信息 - 与用户名并排 */}
-                      {user.statistics && user.statistics.level && (
+                      {isUpdatingMode || !user.statistics?.level ? (
+                        <div className="relative h-8 w-16 rounded-full border-2 border-white/20 overflow-hidden flex-shrink-0 sm:top-[4px] sm:left-[10px]">
+                          <div className="absolute inset-0 animate-pulse bg-gray-300/50 dark:bg-gray-600/50 rounded-full"></div>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-white/50 font-bold text-sm">
+                              {user.statistics?.level?.current || '--'}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
                         <div 
-                          className="relative h-8 w-16 rounded-full border-2 border-white/30 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0 sm:top-[8px] sm:left-[10px]"
+                          className="relative h-8 w-16 rounded-full border-2 border-white/30 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0 sm:top-[4px] sm:left-[10px]"
                           data-tooltip-id="level-tooltip"
                           data-tooltip-content={`等级进度: ${user.statistics.level.progress || 0}%`}
                         >
@@ -134,16 +296,22 @@ const ProfilePage: React.FC = () => {
                       <ReactTooltip
                         id="level-tooltip"
                         place="top"
+                        variant="dark"
+                        offset={10}
+                        delayShow={300}
                         style={{
-                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          backgroundColor: 'rgba(0, 0, 0, 0.9)',
                           color: 'white',
                           borderRadius: '8px',
                           fontSize: '14px',
                           fontWeight: '500',
                           padding: '8px 12px',
                           backdropFilter: 'blur(4px)',
-                          border: '1px solid rgba(255, 255, 255, 0.2)'
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          zIndex: 99999,
+                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
                         }}
+                        classNameArrow="!border-t-black/90"
                       />
                     )}
 
@@ -186,45 +354,14 @@ const ProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 游戏模式选择器 - 响应式布局优化 */}
-                <div className="mt-6 sm:mt-8">
-                  <h2 className="text-lg font-semibold text-white mb-4 text-shadow text-center sm:text-left">
-                    游戏模式
-                  </h2>
-                  <div className="bg-black/20 -mt-[2px] backdrop-blur-sm border border-white/20 rounded-xl p-3 sm:p-4">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                      {(['osu', 'taiko', 'fruits', 'mania', 'osurx', 'osuap'] as const).map((mode) => (
-                        <button
-                          key={mode}
-                          onClick={() => handleModeChange(mode)}
-                          className={`px-2 py-2 sm:px-3 sm:py-2.5 rounded-lg font-medium transition-all duration-300 text-xs sm:text-sm ${
-                            selectedMode === mode
-                              ? 'text-white shadow-lg'
-                              : 'text-white/70 hover:text-white hover:bg-white/10'
-                          }`}
-                          style={{
-                            backgroundColor: selectedMode === mode ? GAME_MODE_COLORS[mode] : 'transparent',
-                          }}
-                        >
-                          {mode === 'osu' ? 'Standard' :
-                           mode === 'taiko' ? 'Taiko' :
-                           mode === 'fruits' ? 'Catch' :
-                           mode === 'mania' ? 'Mania' :
-                           mode === 'osurx' ? 'RX' :
-                           mode === 'osuap' ? 'AP' : mode}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* 右侧：用户详细信息 */}
-              <div className="flex-shrink-0 lg:w-80 w-full lg:max-w-none max-w-md mx-auto min-w-0">
-                <div className="space-y-3 sm:space-y-4 w-full max-w-full">
+              <div className="flex-1 lg:flex-[1] lg:max-w-sm w-full min-w-0">
+                <div className="space-y-3 sm:space-y-4 w-full max-w-full mt-6 sm:mt-5">
                   {/* 用户基本信息 */}
                   <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
-                    <div className="space-y-2 sm:space-y-3">
+                    <div className="space-y-1 sm:space-y-1.5">
                       <div className="flex justify-between items-center">
                         <span className="text-white/70 text-xs sm:text-sm font-medium">用户 ID</span>
                         <span className="text-white font-bold text-sm sm:text-lg">{user.id}</span>
@@ -258,87 +395,122 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 核心统计 */}
-                  {user.statistics && (
-                    <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
-                      <h4 className="text-white font-medium mb-3 text-center text-sm sm:text-base">核心统计</h4>
-                      <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
-                        <div className="text-center">
-                          <div className="text-white font-bold text-sm sm:text-lg">
-                            {user.statistics.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : 'N/A'}
-                          </div>
-                          <div className="text-white/70 text-xs sm:text-sm">全球排名</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-white font-bold text-lg">
-                            {user.statistics.country_rank ? `#${user.statistics.country_rank.toLocaleString()}` : 'N/A'}
-                          </div>
-                          <div className="text-white/70">国家排名</div>
-                        </div>
-                        <div className="text-center">
-                          <div 
-                            className="text-white font-bold text-lg"
-                            style={{ color: GAME_MODE_COLORS[selectedMode] }}
-                          >
-                            {Math.round(user.statistics.pp || 0).toLocaleString()}pp
-                          </div>
-                          <div className="text-white/70">表现分数</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-white font-bold text-lg">
-                            {(user.statistics.hit_accuracy || 0).toFixed(1)}%
-                          </div>
-                          <div className="text-white/70">准确率</div>
-                        </div>
+                  {/* 游戏统计 */}
+                  <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
+                    <div className="flex items-center gap-6 text-xs">
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-white">
+                          {isUpdatingMode || !user.statistics ? (
+                            <TextSkeleton>
+                              {user.statistics?.play_count?.toLocaleString() || '999,999'}
+                            </TextSkeleton>
+                          ) : (
+                            user.statistics.play_count?.toLocaleString() || '0'
+                          )}
+                        </p>
+                        <p className="text-xs text-white/60">游戏次数</p>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-white">
+                          {isUpdatingMode || !user.statistics ? (
+                            <TextSkeleton>
+                              {user.statistics?.total_score?.toLocaleString() || '99,999,999'}
+                            </TextSkeleton>
+                          ) : (
+                            user.statistics.total_score?.toLocaleString() || '0'
+                          )}
+                        </p>
+                        <p className="text-xs text-white/60">总分</p>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-white">
+                          {isUpdatingMode || !user.statistics ? (
+                            <TextSkeleton>
+                              {user.statistics?.ranked_score?.toLocaleString() || '99,999,999'}
+                            </TextSkeleton>
+                          ) : (
+                            user.statistics.ranked_score?.toLocaleString() || '0'
+                          )}
+                        </p>
+                        <p className="text-xs text-white/60">排名分数</p>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-white">
+                          {isUpdatingMode || !user.statistics ? (
+                            <TextSkeleton>
+                              {user.statistics?.play_time ? `${Math.round(user.statistics.play_time / 3600).toLocaleString()}h` : '999h'}
+                            </TextSkeleton>
+                          ) : (
+                            `${Math.round((user.statistics.play_time || 0) / 3600).toLocaleString()}h`
+                          )}
+                        </p>
+                        <p className="text-xs text-white/60">游戏时间</p>
                       </div>
                     </div>
-                  )}
+                  </div>
+
+                  {/* 核心统计 */}
+                  <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
+                    <div className="flex items-center gap-6 text-xs">
+                      <div className="text-left">
+                        <div className="text-white font-bold text-sm sm:text-lg">
+                          {isUpdatingMode || !user.statistics ? (
+                            <TextSkeleton>
+                              {user.statistics?.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : '#999,999'}
+                            </TextSkeleton>
+                          ) : (
+                            user.statistics.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : 'N/A'
+                          )}
+                        </div>
+                        <div className="text-white/70 text-xs sm:text-sm">全球排名</div>
+                      </div>
+                      <div className="text-left">
+                        <div className="text-white font-bold text-lg">
+                          {isUpdatingMode || !user.statistics ? (
+                            <TextSkeleton>
+                              {user.statistics?.country_rank ? `#${user.statistics.country_rank.toLocaleString()}` : '#999,999'}
+                            </TextSkeleton>
+                          ) : (
+                            user.statistics.country_rank ? `#${user.statistics.country_rank.toLocaleString()}` : 'N/A'
+                          )}
+                        </div>
+                        <div className="text-white/70 text-xs sm:text-sm">国家排名</div>
+                      </div>
+                      <div className="text-left">
+                        <div 
+                          className="text-white font-bold text-lg"
+                          style={{ color: GAME_MODE_COLORS[selectedMode] }}
+                        >
+                          {isUpdatingMode || !user.statistics ? (
+                            <TextSkeleton>
+                              {user.statistics?.pp ? `${Math.round(user.statistics.pp).toLocaleString()}pp` : '9,999pp'}
+                            </TextSkeleton>
+                          ) : (
+                            `${Math.round(user.statistics.pp || 0).toLocaleString()}pp`
+                          )}
+                        </div>
+                        <div className="text-white/70 text-xs sm:text-sm">表现分数</div>
+                      </div>
+                      <div className="text-left">
+                        <div className="text-white font-bold text-lg">
+                          {isUpdatingMode || !user.statistics ? (
+                            <TextSkeleton>
+                              {user.statistics?.hit_accuracy ? `${user.statistics.hit_accuracy.toFixed(1)}%` : '99.9%'}
+                            </TextSkeleton>
+                          ) : (
+                            `${(user.statistics.hit_accuracy || 0).toFixed(1)}%`
+                          )}
+                        </div>
+                        <div className="text-white/70 text-xs sm:text-sm">准确率</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </ProfileCover>
       </motion.div>
-
-      {/* 游戏统计 - 移到主要区域 */}
-      {user.statistics && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 w-full max-w-full"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
-            游戏统计
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 w-full max-w-full">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {user.statistics.play_count?.toLocaleString() || '0'}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">游戏次数</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {user.statistics.total_score?.toLocaleString() || '0'}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">总分</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {user.statistics.ranked_score?.toLocaleString() || '0'}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">排名分数</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {Math.round((user.statistics.play_time || 0) / 3600).toLocaleString()}h
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">游戏时间</p>
-            </div>
-          </div>
-        </motion.div>
-      )}
 
       {/* 排名历史图表 */}
       <motion.div
@@ -351,7 +523,14 @@ const ProfilePage: React.FC = () => {
           排名历史趋势
         </h3>
         <div className="h-64">
-          {user.rank_history && user.rank_history.data && user.rank_history.data.length > 0 ? (
+          {isUpdatingMode ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="animate-pulse text-gray-400 dark:text-gray-500 text-center">
+                <div className="text-4xl mb-2">📊</div>
+                <p>数据加载中...</p>
+              </div>
+            </div>
+          ) : user.rank_history && user.rank_history.data && user.rank_history.data.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={user.rank_history.data.map((rank, index) => {
@@ -425,7 +604,14 @@ const ProfilePage: React.FC = () => {
           月度游戏活跃度
         </h3>
         <div className="h-64">
-          {user.monthly_playcounts && user.monthly_playcounts.length > 0 ? (
+          {isUpdatingMode ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="animate-pulse text-gray-400 dark:text-gray-500 text-center">
+                <div className="text-4xl mb-2">📅</div>
+                <p>数据加载中...</p>
+              </div>
+            </div>
+          ) : user.monthly_playcounts && user.monthly_playcounts.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={user.monthly_playcounts.map((item) => ({
@@ -482,7 +668,14 @@ const ProfilePage: React.FC = () => {
           成绩评级分布
         </h3>
         <div className="h-64">
-          {user.statistics?.grade_counts && 
+          {isUpdatingMode ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="animate-pulse text-gray-400 dark:text-gray-500 text-center">
+                <div className="text-4xl mb-2">🏆</div>
+                <p>数据加载中...</p>
+              </div>
+            </div>
+          ) : user.statistics?.grade_counts && 
            Object.values(user.statistics.grade_counts).some(count => count > 0) ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -542,17 +735,19 @@ const ProfilePage: React.FC = () => {
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
           各模式表现对比
         </h3>
-        {user.statistics_rulesets && Object.keys(user.statistics_rulesets).length > 0 ? (
+        {isUpdatingMode ? (
+          <div className="h-32 flex items-center justify-center">
+            <div className="animate-pulse text-gray-400 dark:text-gray-500 text-center">
+              <div className="text-4xl mb-2">🎮</div>
+              <p>数据加载中...</p>
+            </div>
+          </div>
+        ) : user.statistics_rulesets && Object.keys(user.statistics_rulesets).length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Object.entries(user.statistics_rulesets).map(([mode, stats]) => (
               <div key={mode} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3 capitalize">
-                  {mode === 'osu' ? 'Standard' : 
-                   mode === 'taiko' ? 'Taiko' :
-                   mode === 'fruits' ? 'Catch' :
-                   mode === 'mania' ? 'Mania' :
-                   mode === 'osurx' ? 'RX' :
-                   mode === 'osuap' ? 'AP' : mode}
+                  {GAME_MODE_NAMES[mode as GameMode] || mode}
                 </h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">

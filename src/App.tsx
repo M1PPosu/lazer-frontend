@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import UserPage from './pages/UserPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
             <Route path="register" element={<RegisterPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="users/:userId" element={<UserPage />} />
-            <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">设置（即将推出）</h1></div>} />
+            <Route path="settings" element={<SettingsPage />} />
             <Route path="rankings" element={<div className="p-8"><h1 className="text-2xl font-bold">排行榜（即将推出）</h1></div>} />
             <Route path="beatmaps" element={<div className="p-8"><h1 className="text-2xl font-bold">谱面（即将推出）</h1></div>} />
           </Route>

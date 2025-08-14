@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { userAPI } from '../../utils/api';
 
+// 开发环境调试工具
+const debugLog = (message: string, data?: any) => {
+  if (import.meta.env.DEV) {
+    console.log(message, data);
+  }
+};
+
 interface AvatarProps {
   userId?: number;
   username: string;
@@ -36,24 +43,24 @@ const Avatar: React.FC<AvatarProps> = ({
     // 2. 通过userId构建的API头像URL
     // 3. 默认头像 /default.jpg
     const getImageUrl = () => {
-      console.log('Avatar getImageUrl - avatarUrl:', avatarUrl, 'userId:', userId, 'username:', username);
+      debugLog('Avatar getImageUrl - avatarUrl:', { avatarUrl, userId, username });
       if (avatarUrl && avatarUrl.trim() !== '') {
-        console.log('使用提供的 avatarUrl:', avatarUrl);
+        debugLog('使用提供的 avatarUrl:', avatarUrl);
         return avatarUrl;
       }
       if (userId) {
         const apiUrl = userAPI.getAvatarUrl(userId);
-        console.log('使用 API 构建的头像 URL:', apiUrl);
+        debugLog('使用 API 构建的头像 URL:', apiUrl);
         return apiUrl;
       }
-      console.log('使用默认头像');
+      debugLog('使用默认头像');
       return '/default.jpg'; // 使用默认头像
     };
 
     setImageError(false);
     setIsLoading(true);
     const newUrl = getImageUrl();
-    console.log('Avatar 设置新的图片 URL:', newUrl);
+    debugLog('Avatar 设置新的图片 URL:', newUrl);
     setCurrentImageUrl(newUrl);
   }, [userId, username, avatarUrl]);
 

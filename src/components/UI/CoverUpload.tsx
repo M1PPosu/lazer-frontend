@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import type { Crop, PixelCrop } from 'react-image-crop';
@@ -14,16 +14,16 @@ const debugLog = (message: string, data?: any) => {
   }
 };
 
-interface AvatarUploadProps {
+interface CoverUploadProps {
   userId?: number;
-  currentAvatarUrl?: string;
-  onUploadSuccess: (avatarUrl: string) => void;
+  currentCoverUrl?: string;
+  onUploadSuccess: (coverUrl: string) => void;
   onClose: () => void;
 }
 
-const AvatarUpload: React.FC<AvatarUploadProps> = ({
+const CoverUpload: React.FC<CoverUploadProps> = ({
   userId,
-  currentAvatarUrl,
+  currentCoverUrl,
   onUploadSuccess,
   onClose,
 }) => {
@@ -32,7 +32,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [isUploading, setIsUploading] = useState(false);
   const [step, setStep] = useState<'select' | 'crop'>('select');
-  
+
   const imgRef = useRef<HTMLImageElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,37 +45,36 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
     };
   }, []);
 
-  // 中心裁剪，1:1 比例
+  // 中心裁剪，4:1 比例（官方推荐头图比例）
   function centerAspectCrop(
     mediaWidth: number,
     mediaHeight: number,
     aspect: number,
   ): Crop {
-    const crop = centerCrop(
-      makeAspectCrop(
-        {
-          unit: '%',
-          width: 80,
-        },
-        aspect,
-        mediaWidth,
-        mediaHeight,
-      ),
+    // 使用更适中的初始大小，确保居中和良好的用户体验
+    const initialCrop = makeAspectCrop(
+      {
+        unit: '%',
+        width: 80, // 使用80%宽度，确保有足够的可视区域
+      },
+      aspect,
       mediaWidth,
       mediaHeight,
     );
+
+    const centeredCrop = centerCrop(initialCrop, mediaWidth, mediaHeight);
     
-    debugLog('创建头像裁剪区域:', crop);
-    return crop;
+    debugLog('创建居中裁剪区域:', centeredCrop);
+    return centeredCrop;
   }
 
   const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       
-      // 检查文件大小 (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('图片大小不能超过5MB');
+      // 检查文件大小 (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('图片大小不能超过10MB');
         return;
       }
 
@@ -98,16 +97,74 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
     
-    // 根据API文档，检查图片尺寸 - 最大256x256
-    if (width > 1024 || height > 1024) {
-      toast.error('图片尺寸过大，建议使用小于1024x1024像素的图片以获得最佳效果');
+    // 根据API文档，检查图片尺寸 - 最大3000x2000
+    if (width > 3000 || height > 2000) {
+      toast.error('图片尺寸过大，建议使用小于3000x2000像素的图片以获得最佳效果');
       // 不阻止继续，只是提醒用户
     }
 
-    // 设置默认裁剪区域为1:1比例
-    const crop = centerAspectCrop(width, height, 1);
-    setCrop(crop);
+    // 统一使用官方推荐的 2000x500 比例 (4:1)
+    const aspectRatio = 4 / 1;
+
+    // 设置默认裁剪区域，确保不超出图片边界
+    const initialCrop = centerAspectCrop(width, height, aspectRatio);
+    setCrop(initialCrop);
+    setCompletedCrop(undefined); // 重置完成的裁剪
+    
+    debugLog('图片加载完成，使用官方推荐比例 4:1，目标尺寸 2000x500，裁剪区域:', initialCrop);
   };
+
+  // 简化的备用初始化：只在必要时重新初始化
+  useEffect(() => {
+    if (!crop && imgRef.current && step === 'crop' && imgSrc) {
+      const { width, height } = imgRef.current;
+      if (width > 0 && height > 0) {
+        setTimeout(() => {
+          const newCrop = centerAspectCrop(width, height, 4 / 1);
+          setCrop(newCrop);
+          debugLog('备用初始化裁剪区域 (4:1比例):', newCrop);
+        }, 100);
+      }
+    }
+  }, [crop, step, imgSrc]);
+
+  // 处理裁剪变化，使用更稳定的逻辑防止消失
+  const handleCropChange = useCallback((_: Crop, percentCrop: Crop) => {
+    // 完全避免边界检查，直接使用传入的值
+    // 只做最基本的数值验证
+    if (percentCrop && 
+        typeof percentCrop.x === 'number' &&
+        typeof percentCrop.y === 'number' &&
+        typeof percentCrop.width === 'number' &&
+        typeof percentCrop.height === 'number' &&
+        !isNaN(percentCrop.x) &&
+        !isNaN(percentCrop.y) &&
+        !isNaN(percentCrop.width) &&
+        !isNaN(percentCrop.height) &&
+        percentCrop.width > 0 &&
+        percentCrop.height > 0) {
+      
+      setCrop(percentCrop);
+    }
+  }, []);
+
+  // 处理裁剪完成，添加有效性检查
+  const handleCropComplete = useCallback((c: PixelCrop) => {
+    // 多重验证确保裁剪区域有效
+    if (c && 
+        c.width > 0 && 
+        c.height > 0 && 
+        c.x >= 0 && 
+        c.y >= 0 &&
+        !isNaN(c.width) &&
+        !isNaN(c.height) &&
+        !isNaN(c.x) &&
+        !isNaN(c.y)) {
+      setCompletedCrop(c);
+    } else {
+      debugLog('裁剪完成时检测到无效区域:', c);
+    }
+  }, []);
 
   const handleCropAndUpload = async () => {
     if (!completedCrop || completedCrop.width <= 0 || completedCrop.height <= 0) {
@@ -123,7 +180,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
     setIsUploading(true);
 
     try {
-      // 生成256x256的裁剪图片
+      // 生成裁剪图片，保持比例
       const image = imgRef.current;
       const canvas = previewCanvasRef.current;
       const ctx = canvas.getContext('2d');
@@ -132,10 +189,20 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         throw new Error('无法获取画布上下文');
       }
 
-      // 设置画布大小为256x256
-      canvas.width = 256;
-      canvas.height = 256;
+      // 官方推荐的头图尺寸 2000x500 (4:1)
+      const targetWidth = 2000;
+      const targetHeight = 500;
+      
+      debugLog(`使用官方推荐尺寸: ${targetWidth}x${targetHeight}`);
+      
+      // 设置画布大小
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
 
+      // 清空画布
+      ctx.clearRect(0, 0, targetWidth, targetHeight);
+
+      // 启用图片平滑
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
@@ -148,9 +215,6 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       const sourceWidth = Math.max(1, Math.min(completedCrop.width * scaleX, image.naturalWidth - sourceX));
       const sourceHeight = Math.max(1, Math.min(completedCrop.height * scaleY, image.naturalHeight - sourceY));
 
-      // 清空画布
-      ctx.clearRect(0, 0, 256, 256);
-
       // 绘制裁剪后的图片到画布
       ctx.drawImage(
         image,
@@ -160,8 +224,8 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         sourceHeight,
         0,
         0,
-        256,
-        256
+        targetWidth,
+        targetHeight
       );
 
       // 将canvas转换为blob，使用JPEG格式以减小文件大小
@@ -187,14 +251,14 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         size: blob.size
       });
 
-      // 检查blob大小（5MB限制）
-      if (blob.size > 5 * 1024 * 1024) {
-        toast.error('处理后的图片仍然超过5MB限制，请选择更小的图片');
+      // 检查blob大小（10MB限制）
+      if (blob.size > 10 * 1024 * 1024) {
+        toast.error('处理后的图片仍然超过10MB限制，请选择更小的图片');
         return;
       }
 
       // 创建File对象而不是直接使用Blob
-      const fileName = 'avatar.jpg';
+      const fileName = 'cover.jpg';
       const file = new File([blob], fileName, { type: blob.type });
       
       debugLog('创建的File对象:', {
@@ -203,23 +267,25 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         size: file.size
       });
 
-      // 上传头像
-      const result = await userAPI.uploadAvatar(file);
+      // 上传头图
+      const result = await userAPI.uploadCover(file);
       
       debugLog('上传结果:', result);
       
-      // 构造带有缓存破坏的头像URL，确保浏览器会重新加载头像
-      let avatarUrl: string;
+      // 构造带有缓存破坏的头图URL，确保浏览器会重新加载头图
+      let coverUrl: string;
       if (userId) {
-        avatarUrl = userAPI.getAvatarUrl(userId, true);
+        // 这里可以根据需要构造头图URL，目前简单使用时间戳
+        const serverUrl = typeof result === 'string' ? result : (result.cover_url || result.url || result);
+        coverUrl = `${serverUrl}?t=${Date.now()}`;
       } else {
         // 如果没有 userId，使用服务器返回的 URL 并添加时间戳
-        const serverUrl = typeof result === 'string' ? result : (result.avatar_url || result.url || result);
-        avatarUrl = `${serverUrl}?t=${Date.now()}`;
+        const serverUrl = typeof result === 'string' ? result : (result.cover_url || result.url || result);
+        coverUrl = `${serverUrl}?t=${Date.now()}`;
       }
       
-      toast.success('头像上传成功！');
-      onUploadSuccess(avatarUrl);
+      toast.success('头图上传成功！');
+      onUploadSuccess(coverUrl);
       onClose();
 
     } catch (error: any) {
@@ -238,7 +304,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
         } else if (error.response.data?.message) {
           toast.error(`上传失败: ${error.response.data.message}`);
         } else {
-          toast.error('图片格式或大小不符合要求，请检查图片是否为PNG、JPEG或GIF格式，且小于5MB');
+          toast.error('图片格式或大小不符合要求，请检查图片是否为PNG、JPEG或GIF格式，且小于10MB');
         }
       } else {
         toast.error(error.message || '上传失败，请重试');
@@ -271,14 +337,14 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       onClick={(e: React.MouseEvent) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="modal-content"
+        className="modal-content !max-w-4xl"
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
       >
         {/* 头部 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            {step === 'select' && '选择头像'}
-            {step === 'crop' && '裁剪头像'}
+            {step === 'select' && '选择头图'}
+            {step === 'crop' && '裁剪头图'}
           </h2>
           <button
             onClick={onClose}
@@ -300,13 +366,13 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
                 className="hidden"
               />
               
-              {currentAvatarUrl && (
+              {currentCoverUrl && (
                 <div className="mb-6">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">当前头像</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">当前头图</p>
                   <img
-                    src={currentAvatarUrl}
-                    alt="当前头像"
-                    className="w-24 h-24 rounded-full mx-auto object-cover border-2 border-gray-200 dark:border-gray-600"
+                    src={currentCoverUrl}
+                    alt="当前头图"
+                    className="w-full max-w-md h-32 mx-auto object-cover rounded-lg border-2 border-gray-200 dark:border-gray-600"
                   />
                 </div>
               )}
@@ -317,10 +383,10 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
                   点击选择图片或拖拽图片到此处
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500">
-                  支持 PNG、JPEG、GIF 格式，最大 5MB
+                  支持 PNG、JPEG、GIF 格式，最大 10MB
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-400 mt-1">
-                  头像将自动调整为 256x256 像素
+                  建议尺寸：2000*500 像素（4:1 比例）
                 </p>
               </div>
 
@@ -337,18 +403,20 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
             <div>
               <div className="mb-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  调整裁剪区域，头像将被调整为 256x256 像素
+                  调整裁剪区域
                 </p>
                 <div className="relative flex justify-center">
                   <ReactCrop
                     crop={crop}
-                    onChange={(_, percentCrop) => setCrop(percentCrop)}
-                    onComplete={(c) => setCompletedCrop(c)}
-                    aspect={1}
-                    minWidth={30}
-                    minHeight={30}
-                    keepSelection
-                    style={{ maxWidth: '100%' }}
+                    onChange={handleCropChange}
+                    onComplete={handleCropComplete}
+                    aspect={4 / 1}
+                    minWidth={100}
+                    minHeight={25}
+                    keepSelection={true}
+                    disabled={false}
+                    locked={false}
+                    style={{ maxWidth: '100%', maxHeight: '500px' }}
                   >
                     <img
                       ref={imgRef}
@@ -360,7 +428,7 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
                       onContextMenu={(e) => e.preventDefault()}
                       style={{ 
                         maxWidth: '100%', 
-                        maxHeight: '400px',
+                        maxHeight: '500px',
                         width: 'auto',
                         height: 'auto',
                         display: 'block',
@@ -417,4 +485,4 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
   );
 };
 
-export default AvatarUpload;
+export default CoverUpload;

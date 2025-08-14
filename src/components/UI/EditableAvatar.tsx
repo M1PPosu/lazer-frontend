@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiEdit2 } from 'react-icons/fi';
 import Avatar from './Avatar';
 import AvatarUpload from './AvatarUpload';
@@ -24,6 +24,11 @@ const EditableAvatar: React.FC<EditableAvatarProps> = ({
 }) => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState(avatarUrl);
+
+  // 当 avatarUrl prop 变化时，更新本地状态
+  useEffect(() => {
+    setCurrentAvatarUrl(avatarUrl);
+  }, [avatarUrl]);
 
   const handleUploadSuccess = (newAvatarUrl: string) => {
     setCurrentAvatarUrl(newAvatarUrl);
@@ -54,6 +59,7 @@ const EditableAvatar: React.FC<EditableAvatarProps> = ({
 
       {showUploadModal && (
         <AvatarUpload
+          userId={userId}
           currentAvatarUrl={currentAvatarUrl}
           onUploadSuccess={handleUploadSuccess}
           onClose={() => setShowUploadModal(false)}

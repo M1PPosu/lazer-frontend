@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 导入 Extra 字体 */
+@font-face {
+  font-family: 'Extra';
+  src: url('/fonts/extra.96448ca7.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 游戏模式图标字体样式 */
+.fa-extra-mode-osu::before {
+  font-family: 'Extra';
+  content: "\e800";
+}
+
+.fa-extra-mode-fruits::before {
+  font-family: 'Extra';
+  content: "\e801";
+}
+
+.fa-extra-mode-mania::before {
+  font-family: 'Extra';
+  content: "\e802";
+}
+
+.fa-extra-mode-taiko::before {
+  font-family: 'Extra';
+  content: "\e803";
+}
+
+.fa-extra-osu::before {
+  font-family: 'Extra';
+  content: "\e805";
+}
+
+.fa-extra-team-leader::before {
+  font-family: 'Extra';
+  content: "\e806";
+}
+
+/* 通用图标字体基础样式 */
+.fa-extra-mode-osu,
+.fa-extra-mode-fruits,
+.fa-extra-mode-mania,
+.fa-extra-mode-taiko,
+.fa-extra-osu,
+.fa-extra-team-leader {
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+}
+
 :root {
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
@@ -20,6 +74,24 @@
 
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* 防止图片拖拽 */
+.react-crop img {
+  -webkit-user-drag: none !important;
+  -khtml-user-drag: none !important;
+  -moz-user-drag: none !important;
+  -o-user-drag: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  pointer-events: auto !important;
+}
+
+/* 确保裁剪容器居中 */
+.react-crop {
+  display: inline-block;
 }
 
 html, body {
@@ -167,8 +239,10 @@ html, body {
   border: none;
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
-  text-align: center;
+  /* 原本是 inline-block，导致与 Tailwind 的 flex 类冲突，这里改为 inline-flex 方便使用 flex 排版 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary:hover {
@@ -186,8 +260,9 @@ html, body {
   transition: all 0.2s ease;
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-secondary:hover {

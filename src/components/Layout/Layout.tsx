@@ -12,12 +12,18 @@ const Layout: React.FC = () => {
       </main>
       <Toaster
         position="top-right"
+        containerStyle={{
+          top: '80px', // 在顶栏下面显示，顶栏高度约为64px，留一些间距
+          right: '16px', // 右侧留一些边距
+        }}
         toastOptions={{
           duration: 4000,
           style: {
             background: 'var(--bg-secondary)',
             color: 'var(--text-primary)',
             border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           },
           success: {
             iconTheme: {

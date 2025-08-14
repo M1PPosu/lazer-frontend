@@ -1,5 +1,39 @@
-// Game modes
-export type GameMode = 'osu' | 'taiko' | 'fruits' | 'mania' | 'osurx' | 'osuap';
+// Game modes - 主要模式和子模式
+export type GameMode = 'osu' | 'taiko' | 'fruits' | 'mania' | 'osurx' | 'osuap' | 'taikorx' | 'fruitsrx';
+
+// 主模式类型
+export type MainGameMode = 'osu' | 'taiko' | 'fruits' | 'mania';
+
+// 模式分组配置
+export const GAME_MODE_GROUPS: Record<MainGameMode, GameMode[]> = {
+  osu: ['osu', 'osurx', 'osuap'],
+  taiko: ['taiko', 'taikorx'],
+  fruits: ['fruits', 'fruitsrx'],
+  mania: ['mania']
+};
+
+// 模式显示名称（更新版本）
+export const GAME_MODE_NAMES: Record<GameMode, string> = {
+  osu: 'Standard',
+  osurx: 'Relax',
+  osuap: 'Auto Pilot',
+  taiko: 'Taiko',
+  taikorx: 'Taiko RX',
+  fruits: 'Catch',
+  fruitsrx: 'Catch RX',
+  mania: 'Mania'
+};
+
+export const GAME_MODE_COLORS: Record<GameMode, string> = {
+  osu: '#ED8EA6',
+  osurx: '#ED8EA6',
+  osuap: '#ED8EA6',
+  taiko: '#7DD5D4',
+  taikorx: '#7DD5D4',
+  fruits: '#7DD5D4',
+  fruitsrx: '#7DD5D4',
+  mania: '#ED8EA6',
+};
 
 // User types
 export interface User {
@@ -196,21 +230,10 @@ export interface NavItem {
 // Theme types
 export type Theme = 'light' | 'dark';
 
-// Game mode display names and colors
-export const GAME_MODE_NAMES: Record<GameMode, string> = {
-  osu: 'osu!',
-  taiko: 'osu!taiko',
-  fruits: 'osu!catch',
-  mania: 'osu!mania',
-  osurx: 'osu!rx',
-  osuap: 'osu!ap',
-};
-
-export const GAME_MODE_COLORS: Record<GameMode, string> = {
-  osu: '#ED8EA6',
-  taiko: '#7DD5D4',
-  fruits: '#7DD5D4',
-  mania: '#ED8EA6',
-  osurx: '#ED8EA6',
-  osuap: '#7DD5D4',
+// 主模式图标类名
+export const MAIN_MODE_ICONS: Record<MainGameMode, string> = {
+  osu: 'fa-extra-mode-osu',
+  taiko: 'fa-extra-mode-taiko',
+  fruits: 'fa-extra-mode-fruits',
+  mania: 'fa-extra-mode-mania'
 };
