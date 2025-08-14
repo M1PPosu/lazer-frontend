@@ -101,13 +101,13 @@ const ProfilePage: React.FC = () => {
                         <div 
                           className="relative h-8 w-16 rounded-full border-2 border-white/30 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 flex-shrink-0 sm:top-[8px] sm:left-[10px]"
                           data-tooltip-id="level-tooltip"
-                          data-tooltip-content={`等级进度: ${Math.round((user.statistics.level.progress || 0) * 100)}%`}
+                          data-tooltip-content={`等级进度: ${user.statistics.level.progress || 0}%`}
                         >
                           {/* 背景进度条 */}
                           <div 
                             className="absolute inset-0 transition-all duration-500"
                             style={{
-                              background: `linear-gradient(90deg, ${GAME_MODE_COLORS[selectedMode]}40 0%, ${GAME_MODE_COLORS[selectedMode]} ${(user.statistics.level.progress || 0) * 100}%, rgba(255,255,255,0.1) ${(user.statistics.level.progress || 0) * 100}%)`
+                              background: `linear-gradient(90deg, ${GAME_MODE_COLORS[selectedMode]}40 0%, ${GAME_MODE_COLORS[selectedMode]} ${user.statistics.level.progress || 0}%, rgba(255,255,255,0.1) ${user.statistics.level.progress || 0}%)`
                             }}
                           />
                           
