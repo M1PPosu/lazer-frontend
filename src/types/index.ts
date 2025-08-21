@@ -237,3 +237,38 @@ export const MAIN_MODE_ICONS: Record<MainGameMode, string> = {
   fruits: 'fa-extra-mode-fruits',
   mania: 'fa-extra-mode-mania'
 };
+
+// Rankings types
+export interface TopUsersResponse {
+  ranking: UserRanking[];
+  cursor: {
+    page: number;
+  };
+  total: number;
+}
+
+export interface UserRanking {
+  user: User;
+  score?: number;
+  pp?: number;
+}
+
+export interface CountryResponse {
+  ranking: CountryRanking[];
+  cursor: {
+    page: number;
+  };
+  total: number;
+}
+
+export interface CountryRanking {
+  code: string;
+  name: string;
+  active_users: number;
+  play_count: number;
+  ranked_score: number;
+  performance: number;
+}
+
+export type RankingType = 'performance' | 'score';
+export type TabType = 'users' | 'countries';

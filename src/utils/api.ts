@@ -378,6 +378,33 @@ export const handleApiError = (error: any) => {
   }
 };
 
+// Rankings API functions
+export const rankingsAPI = {
+  // 获取用户排行榜
+  getUserRankings: async (
+    ruleset: string, 
+    type: 'performance' | 'score', 
+    country?: string, 
+    page: number = 1
+  ) => {
+    const params = new URLSearchParams();
+    if (country) params.append('country', country);
+    params.append('page', page.toString());
+    
+    const response = await api.get(`/api/v2/rankings/${ruleset}/${type}?${params}`);
+    return response.data;
+  },
+
+  // 获取地区排行榜
+  getCountryRankings: async (ruleset: string, page: number = 1) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    
+    const response = await api.get(`/api/v2/rankings/${ruleset}/country?${params}`);
+    return response.data;
+  },
+};
+
 // Client credentials - in production, these should be environment variables
 export const CLIENT_CONFIG = {
   osu_client_id: 6,
