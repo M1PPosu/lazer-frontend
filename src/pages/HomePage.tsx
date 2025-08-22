@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '../hooks/useAuth';
+import ServerStatsCard from '../components/UI/ServerStatsCard';
 
 const HomePage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -96,7 +97,16 @@ const HomePage: React.FC = () => {
             )}
           </div>
 
-          
+          {/* Right side - Server Stats */}
+          <div className="flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            >
+              <ServerStatsCard />
+            </motion.div>
+          </div>
         </div>
       </section>
 

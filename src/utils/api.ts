@@ -405,6 +405,21 @@ export const rankingsAPI = {
   },
 };
 
+// Stats API functions
+export const statsAPI = {
+  // Get current server stats
+  getCurrentStats: async () => {
+    const response = await api.get('/api/v2/stats');
+    return response.data;
+  },
+
+  // Get 24h online history
+  getOnlineHistory: async () => {
+    const response = await api.get('/api/v2/stats/history');
+    return response.data;
+  },
+};
+
 // Client credentials - in production, these should be environment variables
 export const CLIENT_CONFIG = {
   osu_client_id: 6,
