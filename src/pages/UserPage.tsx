@@ -12,6 +12,8 @@ import Avatar from '../components/UI/Avatar';
 import ProfileCover from '../components/UI/ProfileCover';
 import toast from 'react-hot-toast';
 import TextSkeleton from '../components/UI/TextSkeleton';
+
+import UserStatsSection from '../components/User/UserStatsSection';
 import UserInfoCard from '../components/User/UserInfoCard';
 import GameStatsCard from '../components/User/GameStatsCard';
 import CoreStatsCard from '../components/User/CoreStatsCard';
@@ -378,7 +380,7 @@ const UserPage: React.FC = () => {
                   </div>
 
                   {/* 游戏统计 */}
-                  <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
+                  <div className="hidden">
                     <div className="flex items-center gap-6 text-xs">
                       <div className="text-left">
                         <p className="text-sm font-bold text-white">{isUpdatingMode || !user.statistics ? <TextSkeleton>{user.statistics?.play_count?.toLocaleString() || '999,999'}</TextSkeleton> : user.statistics.play_count?.toLocaleString() || '0'}</p>
@@ -400,7 +402,7 @@ const UserPage: React.FC = () => {
                   </div>
 
                   {/* 核心统计 */}
-                  <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
+                  <div className="hidden">
                     <div className="flex items-center gap-6 text-xs">
                       <div className="text-left">
                         <div className="text-white font-bold text-sm sm:text-lg">{isUpdatingMode || !user.statistics ? <TextSkeleton>{user.statistics?.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : '#999,999'}</TextSkeleton> : user.statistics.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : 'N/A'}</div>
@@ -492,6 +494,14 @@ const UserPage: React.FC = () => {
       </motion.div>
 
       {/* 手机端用户详细信息卡片 */}
+
+      <UserStatsSection
+        user={user}
+        statistics={user.statistics}
+        isUpdatingMode={isUpdatingMode}
+        selectedMode={selectedMode}
+      />
+
       <div className="lg:hidden space-y-4">
         <UserInfoCard user={user} delay={0.2} />
         <GameStatsCard statistics={user.statistics} isUpdatingMode={isUpdatingMode} delay={0.3} />

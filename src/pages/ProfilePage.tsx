@@ -9,6 +9,8 @@ import { GAME_MODE_COLORS, GAME_MODE_GROUPS, GAME_MODE_NAMES, MAIN_MODE_ICONS } 
 import EditableAvatar from '../components/UI/EditableAvatar';
 import ProfileCover from '../components/UI/ProfileCover';
 import TextSkeleton from '../components/UI/TextSkeleton';
+
+import UserStatsSection from '../components/User/UserStatsSection';
 import UserInfoCard from '../components/User/UserInfoCard';
 import GameStatsCard from '../components/User/GameStatsCard';
 import CoreStatsCard from '../components/User/CoreStatsCard';
@@ -392,7 +394,7 @@ const ProfilePage: React.FC = () => {
                   </div>
 
                   {/* 游戏统计 */}
-                  <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
+                  <div className="hidden">
                     <div className="flex items-center gap-6 text-xs">
                       <div className="text-left">
                         <p className="text-sm font-bold text-white">
@@ -446,7 +448,7 @@ const ProfilePage: React.FC = () => {
                   </div>
 
                   {/* 核心统计 */}
-                  <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
+                  <div className="hidden">
                     <div className="flex items-center gap-6 text-xs">
                       <div className="text-left">
                         <div className="text-white font-bold text-sm sm:text-lg">
@@ -508,6 +510,14 @@ const ProfilePage: React.FC = () => {
         </ProfileCover>
       </motion.div>
 
+
+      <UserStatsSection
+        user={user}
+        statistics={user.statistics}
+        isUpdatingMode={isUpdatingMode}
+        selectedMode={selectedMode}
+      />
+
       {/* 手机端用户详细信息卡片 */}
       <div className="lg:hidden space-y-4">
         <UserInfoCard user={user} delay={0.2} />
@@ -519,6 +529,7 @@ const ProfilePage: React.FC = () => {
           delay={0.4}
         />
       </div>
+
 
       {/* 排名历史图表 */}
       <motion.div
