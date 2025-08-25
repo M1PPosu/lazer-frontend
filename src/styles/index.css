@@ -554,3 +554,22 @@ html, body {
 .dark .modal-content {
   background: #1f2937;
 }
+
+/* Additional profile utilities */
+.avatar-gradient {
+  background: linear-gradient(45deg, #ED8EA6, #7DD5D4);
+}
+
+.chart-line {
+  background: linear-gradient(
+    90deg,
+    rgba(237,138,166,0.6) 0%,
+    rgba(237,138,166,0.9) 20%,
+    rgba(237,138,166,1) 40%,
+    rgba(237,138,166,1) 60%,
+    rgba(237,138,166,0.9) 80%,
+    rgba(237,138,166,0.6) 100%
+  );
+  clip-path: polygon(0 90%, 5% 85%, 15% 70%, 25% 60%, 35% 45%, 50% 35%, 65% 25%, 80% 20%, 90% 15%, 100% 10%, 100% 100%, 0 100%);
+}
+
