@@ -409,13 +409,13 @@ export const rankingsAPI = {
 export const statsAPI = {
   // Get current server stats
   getCurrentStats: async () => {
-    const response = await api.get('/api/private/stats');
+    const response = await api.get('/api/v2/stats');
     return response.data;
   },
 
   // Get 24h online history
   getOnlineHistory: async () => {
-    const response = await api.get('/api/private/stats/history');
+    const response = await api.get('/api/v2/stats/history');
     return response.data;
   },
 };

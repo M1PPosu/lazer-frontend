@@ -249,7 +249,7 @@ export interface TopUsersResponse {
 
 export interface UserRanking {
   user: User;
-  score?: number;
+  ranked_score?: number;
   pp?: number;
 }
 

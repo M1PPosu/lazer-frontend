@@ -1,99 +1,342 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers } from 'react-icons/fi';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import UserDropdown from '../UI/UserDropdown';
 import Avatar from '../UI/Avatar';
 import type { NavItem } from '../../types';
 
+// 将 NavItem 组件提取并使用 memo 优化，防止不必要的重新渲染
+const NavItem = memo<{ item: NavItem }>(({ item }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [forceShowText, setForceShowText] = useState(false);
+  const prevIsActiveRef = useRef<boolean | undefined>(undefined);
+  const location = useLocation();
+  const IconComponent = item.icon;
+  const isActive = location.pathname === item.path;
+  
+  // 文字显示逻辑：活跃时强制显示，或者悬停时显示
+  const shouldShowText = isActive || forceShowText || isHovered;
+  
+  // 检测是否是路由切换导致的状态变化
+  const isRouteChange = prevIsActiveRef.current !== undefined && 
+                       prevIsActiveRef.current !== isActive;
+  
+  // 更新前一个活跃状态的引用
+  useEffect(() => {
+    prevIsActiveRef.current = isActive;
+    // 如果变为活跃状态，强制显示文本
+    if (isActive) {
+      setForceShowText(true);
+    } else {
+      setForceShowText(false);
+    }
+  }, [isActive]);
+
+  // 使用 useCallback 防止函数重新创建导致重新渲染
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+  }, []);
+
+  return (
+    <motion.div
+      animate={{ 
+        scale: isActive ? 1 : 0.98,
+        opacity: isActive ? 1 : 0.75 
+      }}
+      whileHover={{ 
+        scale: 1,
+        opacity: 1,
+        transition: { duration: 0.2 }
+      }}
+      transition={{ 
+        duration: 0.3,
+        ease: "easeOut"
+      }}
+      onHoverStart={handleMouseEnter}
+      onHoverEnd={handleMouseLeave}
+      className="relative"
+    >
+      <Link
+        to={item.path}
+        className={`relative flex items-center rounded-xl font-medium text-sm transition-all duration-200 group overflow-hidden ${
+          isActive
+            ? 'text-white bg-osu-pink shadow-lg shadow-osu-pink/25'
+            : 'text-gray-600 dark:text-gray-300 hover:text-osu-pink dark:hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50'
+        }`}
+        style={{ 
+          paddingLeft: '12px',
+          paddingRight: shouldShowText ? '16px' : '12px',
+          paddingTop: '8px',
+          paddingBottom: '8px'
+        }}
+      >
+        {/* 图标 */}
+        {IconComponent && (
+          <motion.div
+            animate={{ 
+              rotate: isHovered && !isActive ? 10 : 0 
+            }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="flex-shrink-0"
+          >
+            <IconComponent size={16} />
+          </motion.div>
+        )}
+        
+        {/* 文字伸缩效果 */}
+        <motion.div
+          className="overflow-hidden flex items-center"
+          animate={{ 
+            width: shouldShowText ? 'auto' : 0,
+            marginLeft: shouldShowText ? 8 : 0,
+          }}
+          transition={{ 
+            // 路由切换时不播放动画，只有悬停时才播放动画
+            duration: isRouteChange ? 0 : 0.3,
+            ease: [0.4, 0, 0.2, 1]
+          }}
+        >
+          <motion.span
+            className="whitespace-nowrap"
+            animate={{ 
+              opacity: shouldShowText ? 1 : 0,
+              x: shouldShowText ? 0 : -10
+            }}
+            transition={{ 
+              // 路由切换时不播放动画，只有悬停时才播放动画
+              duration: isRouteChange ? 0 : 0.25,
+              delay: shouldShowText && !isActive && isHovered ? 0.1 : 0
+            }}
+          >
+            {item.title}
+          </motion.span>
+        </motion.div>
+
+        {/* 活跃状态指示器 */}
+        {isActive && (
+          <motion.div 
+            className="absolute bottom-0 left-2 right-2 h-0.5 bg-white/50 rounded-full"
+            layoutId="activeTabIndicator"
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          />
+        )}
+
+        {/* 悬停效果背景 */}
+        {!isActive && (
+          <motion.div
+            className="absolute inset-0 rounded-xl bg-osu-pink/10"
+            animate={{ opacity: isHovered ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
+      </Link>
+    </motion.div>
+  );
+});
+
+NavItem.displayName = 'NavItem';
+
+// 将 MobileNavItem 组件也提取并使用 memo 优化
+const MobileNavItem = memo<{ item: NavItem }>(({ item }) => {
+  const location = useLocation();
+  const IconComponent = item.icon;
+  const isActive = location.pathname === item.path;
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+    >
+      <Link
+        to={item.path}
+        className={`relative flex flex-col items-center py-3 px-3 rounded-2xl transition-all duration-200 ${
+          isActive 
+            ? 'text-white' 
+            : 'text-gray-600 dark:text-gray-400 hover:text-osu-pink'
+        }`}
+      >
+        {isActive && (
+          <motion.div 
+            className="absolute inset-0 bg-osu-pink rounded-2xl shadow-lg shadow-osu-pink/25"
+            layoutId="mobileActiveTab"
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          />
+        )}
+        
+        <div className="relative z-10 flex flex-col items-center">
+          {IconComponent && (
+            <motion.div
+              animate={{ 
+                rotateY: isActive ? 360 : 0 
+              }}
+              transition={{ 
+                duration: 0.6,
+                ease: "easeOut" 
+              }}
+              className="mb-1"
+            >
+              <IconComponent size={20} />
+            </motion.div>
+          )}
+          <span className="text-xs font-medium">{item.title}</span>
+        </div>
+
+        {!isActive && (
+          <motion.div 
+            className="absolute inset-0 rounded-2xl bg-osu-pink/10"
+            initial={{ opacity: 0 }}
+            whileHover={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
+      </Link>
+    </motion.div>
+  );
+});
+
+MobileNavItem.displayName = 'MobileNavItem';
+
 const Navbar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
-  const location = useLocation();
+  //const location = useLocation();
 
-
-
-  const navItems: NavItem[] = [
+  const navItems: NavItem[] = React.useMemo(() => [
     { path: '/', title: '主页', icon: FiHome },
-    { path: '/rankings', title: '排行榜', icon: FiTrendingUp },
-    { path: '/beatmaps', title: '谱面', icon: FiMusic },
+    { path: '/rankings', title: '排行榜', icon: FiTrendingUp, requireAuth: true },
+    { path: '/beatmaps', title: '谱面', icon: FiMusic, requireAuth: true },
+    { path: '/team', title: '战队', icon: FiUsers, requireAuth: true },
     { path: '/profile', title: '个人资料', icon: FiUser, requireAuth: true },
-  ];
+  ], []);
 
-  const filteredNavItems = navItems.filter(item => 
-    !item.requireAuth || (item.requireAuth && isAuthenticated)
+  const filteredNavItems = React.useMemo(() => 
+    navItems.filter(item => 
+      !item.requireAuth || (item.requireAuth && isAuthenticated)
+    ), [navItems, isAuthenticated]
   );
+
+  // 使用 useCallback 优化回调函数
+  const handleThemeToggle = useCallback(() => {
+    toggleTheme();
+  }, [toggleTheme]);
+
+  const handleLogout = useCallback(() => {
+    logout();
+  }, [logout]);
 
   return (
     <>
       {/* Desktop Navigation - Top */}
-      <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
+      <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* 使用 grid 布局来确保三个区域的平衡 */}
+          <div className="grid grid-cols-3 items-center h-16">
             {/* Logo - Left */}
-            <div className="flex-shrink-0">
-              <Link to="/" className="flex items-center space-x-3">
-                <img 
-                  src="/image/logo.svg" 
-                  alt="GuSou Logo" 
-                  className="w-8 h-8 object-contain"
-                />
-                <span className="text-xl font-bold gradient-text">
-                  咕哦！
-                </span>
-              </Link>
+            <div className="flex items-center justify-start">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center space-x-3 group"
+              >
+                <Link to="/" className="flex items-center space-x-3 transition-transform duration-200">
+                  <div className="relative">
+                    <img 
+                      src="/image/logo.svg" 
+                      alt="GuSou Logo" 
+                      className="w-9 h-9 object-contain"
+                    />
+                    <motion.div 
+                      className="absolute inset-0 bg-osu-pink rounded-lg"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 0.2 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  </div>
+                  <span className="text-xl font-bold text-osu-pink">
+                    咕哦！
+                  </span>
+                </Link>
+              </motion.div>
             </div>
 
-            {/* Navigation Links - Center */}
-            <div className="flex-1 flex justify-center">
-              <div className="flex items-center space-x-8">
-                {filteredNavItems.map((item) => {
-                  const IconComponent = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      className={`nav-link flex items-center ${
-                        location.pathname === item.path ? 'active' : ''
-                      }`}
-                    >
-                      {IconComponent && <IconComponent size={16} className="mr-2" />}
-                      {item.title}
-                    </Link>
-                  );
-                })}
+            {/* Navigation Links - Center (真正居中) */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-1">
+                {filteredNavItems.map((item) => (
+                  <NavItem key={item.path} item={item} />
+                ))}
               </div>
             </div>
 
             {/* Right side actions */}
-            <div className="flex-shrink-0 flex items-center space-x-4">
+            <div className="flex items-center justify-end space-x-3">
+              {/* Notification (if authenticated) */}
+              {isAuthenticated && (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="relative p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 group"
+                >
+                  <FiBell size={18} />
+                  <motion.div 
+                    className="absolute top-2 right-2 w-2 h-2 bg-osu-pink rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                </motion.button>
+              )}
+
               {/* Theme toggle */}
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-osu-pink dark:hover:text-osu-pink transition-colors"
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleThemeToggle}
+                className="p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200"
                 aria-label="Toggle theme"
               >
-                {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
-              </button>
+                <motion.div
+                  animate={{ rotate: isDark ? 180 : 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
+                </motion.div>
+              </motion.button>
 
               {/* User actions */}
               {isAuthenticated && user ? (
-                <UserDropdown user={user} onLogout={logout} />
+                <UserDropdown user={user} onLogout={handleLogout} />
               ) : (
                 <div className="flex items-center space-x-3">
-                                  <Link
-                  to="/login"
-                  className="btn-secondary !px-4 !py-2 text-sm"
-                >
-                  登录
-                </Link>
-                <Link
-                  to="/register"
-                  className="btn-primary !px-4 !py-2 text-sm"
-                >
-                  注册
-                </Link>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link
+                      to="/login"
+                      className="px-5 py-2.5 text-sm font-medium text-osu-blue hover:text-osu-blue/80 border border-osu-blue/30 hover:border-osu-blue/50 rounded-xl hover:bg-osu-blue/5 transition-all duration-200"
+                    >
+                      登录
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link
+                      to="/register"
+                      className="px-5 py-2.5 text-sm font-medium text-white bg-osu-pink hover:bg-osu-pink/90 rounded-xl shadow-lg shadow-osu-pink/25 hover:shadow-osu-pink/35 transition-all duration-200"
+                    >
+                      注册
+                    </Link>
+                  </motion.div>
                 </div>
               )}
             </div>
@@ -102,88 +345,124 @@ const Navbar: React.FC = () => {
       </nav>
 
       {/* Mobile Header - Top */}
-      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+      <nav className="md:hidden fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src="/image/logo.svg" 
-              alt="GuSou Logo" 
-              className="w-8 h-8 object-contain"
-            />
-            <span className="text-lg font-bold gradient-text">咕哦！</span>
-          </Link>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link to="/" className="flex items-center space-x-3 group">
+              <div className="relative">
+                <img 
+                  src="/image/logo.svg" 
+                  alt="GuSou Logo" 
+                  className="w-8 h-8 object-contain"
+                />
+                <motion.div 
+                  className="absolute inset-0 bg-osu-pink rounded-lg"
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 0.2 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </div>
+              <span className="text-lg font-bold text-osu-pink">
+                咕哦！
+              </span>
+            </Link>
+          </motion.div>
 
           {/* Mobile actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            {/* Notification (if authenticated) */}
+            {isAuthenticated && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="relative p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200"
+              >
+                <FiBell size={16} />
+                <motion.div 
+                  className="absolute top-2 right-2 w-1.5 h-1.5 bg-osu-pink rounded-full"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              </motion.button>
+            )}
+
             {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-osu-pink transition-colors"
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handleThemeToggle}
+              className="p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200"
               aria-label="Toggle theme"
             >
-              {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
-            </button>
+              <motion.div
+                animate={{ rotate: isDark ? 180 : 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {isDark ? <FiSun size={16} /> : <FiMoon size={16} />}
+              </motion.div>
+            </motion.button>
 
             {/* User actions */}
             {isAuthenticated && user ? (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
                 {/* User Avatar */}
-                <Link to="/profile" className="flex items-center space-x-2">
-                  <Avatar
-                    userId={user.id}
-                    username={user.username}
-                    avatarUrl={user.avatar_url}
-                    size="sm"
-                  />
-                  <div className="flex flex-col justify-center">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-16 truncate leading-tight">
-                      {user.username}
-                    </span>
-                  </div>
-                </Link>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link to="/profile" className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200">
+                    <Avatar
+                      userId={user.id}
+                      username={user.username}
+                      avatarUrl={user.avatar_url}
+                      size="sm"
+                    />
+                    <div className="flex flex-col justify-center">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-16 truncate leading-tight">
+                        {user.username}
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
                 
                 {/* Logout Button */}
-                <button
-                  onClick={logout}
-                  className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-red-500 transition-colors"
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleLogout}
+                  className="p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all duration-200"
                   aria-label="Logout"
                 >
                   <FiLogOut size={16} />
-                </button>
+                </motion.button>
               </div>
             ) : (
-              <Link
-                to="/login"
-                className="px-3 py-1.5 text-sm font-medium text-osu-pink hover:text-osu-purple transition-colors"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                登录
-              </Link>
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-sm font-medium text-osu-pink hover:text-osu-pink/80 bg-osu-pink/10 hover:bg-osu-pink/15 rounded-xl transition-all duration-200"
+                >
+                  登录
+                </Link>
+              </motion.div>
             )}
           </div>
         </div>
       </nav>
 
       {/* Mobile Navigation - Bottom (页面导航) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 safe-area-inset-bottom">
-        <div className="flex items-center justify-around py-2">
-          {filteredNavItems.map((item) => {
-            const IconComponent = item.icon;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex flex-col items-center py-2 px-4 rounded-lg transition-colors ${
-                  location.pathname === item.path 
-                    ? 'text-osu-pink' 
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}
-              >
-                {IconComponent && <IconComponent size={22} className="mb-1" />}
-                <span className="text-xs font-medium">{item.title}</span>
-              </Link>
-            );
-          })}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 shadow-lg safe-area-inset-bottom">
+        <div className="flex items-center justify-around py-2 px-2">
+          {filteredNavItems.map((item) => (
+            <MobileNavItem key={item.path} item={item} />
+          ))}
         </div>
       </nav>
     </>

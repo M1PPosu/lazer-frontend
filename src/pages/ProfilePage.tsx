@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
@@ -245,7 +245,7 @@ const ProfilePage: React.FC = () => {
                   {/* 用户基本信息 */}
                   <div className="flex-1 text-left min-w-0 max-w-full">
                     <div className="flex flex-col gap-2 mb-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items中心 gap-3">
                         <h1 className="text-lg sm:text-xl md:text-2xl xl:text-3xl font-bold text-white text-shadow-lg leading-tight min-w-0 max-w-full">
                           <span className="inline-block break-all word-wrap break-words">{user.username}</span>
                         </h1>
@@ -346,7 +346,7 @@ const ProfilePage: React.FC = () => {
                       
                       {user.scores_best_count > 0 && (
                         <div className="flex items-center gap-1">
-                          <span className="text-white font-bold text-base">{user.scores_best_count.toLocaleString()}</span>
+                          <span className="text白 font-bold text-base">{user.scores_best_count.toLocaleString()}</span>
                           <span className="text-white/80 text-shadow">最佳成绩</span>
                         </div>
                       )}
@@ -358,7 +358,7 @@ const ProfilePage: React.FC = () => {
 
               {/* 右侧：用户详细信息 - 桌面端显示 */}
               <div className="hidden lg:block flex-1 lg:flex-[1] lg:max-w-sm w-full min-w-0">
-                <div className="space-y-3 sm:space-y-4 w-full max-w-full mt-6 sm:mt-5">
+                <div className="space-y-3 sm:space-y-4 w全 max-w-full mt-6 sm:mt-5">
                   {/* 用户基本信息 */}
                   <div className="bg-black/20 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20">
                     <div className="space-y-1 sm:space-y-1.5">
@@ -423,7 +423,7 @@ const ProfilePage: React.FC = () => {
                         <p className="text-xs text-white/60">总分</p>
                       </div>
                       <div className="text-left">
-                        <p className="text-sm font-bold text-white">
+                        <p className="text-sm font-bold text白">
                           {isUpdatingMode || !user.statistics ? (
                             <TextSkeleton>
                               {user.statistics?.ranked_score?.toLocaleString() || '99,999,999'}
@@ -524,13 +524,13 @@ const ProfilePage: React.FC = () => {
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">用户 ID</span>
-              <span className="text-gray-900 dark:text-white font-bold text-lg">{user.id}</span>
+              <span className="text-gray-900 dark:text白 font-bold text-lg">{user.id}</span>
             </div>
             
             {user.join_date && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">加入时间</span>
-                <span className="text-gray-900 dark:text-white font-medium text-base">
+                <span className="text-gray-900 dark:text白 font-medium text-base">
                   {new Date(user.join_date).toLocaleDateString('zh-CN', {
                     year: 'numeric',
                     month: 'short',
@@ -543,7 +543,7 @@ const ProfilePage: React.FC = () => {
             {user.last_visit && (
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">最后访问</span>
-                <span className="text-gray-900 dark:text-white font-medium text-base">
+                <span className="text-gray-900 dark:text白 font-medium text-base">
                   {new Date(user.last_visit).toLocaleDateString('zh-CN', {
                     year: 'numeric',
                     month: 'short',
@@ -564,7 +564,7 @@ const ProfilePage: React.FC = () => {
         >
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
+              <p className="text-lg font-bold text-gray-900 dark:text白">
                 {isUpdatingMode || !user.statistics ? (
                   <TextSkeleton>
                     {user.statistics?.play_count?.toLocaleString() || '999,999'}
@@ -576,7 +576,7 @@ const ProfilePage: React.FC = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400">游戏次数</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
+              <p className="text-lg font-bold text-gray-900 dark:text白">
                 {isUpdatingMode || !user.statistics ? (
                   <TextSkeleton>
                     {user.statistics?.total_score?.toLocaleString() || '99,999,999'}
@@ -588,7 +588,7 @@ const ProfilePage: React.FC = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400">总分</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
+              <p className="text-lg font-bold text-gray-900 dark:text白">
                 {isUpdatingMode || !user.statistics ? (
                   <TextSkeleton>
                     {user.statistics?.ranked_score?.toLocaleString() || '99,999,999'}
@@ -600,7 +600,7 @@ const ProfilePage: React.FC = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400">排名分数</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
+              <p className="text-lg font-bold text-gray-900 dark:text白">
                 {isUpdatingMode || !user.statistics ? (
                   <TextSkeleton>
                     {user.statistics?.play_time ? `${Math.round(user.statistics.play_time / 3600).toLocaleString()}h` : '999h'}
@@ -623,7 +623,7 @@ const ProfilePage: React.FC = () => {
         >
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+              <div className="text-lg font-bold text-gray-900 dark:text白">
                 {isUpdatingMode || !user.statistics ? (
                   <TextSkeleton>
                     {user.statistics?.global_rank ? `#${user.statistics.global_rank.toLocaleString()}` : '#999,999'}
@@ -635,7 +635,7 @@ const ProfilePage: React.FC = () => {
               <div className="text-sm text-gray-600 dark:text-gray-400">全球排名</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+              <div className="text-lg font-bold text-gray-900 dark:text白">
                 {isUpdatingMode || !user.statistics ? (
                   <TextSkeleton>
                     {user.statistics?.country_rank ? `#${user.statistics.country_rank.toLocaleString()}` : '#999,999'}
@@ -662,7 +662,7 @@ const ProfilePage: React.FC = () => {
               <div className="text-sm text-gray-600 dark:text-gray-400">表现分数</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
+              <div className="text-lg font-bold text-gray-900 dark:text白">
                 {isUpdatingMode || !user.statistics ? (
                   <TextSkeleton>
                     {user.statistics?.hit_accuracy ? `${user.statistics.hit_accuracy.toFixed(1)}%` : '99.9%'}
@@ -684,7 +684,7 @@ const ProfilePage: React.FC = () => {
         transition={{ delay: 0.4 }}
         className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6"
       >
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+        <h3 className="text-xl font-bold text-gray-900 dark:text白 mb-6">
           排名历史趋势
         </h3>
         <div className="h-64">
@@ -765,7 +765,7 @@ const ProfilePage: React.FC = () => {
         transition={{ delay: 0.5 }}
         className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6"
       >
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+        <h3 className="text-xl font-bold text-gray-900 dark:text白 mb-6">
           月度游戏活跃度
         </h3>
         <div className="h-64">
@@ -820,139 +820,6 @@ const ProfilePage: React.FC = () => {
             </div>
           )}
         </div>
-      </motion.div>
-
-      {/* 评级分布饼图 */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6"
-      >
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-          成绩评级分布
-        </h3>
-        <div className="h-64">
-          {isUpdatingMode ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="animate-pulse text-gray-400 dark:text-gray-500 text-center">
-                <div className="text-4xl mb-2">🏆</div>
-                <p>数据加载中...</p>
-              </div>
-            </div>
-          ) : user.statistics?.grade_counts && 
-           Object.values(user.statistics.grade_counts).some(count => count > 0) ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'SSH', value: user.statistics.grade_counts.ssh, color: '#FFD700' },
-                    { name: 'SS', value: user.statistics.grade_counts.ss, color: '#C0C0C0' },
-                    { name: 'SH', value: user.statistics.grade_counts.sh, color: '#FFA500' },
-                    { name: 'S', value: user.statistics.grade_counts.s, color: '#87CEEB' },
-                    { name: 'A', value: user.statistics.grade_counts.a, color: '#98FB98' },
-                  ].filter(item => item.value > 0)}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {[
-                    { name: 'SSH', value: user.statistics.grade_counts.ssh, color: '#FFD700' },
-                    { name: 'SS', value: user.statistics.grade_counts.ss, color: '#C0C0C0' },
-                    { name: 'SH', value: user.statistics.grade_counts.sh, color: '#FFA500' },
-                    { name: 'S', value: user.statistics.grade_counts.s, color: '#87CEEB' },
-                    { name: 'A', value: user.statistics.grade_counts.a, color: '#98FB98' },
-                  ].filter(item => item.value > 0).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-primary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="text-4xl mb-2 text-gray-400 dark:text-gray-500">🏆</div>
-                <p className="text-gray-500 dark:text-gray-400">暂无成绩评级数据</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* 多模式统计对比 */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6"
-      >
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-          各模式表现对比
-        </h3>
-        {isUpdatingMode ? (
-          <div className="h-32 flex items-center justify-center">
-            <div className="animate-pulse text-gray-400 dark:text-gray-500 text-center">
-              <div className="text-4xl mb-2">🎮</div>
-              <p>数据加载中...</p>
-            </div>
-          </div>
-        ) : user.statistics_rulesets && Object.keys(user.statistics_rulesets).length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Object.entries(user.statistics_rulesets).map(([mode, stats]) => (
-              <div key={mode} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 capitalize">
-                  {GAME_MODE_NAMES[mode as GameMode] || mode}
-                </h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">PP:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {Math.round(stats.pp || 0).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">准确率:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {(stats.hit_accuracy || 0).toFixed(2)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">游戏次数:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {(stats.play_count || 0).toLocaleString()}
-                    </span>
-                  </div>
-                  {stats.global_rank && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">排名:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        #{stats.global_rank.toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-32">
-            <div className="text-center">
-              <div className="text-4xl mb-2 text-gray-400 dark:text-gray-500">🎮</div>
-              <p className="text-gray-500 dark:text-gray-400">暂无多模式统计数据</p>
-            </div>
-          </div>
-        )}
       </motion.div>
     </div>
   );

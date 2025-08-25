@@ -23,7 +23,30 @@ function App() {
             <Route path="users/:userId" element={<UserPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="rankings" element={<RankingsPage />} />
-            <Route path="beatmaps" element={<div className="p-8"><h1 className="text-2xl font-bold">谱面（即将推出）</h1></div>} />
+            <Route
+              path="beatmaps"
+              element={
+                <div className="flex items-center justify-center h-screen">
+                  <h1 className="text-2xl font-bold">谱面（即将推出）</h1>
+                </div>
+              }
+            />
+            <Route
+              path="team"
+              element={
+                <div className="flex items-center justify-center h-screen">
+                  <h1 className="text-2xl font-bold">团队（即将推出）</h1>
+                </div>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <div className="flex items-center justify-center h-screen">
+                  <h1 className="text-2xl font-bold">404 - 页面未找到</h1>
+                </div>
+              }
+            />
           </Route>
         </Routes>
       </Router>
