@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Avatar from '../UI/Avatar';
 import GameModeSelector from '../UI/GameModeSelector';
 import RankHistoryChart from '../UI/RankHistoryChart';
+import PlayerRankCard from '../User/PlayerRankCard';
+import StatsCard from '../User/StatsCard';
 import { GAME_MODE_COLORS, type User, type GameMode } from '../../types';
 
 
@@ -83,7 +85,15 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
   const levelProgress = stats?.level?.progress ?? 0;
   const levelCurrent = stats?.level?.current ?? 0;
   const playTime = formatPlayTime(stats?.play_time);
-  const hitsPerPlay = stats && stats.play_count ? Math.round((stats.total_hits || 0) / stats.play_count) : 0;
+  const user_achievements = Array.isArray(user.user_achievements)
+    ? user.user_achievements.filter(
+        (a): a is { achievement_id: number; achieved_at: string } =>
+          typeof a === 'object' &&
+          a !== null &&
+          typeof (a as any).achievement_id === 'number' &&
+          typeof (a as any).achieved_at === 'string'
+      )
+    : undefined;
 
   const coverUrl = user.cover_url || user.cover?.url || undefined;
   const tint = useMemo(() => GAME_MODE_COLORS[selectedMode] || '#ED8EA6', [selectedMode]);
@@ -179,19 +189,19 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
             {/* 左侧 3/4 */}
             <div className="flex-[3] flex flex-col gap-3">
               {/* 排名 */}
-              <div className="flex gap-8 bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg rank-card-shadow">
+              <div className="flex gap-8 p-3 rounded-lg rank-card-shadow mb-[20px] ml-[-10px]">
                 <div className="text-center">
-                  <div className="text-gray-500 dark:text-gray-400 mb-1 text-[12px]">全球排名</div>
-                  <div className="font-bold text-primary text-[30px]">#{stats?.global_rank ?? '—'}</div>
+                  <div className="text-gray-500 dark:text-gray-400 mb-[-5px] mb-1 text-[12px]">全球排名</div>
+                  <div className="font-bold text-primary text-[20px]">#{stats?.global_rank ?? '—'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-gray-500 dark:text-gray-400 mb-1 text-[12px]">地区排名</div>
-                  <div className="font-bold text-primary text-[30px]">#{stats?.country_rank ?? '—'}</div>
+                  <div className="text-gray-500 dark:text-gray-400 mb-[-5px] text-[12px]">地区排名</div>
+                  <div className="font-bold text-primary text-[20px]">#{stats?.country_rank ?? '—'}</div>
                 </div>
               </div>
 
-              {/* 折线图占位（你可替换成真实图表） */}
-              <div className="w-full">
+              {/* 折线图 */}
+              <div className="w-full mt-[-45px]">
                 <RankHistoryChart
                   rankHistory={user.rank_history}
                   isUpdatingMode={isUpdatingMode}
@@ -202,87 +212,20 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               </div>
 
               {/* 附加信息（PP / 游戏时间 / 成绩徽章） */}
-              <div className="bg-gray-50 dark:bg-gray-800/60 px-4 py-3 rounded-lg flex justify-between items-center rank-card-shadow">
-                <div className="flex gap-4 items-center">
-                  <div className="text-center">
-                    <div className="text-gray-500 dark:text-gray-400 text-xs mb-1">PP</div>
-                    <div className="text-gray-800 dark:text-gray-100 font-bold text-base">{stats?.pp ?? 0}</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-gray-500 dark:text-gray-400 text-xs mb-1">游戏时间</div>
-                    <div className="text-gray-800 dark:text-gray-100 font-bold text-base">{playTime}</div>
-                  </div>
-                  {hitsPerPlay ? (
-                    <div className="text-center">
-                      <div className="text-gray-500 dark:text-gray-400 text-xs mb-1">每次游戏击打</div>
-                      <div className="text-gray-800 dark:text-gray-100 font-bold text-base">{hitsPerPlay}</div>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className="flex gap-1">
-                  <div className="w-10 h-10 bg-primary rounded-lg flex flex-col items-center justify-center font-bold text-xs text-white badge-shadow">
-                    <div>SSH</div>
-                    <div className="text-[10px] mt-1">{gradeCounts.ssh}</div>
-                  </div>
-                  <div className="w-10 h-10 bg-primary rounded-lg flex flex-col items-center justify-center font-bold text-xs text-white badge-shadow">
-                    <div>SS</div>
-                    <div className="text-[10px] mt-1">{gradeCounts.ss}</div>
-                  </div>
-                  <div className="w-10 h-10 bg-secondary rounded-lg flex flex-col items-center justify-center font-bold text-xs text-white badge-shadow">
-                    <div>SH</div>
-                    <div className="text-[10px] mt-1">{gradeCounts.sh}</div>
-                  </div>
-                  <div className="w-10 h-10 bg-secondary rounded-lg flex flex-col items-center justify-center font-bold text-xs text-white badge-shadow">
-                    <div>S</div>
-                    <div className="text-[10px] mt-1">{gradeCounts.s}</div>
-                  </div>
-                  <div className="w-10 h-10 bg-yellow-400 text-black rounded-lg flex flex-col items-center justify-center font-bold text-xs badge-shadow">
-                    <div>A</div>
-                    <div className="text-[10px] mt-1">{gradeCounts.a}</div>
-                  </div>
-                </div>
+              <div className="w-full mt-[-50px]">
+                <PlayerRankCard
+                  stats={stats}
+                  playTime={playTime}
+                  user_achievements={user_achievements}
+                  gradeCounts={gradeCounts}
+                />
               </div>
             </div>
 
             {/* 右侧 1/4：统计信息 */}
             <div className="flex-1">
               <div className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg h-full flex flex-col justify-center stats-card-shadow">
-                <div className="text-gray-500 dark:text-gray-400 text-xs mb-2 font-medium">统计信息</div>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-300">准确率</span>
-                    <span className="text-gray-800 dark:text-gray-100 font-bold">{(stats?.hit_accuracy ?? 0).toFixed(2)}%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-300">PP</span>
-                    <span className="text-primary font-bold">{stats?.pp ?? 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-300">计分成绩点</span>
-                    <span className="text-gray-800 dark:text-gray-100 font-bold">{stats?.ranked_score?.toLocaleString() ?? 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-300">总分</span>
-                    <span className="text-gray-800 dark:text-gray-100 font-bold">{stats?.total_score?.toLocaleString() ?? 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-300">游戏次数</span>
-                    <span className="text-gray-800 dark:text-gray-100 font-bold">{stats?.play_count?.toLocaleString() ?? 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-300">总命中次数</span>
-                    <span className="text-gray-800 dark:text-gray-100 font-bold">{stats?.total_hits?.toLocaleString() ?? 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-300">最大连击</span>
-                    <span className="text-gray-800 dark:text-gray-100 font-bold">{stats?.maximum_combo?.toLocaleString() ?? 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 dark:text-gray-300">回放被观看</span>
-                    <span className="text-gray-800 dark:text-gray-100 font-bold">{stats?.replays_watched_by_others?.toLocaleString() ?? 0}</span>
-                  </div>
-                </div>
+                <StatsCard stats={stats} />
               </div>
             </div>
           </div>
