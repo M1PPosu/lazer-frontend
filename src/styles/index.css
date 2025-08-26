@@ -555,11 +555,6 @@ html, body {
   background: #1f2937;
 }
 
-/* Additional profile utilities */
-.avatar-gradient {
-  background: linear-gradient(45deg, #ED8EA6, #7DD5D4);
-}
-
 .chart-line {
   background: linear-gradient(
     90deg,
