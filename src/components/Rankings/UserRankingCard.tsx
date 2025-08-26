@@ -44,7 +44,7 @@ const UserRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode, ranking
             </Link>
             {ranking.user.country_code && (
               <img
-                src={`https://flagcdn.com/20x15/${ranking.user.country_code.toLowerCase()}.png`}
+                src={`/image/flag/${ranking.user.country_code.toLowerCase()}.svg`}
                 alt={ranking.user.country_code}
                 className="w-5 h-4 rounded-sm"
                 title={ranking.user.country?.name || ranking.user.country_code}

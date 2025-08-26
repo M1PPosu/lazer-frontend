@@ -35,6 +35,17 @@ export const GAME_MODE_COLORS: Record<GameMode, string> = {
   mania: '#ED8EA6',
 };
 
+// Team types
+export interface Team {
+  id: number;
+  flag_url: string;
+  created_at: string;
+  short_name: string;
+  name: string;
+  cover_url: string;
+  leader_id: number;
+}
+
 // User types
 export interface User {
   id: number;
@@ -130,7 +141,7 @@ export interface User {
     [key: string]: UserStatistics;
   };
   user_achievements: unknown[];
-  team?: unknown;
+  team?: Team;
   session_verified: boolean;
   daily_challenge_user_stats?: {
     daily_streak_best: number;

@@ -109,7 +109,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
           {selectedCountry && (
             <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
               <img
-                src={`https://flagcdn.com/20x15/${selectedCountry.code.toLowerCase()}.png`}
+                src={`/image/flag/${selectedCountry.code.toLowerCase()}.svg`}
                 alt={selectedCountry.code}
                 className="w-5 h-4 rounded-sm"
                 title={selectedCountry.name}
@@ -151,7 +151,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
                 className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 focus:bg-gray-100 dark:focus:bg-gray-600 focus:outline-none flex items-center gap-3"
               >
                 <img
-                  src={`https://flagcdn.com/20x15/${country.code.toLowerCase()}.png`}
+                  src={`/image/flag/${country.code.toLowerCase()}.svg`}
                   alt={country.code}
                   className="w-5 h-4 rounded-sm"
                 />
