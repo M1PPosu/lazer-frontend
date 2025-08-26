@@ -4,6 +4,7 @@ import GameModeSelector from '../UI/GameModeSelector';
 import RankHistoryChart from '../UI/RankHistoryChart';
 import PlayerRankCard from '../User/PlayerRankCard';
 import StatsCard from '../User/StatsCard';
+import LevelProgress from '../UI/LevelProgress';
 import { GAME_MODE_COLORS, type User, type GameMode } from '../../types';
 import FriendStats from './FriendStats';
 
@@ -27,12 +28,12 @@ const formatPlayTime = (seconds: number | undefined): string => {
 };
 
 /** 头图懒加载 + blur 过渡 */
-const CoverImage: React.FC<{ src?: string; alt?: string; height?: number; tint?: string }> = ({ src, alt = 'cover', height = 288, tint = '#ED8EA6' }) => {
+const CoverImage: React.FC<{ src?: string; alt?: string; height?: number; mobileHeight?: number; tint?: string }> = ({ src, alt = 'cover', height = 288, mobileHeight = 180, tint = '#ED8EA6' }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [inView, setInView] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
-  const [isUpdatingMode, setIsUpdatingMode] = useState(false);
+  //const [isUpdatingMode, setIsUpdatingMode] = useState(false);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -56,7 +57,7 @@ const CoverImage: React.FC<{ src?: string; alt?: string; height?: number; tint?:
   }, []);
 
   return (
-    <div ref={ref} className="relative w-full overflow-hidden" style={{ height }}>
+    <div ref={ref} className="relative w-full overflow-hidden h-[180px] md:h-[288px]">
       {/* 骨架 or 渐变背景兜底 */}
       <div className="absolute inset-0 cover-bg">
         <div className="h-full w-full bg-white/0 dark:bg-black/10" />
@@ -102,14 +103,14 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
   const [isUpdatingMode, setIsUpdatingMode] = useState(false);
 
   return (
-    <main className="max-w-6xl mx-auto px-4 md:px-8 py-6">
+    <main className="max-w-6xl mx-auto px-2 md:px-4 lg:px-8 py-4 md:py-6">
       {/* 主卡片 */}
       <div className="bg-white/95 dark:bg-gray-900/85 main-card-shadow rounded-t-2xl overflow-hidden border border-gray-100/70 dark:border-white/10">
         {/* 头部栏 + 模式选择（与头图同容器） */}
         <div className="relative overflow-hidden">
-          <div className="bg-white/95 dark:bg-gray-900/85 text-gray-900 dark:text-gray-100 px-4 py-2 flex items-center justify-between rounded-t-2xl border-b border-gray-100/70 dark:border-white/10">
-            <div className="text-lg font-bold">玩家信息</div>
-            <div className="flex items-center gap-3">
+          <div className="bg-white/95 dark:bg-gray-900/85 text-gray-900 dark:text-gray-100 px-3 md:px-4 py-2 flex items-center justify-between rounded-t-2xl border-b border-gray-100/70 dark:border-white/10">
+            <div className="text-base md:text-lg font-bold">玩家信息</div>
+            <div className="flex items-center gap-2 md:gap-3">
               {/* 右侧模式按钮们（来自你的 GameModeSelector） */}
               <GameModeSelector
                 selectedMode={selectedMode}
@@ -121,10 +122,10 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
           </div>
 
           {/* 头图懒加载 */}
-          <CoverImage src={coverUrl} alt={`${user.username} cover`} height={288} tint={tint} />
+          <CoverImage src={coverUrl} alt={`${user.username} cover`} tint={tint} />
 
           {/* 编辑按钮 */}
-          <button className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/50 text-white grid place-items-center edit-button-shadow" aria-label="编辑封面">
+          <button className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-7 h-7 md:w-9 md:h-9 rounded-full bg-black/50 text-white grid place-items-center edit-button-shadow text-xs md:text-sm" aria-label="编辑封面">
             ✎
           </button>
         </div>
@@ -148,12 +149,12 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               {user.username}
             </h1>
             <div className="flex items-center gap-4">
-              {/* 国旗（使用 flagcdn 动态加载） */}
+              {/* 国旗（使用 flagcdn 动态加载） - 修复手机端显示问题 */}
               {user.country?.code && (
                 <img
                   src={`https://flagcdn.com/${user.country.code.toLowerCase()}.svg`}
                   alt={user.country.name}
-                  className="ml-[-8px] h-[25px] rounded-sm object-cover"
+                  className="ml-[-8px] h-[25px] w-auto rounded-sm object-contain"
                   loading="lazy"
                   decoding="async"
                 />
@@ -233,20 +234,17 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
         </div>
 
         {/* 底部：好友/消息 + 等级进度 */}
-        <div className="bg-white/95 dark:bg-gray-900/85 px-6 md:px-8 py-6">
+        <div className="bg-white/95 dark:bg-gray-900/85 px-4 md:px-6 lg:px-8 py-4 md:py-6">
           <div className="flex items-center justify-between">
               <FriendStats user={user} />
-
             <div className="flex items-center gap-4">
-              {/* 进度条（左） */}
-              <div className="relative w-48 h-4 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden inner-card-shadow">
-                <div
-                  className="absolute top-0 left-0 h-full inner-card-shadow"
-                  style={{ width: `${levelProgress}%`, backgroundColor: tint }}
-                />
-              </div>
-              {/* 标签（右） */}
-              <span className="text-gray-800 dark:text-gray-100 font-semibold">Lv.{levelCurrent} · {levelProgress}%</span>
+              {/* 进度条 */}
+              <LevelProgress
+                levelCurrent={levelCurrent}
+                levelProgress={levelProgress}
+                className="flex-1"
+                tint="#ED8EA6"
+              />
             </div>
           </div>
         </div>
