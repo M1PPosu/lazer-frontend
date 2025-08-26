@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Avatar from '../UI/Avatar';
 import GameModeSelector from '../UI/GameModeSelector';
 import RankHistoryChart from '../UI/RankHistoryChart';
 import PlayerRankCard from '../User/PlayerRankCard';
 import StatsCard from '../User/StatsCard';
 import LevelProgress from '../UI/LevelProgress';
-import { GAME_MODE_COLORS, type User, type GameMode } from '../../types';
+import { type User, type GameMode } from '../../types';
 import FriendStats from './FriendStats';
 import { BiSolidPencil } from 'react-icons/bi';
 import { FaTools } from "react-icons/fa"
@@ -29,7 +29,7 @@ const formatPlayTime = (seconds: number | undefined): string => {
 };
 
 /** 头图懒加载 + blur 过渡 */
-const CoverImage: React.FC<{ src?: string; alt?: string; height?: number; mobileHeight?: number; tint?: string }> = ({ src, alt = 'cover', height = 288, mobileHeight = 180, tint = '#ED8EA6' }) => {
+const CoverImage: React.FC<{ src?: string; alt?: string }> = ({ src, alt = 'cover' }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [inView, setInView] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -103,9 +103,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
     coverUrlRaw === "https://assets.ppy.sh/user-profile-covers/default.jpeg"
       ? "/image/bgcover.jpg"
       : coverUrlRaw;
-  const tint = useMemo(() => GAME_MODE_COLORS[selectedMode] || '#ED8EA6', [selectedMode]);
-
-  const [isUpdatingMode, setIsUpdatingMode] = useState(false);
+  const [isUpdatingMode] = useState(false);
 
   return (
     <main className="max-w-6xl mx-auto px-2 md:px-4 lg:px-8 py-4 md:py-6">
@@ -127,7 +125,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
           </div>
 
           {/* 头图懒加载 */}
-          <CoverImage src={coverUrl} alt={`${user.username} cover`} tint={tint} />
+          <CoverImage src={coverUrl} alt={`${user.username} cover`} />
 
           {/* 编辑按钮 */}
           <button className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-7 h-7 md:w-9 md:h-9 rounded-full bg-black/50 text-white grid place-items-center edit-button-shadow text-xs md:text-sm" aria-label="编辑封面">
