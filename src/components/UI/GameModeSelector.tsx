@@ -48,10 +48,11 @@ const GameModeSelector: React.FC<GameModeSelectorProps> = ({
     setShowSubModes(showSubModes === mainMode ? null : mainMode);
   };
 
-  const handleSubModeSelect = (mode: GameMode) => {
-    onModeChange(mode);
-    setShowSubModes(null);
-  };
+    const handleSubModeSelect = (mode: GameMode) => {
+      onModeChange(mode);
+      setShowSubModes(null);
+      setHoveredMode(null);
+    };
 
   if (variant === 'compact') {
     return (
@@ -62,7 +63,7 @@ const GameModeSelector: React.FC<GameModeSelectorProps> = ({
             const isHovered = hoveredMode === mainMode;
             const hasSubModes = GAME_MODE_GROUPS[mainMode].length > 1;
             const isExpanded = showSubModes === mainMode;
-            const shouldExpand = (isHovered || isExpanded) && hasSubModes;
+            const shouldExpand = isExpanded || (isHovered && hasSubModes && !showSubModes);
 
             const brand = GAME_MODE_COLORS[GAME_MODE_GROUPS[mainMode][0]];
 
