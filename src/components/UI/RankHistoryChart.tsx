@@ -26,18 +26,24 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
   height = '16rem',
   fullBleed = true,
 }) => {
-  // 输入是倒序(最新在前) -> 反转为旧->新（右边为最新）
+  // 数据本身就是按时间顺序排列（最后一个是最新），不需要反转
   const chartData = React.useMemo(() => {
     const src = rankHistory?.data ?? [];
     if (src.length === 0) return [];
-    const normalized = [...src].reverse();
-
-    return normalized
-      .map((rank, idx) => ({
-        idx, // 仅用于 X 轴/Tooltip
+        
+    // 先过滤掉无效数据，然后重新分配索引
+    const validData = src
+      .map((rank, originalIdx) => ({
+        originalIdx,
         rank: rank === 0 ? null : rank, // 0 当作缺失
       }))
       .filter(d => d.rank !== null);
+    
+    // 重新分配连续的索引
+    return validData.map((item, newIdx) => ({
+      idx: newIdx, // 连续的索引，从0开始
+      rank: item.rank,
+    }));
   }, [rankHistory?.data]);
 
   const total = chartData.length;
@@ -74,7 +80,8 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
                 }}
                 labelFormatter={(label) => {
                   const idx = Number(label);
-                  const daysAgo = total - 1 - idx; // 右端为最新
+                  // 计算天数：最右边(最大idx)为最新数据(刚刚)
+                  const daysAgo = total - 1 - idx;
                   return daysAgo === 0 ? '刚刚' : `${daysAgo} 天前`;
                 }}
                 formatter={(value) => [`#${value}`, '全球排名']}
