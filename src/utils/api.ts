@@ -318,7 +318,7 @@ export const friendsAPI = {
   checkRelationship: async (targetUserId: number) => {
     try {
       // 使用新的专用 API 端点来获取关系状态
-      const response = await api.get(`/api/v2/relationship/check/${targetUserId}`);
+      const response = await api.get(`/api/private/relationship/check/${targetUserId}`);
       return response.data;
     } catch (error) {
       console.error('检查用户关系失败:', error);

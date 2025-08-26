@@ -6,6 +6,7 @@ type User = { follower_count?: number; unread_pm_count?: number };
 export default function FriendStats({ user }: { user: User }) {
   return (
     <div className="flex gap-3">
+        {/* TODO: 好友API */}
         <FriendActions
           status={{
             isFriend: false,

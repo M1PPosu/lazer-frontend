@@ -7,7 +7,7 @@ import StatsCard from '../User/StatsCard';
 import LevelProgress from '../UI/LevelProgress';
 import { GAME_MODE_COLORS, type User, type GameMode } from '../../types';
 import FriendStats from './FriendStats';
-
+import { BiSolidPencil } from 'react-icons/bi';
 
 interface UserProfileLayoutProps {
   user: User;
@@ -126,7 +126,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
 
           {/* 编辑按钮 */}
           <button className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-7 h-7 md:w-9 md:h-9 rounded-full bg-black/50 text-white grid place-items-center edit-button-shadow text-xs md:text-sm" aria-label="编辑封面">
-            ✎
+            <BiSolidPencil />
           </button>
         </div>
 
