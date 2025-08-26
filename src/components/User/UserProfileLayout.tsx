@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Avatar from '../UI/Avatar';
 import GameModeSelector from '../UI/GameModeSelector';
+import RankHistoryChart from '../UI/RankHistoryChart';
 import { GAME_MODE_COLORS, type User, type GameMode } from '../../types';
 
 
@@ -28,6 +29,7 @@ const CoverImage: React.FC<{ src?: string; alt?: string; height?: number; tint?:
   const [inView, setInView] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const [isUpdatingMode, setIsUpdatingMode] = useState(false);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -85,6 +87,8 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
 
   const coverUrl = user.cover_url || user.cover?.url || undefined;
   const tint = useMemo(() => GAME_MODE_COLORS[selectedMode] || '#ED8EA6', [selectedMode]);
+
+  const [isUpdatingMode, setIsUpdatingMode] = useState(false);
 
   return (
     <main className="max-w-6xl mx-auto px-4 md:px-8 py-6">
@@ -187,8 +191,14 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               </div>
 
               {/* 折线图占位（你可替换成真实图表） */}
-              <div className="relative w-full h-32 bg-gray-50 dark:bg-gray-800/60 rounded-lg overflow-hidden rank-card-shadow">
-                <div className="chart-line absolute bottom-0 left-0 right-0 h-20" />
+              <div className="w-full">
+                <RankHistoryChart
+                  rankHistory={user.rank_history}
+                  isUpdatingMode={isUpdatingMode}
+                  selectedModeColor="#ED8EA6"
+                  delay={0.4}
+                  height="8rem"
+                />
               </div>
 
               {/* 附加信息（PP / 游戏时间 / 成绩徽章） */}
