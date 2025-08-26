@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LineChart, Line, Tooltip, ResponsiveContainer, XAxis } from 'recharts';
-import { FiBarChart2 } from 'react-icons/fi'; // 引入图标
+import { LineChart, Line, Tooltip, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { FiBarChart2 } from 'react-icons/fi';
 
 interface RankHistoryData {
   data: number[];
@@ -26,27 +26,36 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
   height = '16rem',
   fullBleed = true,
 }) => {
-  // 数据本身就是按时间顺序排列（最后一个是最新），不需要反转
+  // 数据预处理：去除 0（视为缺失），保留时间顺序
   const chartData = React.useMemo(() => {
     const src = rankHistory?.data ?? [];
     if (src.length === 0) return [];
-        
-    // 先过滤掉无效数据，然后重新分配索引
+
     const validData = src
       .map((rank, originalIdx) => ({
         originalIdx,
-        rank: rank === 0 ? null : rank, // 0 当作缺失
+        rank: rank === 0 ? null : rank,
       }))
-      .filter(d => d.rank !== null);
-    
-    // 重新分配连续的索引
+      .filter(d => d.rank !== null) as Array<{ originalIdx: number; rank: number }>;
+
     return validData.map((item, newIdx) => ({
-      idx: newIdx, // 连续的索引，从0开始
+      idx: newIdx,
       rank: item.rank,
     }));
   }, [rankHistory?.data]);
 
   const total = chartData.length;
+
+  // === 关键修复：为 Y 轴增加上下缓冲，避免极值处被裁半 ===
+  const yDomain = React.useMemo<[number | 'auto', number | 'auto']>(() => {
+    if (chartData.length === 0) return ['auto', 'auto'];
+    const values = chartData.map(d => d.rank as number);
+    const dataMin = Math.min(...values);
+    const dataMax = Math.max(...values);
+    // 按范围的 5% 取整做缓冲，至少 1
+    const pad = Math.max(1, Math.round((dataMax - dataMin) * 0.05));
+    return [dataMin - pad, dataMax + pad];
+  }, [chartData]);
 
   return (
     <motion.div
@@ -68,9 +77,21 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
-              margin={{ top: 10, right: 0, left: 0, bottom: 0 }} // 左右贴边
+              // 上下给一点额外 margin，配合 yDomain 的缓冲更稳
+              margin={{ top: 12, right: 0, left: 0, bottom: 12 }}
             >
               <XAxis dataKey="idx" hide />
+              {/* 上小下大：反转 Y 轴；并使用带缓冲的 domain */}
+              <YAxis
+                type="number"
+                dataKey="rank"
+                hide
+                reversed
+                domain={yDomain}
+                allowDecimals={false}
+                // 如果数据突变导致临时越界，也能先画出来不被裁
+                allowDataOverflow
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'var(--bg-primary)',
@@ -80,8 +101,7 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
                 }}
                 labelFormatter={(label) => {
                   const idx = Number(label);
-                  // 计算天数：最右边(最大idx)为最新数据(刚刚)
-                  const daysAgo = total - 1 - idx;
+                  const daysAgo = total - 1 - idx; // 最右是最新
                   return daysAgo === 0 ? '刚刚' : `${daysAgo} 天前`;
                 }}
                 formatter={(value) => [`#${value}`, '全球排名']}
@@ -94,6 +114,8 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
                 dot={false}
                 activeDot={false}
                 connectNulls={false}
+                // 线端圆角，边缘看起来更自然
+                strokeLinecap="round"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -107,12 +129,8 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
         )}
       </div>
       <style>{`
-        *:focus {
-            outline: none;
-        }
-        textarea:focus, input:focus{
-            outline: none;
-        }
+        *:focus { outline: none; }
+        textarea:focus, input:focus { outline: none; }
       `}</style>
     </motion.div>
   );

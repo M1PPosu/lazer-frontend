@@ -5,6 +5,7 @@ import RankHistoryChart from '../UI/RankHistoryChart';
 import PlayerRankCard from '../User/PlayerRankCard';
 import StatsCard from '../User/StatsCard';
 import { GAME_MODE_COLORS, type User, type GameMode } from '../../types';
+import FriendStats from './FriendStats';
 
 
 interface UserProfileLayoutProps {
@@ -212,7 +213,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               </div>
 
               {/* 附加信息（PP / 游戏时间 / 成绩徽章） */}
-              <div className="w-full mt-[-50px]">
+              <div className="w-full mt-[-55px]">
                 <PlayerRankCard
                   stats={stats}
                   playTime={playTime}
@@ -234,16 +235,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
         {/* 底部：好友/消息 + 等级进度 */}
         <div className="bg-white/95 dark:bg-gray-900/85 px-6 md:px-8 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex gap-3">
-              <div className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-full flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 friend-button-shadow">
-                <span>好友</span>
-                <span>{user.follower_count ?? 0}</span>
-              </div>
-              <div className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-full flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 friend-button-shadow">
-                <span>🔔</span>
-                <span>{user.unread_pm_count ?? 0}</span>
-              </div>
-            </div>
+              <FriendStats user={user} />
 
             <div className="flex items-center gap-4">
               {/* 进度条（左） */}
