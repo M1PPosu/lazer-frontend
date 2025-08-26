@@ -1,10 +1,12 @@
 import { FaBell } from "react-icons/fa";
 import FriendActions from "./FriendActions";
 import { useFriendRelationship } from "../../hooks/useFriendRelationship";
-
+import { useAuth } from "../../contexts/AuthContext";
 type User = { id: number; follower_count?: number; unread_pm_count?: number };
 
-export default function FriendStats({ user, selfId }: { user: User; selfId: number }) {
+export default function FriendStats({ user, selfId }: { user: User; selfId?: number }) {
+  const { user: self } = useAuth();
+  const resolvedSelfId = selfId ?? self?.id ?? 0;
   const {
     status,
     isSelf,
@@ -12,7 +14,7 @@ export default function FriendStats({ user, selfId }: { user: User; selfId: numb
     remove,
     block,
     unblock,
-  } = useFriendRelationship(user.id, selfId);
+  } = useFriendRelationship(user.id, resolvedSelfId);
 
   return (
     <div className="flex gap-3">
