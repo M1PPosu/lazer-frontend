@@ -156,7 +156,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               {/* 国旗（使用 flagcdn 动态加载） - 修复手机端显示问题 */}
               {user.country?.code && (
                 <img
-                  src={`image/flag/${user.country.code.toLowerCase()}.svg`}
+                  src={`/image/flag/${user.country.code.toLowerCase()}.svg`}
                   alt={user.country.name}
                   className="ml-[-8px] h-[25px] w-auto rounded-sm object-contain"
                   loading="lazy"
