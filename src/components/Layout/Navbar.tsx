@@ -8,6 +8,10 @@ import UserDropdown from '../UI/UserDropdown';
 import Avatar from '../UI/Avatar';
 import type { NavItem } from '../../types';
 
+
+// 彩蛋
+import toast from 'react-hot-toast';
+
 // 将 NavItem 组件提取并使用 memo 优化，防止不必要的重新渲染
 const NavItem = memo<{ item: NavItem }>(({ item }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -284,6 +288,9 @@ const Navbar: React.FC = () => {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   className="relative p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 group"
+                  onClick={() => {
+                    toast.success("别急，还在写呢，等我咕咕咕一下！");
+                  }}
                 >
                   <FiBell size={18} />
                   <motion.div 
