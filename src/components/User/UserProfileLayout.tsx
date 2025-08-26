@@ -8,6 +8,7 @@ import LevelProgress from '../UI/LevelProgress';
 import { GAME_MODE_COLORS, type User, type GameMode } from '../../types';
 import FriendStats from './FriendStats';
 import { BiSolidPencil } from 'react-icons/bi';
+import { FaTools } from "react-icons/fa"
 
 interface UserProfileLayoutProps {
   user: User;
@@ -109,7 +110,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
   return (
     <main className="max-w-6xl mx-auto px-2 md:px-4 lg:px-8 py-4 md:py-6">
       {/* 主卡片 */}
-      <div className="bg-white/95 dark:bg-gray-900/85 main-card-shadow rounded-t-2xl overflow-hidden border border-gray-100/70 dark:border-white/10">
+      <div className="bg-white/95 dark:bg-gray-900/85 main-card-shadow rounded-t-2xl rounded-b-2xl overflow-hidden border border-gray-100/70 dark:border-white/10">
         {/* 头部栏 + 模式选择（与头图同容器） */}
         <div className="relative overflow-hidden">
           <div className="bg-white/95 dark:bg-gray-900/85 text-gray-900 dark:text-gray-100 px-3 md:px-4 py-2 flex items-center justify-between rounded-t-2xl border-b border-gray-100/70 dark:border-white/10">
@@ -237,7 +238,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
           </div>
         </div>
 
-        {/* 底部：好友/消息 + 等级进度 */}
+        {/* 好友/消息 + 等级进度 */}
         <div className="bg-white/95 dark:bg-gray-900/85 px-4 md:px-6 lg:px-8 py-4 md:py-6">
           <div className="flex items-center justify-between">
               <FriendStats user={user} />
@@ -252,6 +253,17 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
             </div>
           </div>
         </div>
+
+        {/* 施工中 */}
+        <div className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg h-[500px] flex flex-col justify-center">
+          <div className="flex justify-center items-center h-full">
+            <p className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+              <FaTools className="text-lg" />
+              剩下数据正在努力施工中
+            </p>
+          </div>
+        </div>
+
       </div>
     </main>
   );

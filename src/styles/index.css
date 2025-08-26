@@ -567,3 +567,26 @@ html, body {
   );
   clip-path: polygon(0 90%, 5% 85%, 15% 70%, 25% 60%, 35% 45%, 50% 35%, 65% 25%, 80% 20%, 90% 15%, 100% 10%, 100% 100%, 0 100%);
 }
+
+/* 全局禁用选择（文本 & 元素） */
+html, body, * {
+  -webkit-user-select: none; /* Chrome / Safari / 新 Edge / Opera */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* 旧 IE/Edge */
+  user-select: none;
+}
+
+/* 图片/媒体额外处理：禁拖拽、禁长按弹出（iOS Safari） */
+img, svg, picture, video {
+  -webkit-user-drag: none;   /* 禁止拖拽保存 */
+  user-drag: none;           /* 非标准，部分浏览器支持 */
+  -webkit-touch-callout: none; /* iOS 长按菜单 */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input, textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
