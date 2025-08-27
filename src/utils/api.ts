@@ -417,6 +417,28 @@ export const rankingsAPI = {
     const response = await api.get(`/api/v2/rankings/${ruleset}/country?${params}`);
     return response.data;
   },
+
+  // 获取战队排行榜
+  getTeamRankings: async (
+    ruleset: string, 
+    sort: 'performance' | 'score', 
+    page: number = 1
+  ) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    
+    const response = await api.get(`/api/v2/rankings/${ruleset}/team/${sort}?${params}`);
+    return response.data;
+  },
+};
+
+// Teams API functions
+export const teamsAPI = {
+  // 获取战队详情
+  getTeam: async (teamId: number) => {
+    const response = await api.get(`/api/private/team/${teamId}`);
+    return response.data;
+  },
 };
 
 // Stats API functions

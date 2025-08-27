@@ -9,6 +9,8 @@ import ProfilePage from './pages/ProfilePage';
 import UserPage from './pages/UserPage';
 import SettingsPage from './pages/SettingsPage';
 import RankingsPage from './pages/RankingsPage';
+import TeamsPage from './pages/TeamsPage';
+import TeamDetailPage from './pages/TeamDetailPage';
 
 function App() {
   return (
@@ -23,19 +25,13 @@ function App() {
             <Route path="users/:userId" element={<UserPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="rankings" element={<RankingsPage />} />
+            <Route path="teams" element={<TeamsPage />} />
+            <Route path="teams/:teamId" element={<TeamDetailPage />} />
             <Route
               path="beatmaps"
               element={
                 <div className="flex items-center justify-center h-screen">
                   <h1 className="text-2xl font-bold">谱面（即将推出）</h1>
-                </div>
-              }
-            />
-            <Route
-              path="team"
-              element={
-                <div className="flex items-center justify-center h-screen">
-                  <h1 className="text-2xl font-bold">团队（即将推出）</h1>
                 </div>
               }
             />

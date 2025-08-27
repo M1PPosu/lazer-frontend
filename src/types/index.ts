@@ -282,7 +282,29 @@ export interface CountryRanking {
 }
 
 export type RankingType = 'performance' | 'score';
-export type TabType = 'users' | 'countries';
+export type TabType = 'users' | 'countries' | 'teams';
+
+// Team Rankings types
+export interface TeamRankingsResponse {
+  ranking: TeamRanking[];
+  cursor?: {
+    page: number;
+  };
+  total: number;
+}
+
+export interface TeamRanking {
+  team_id: number;
+  ruleset_id: number;
+  play_count: number;
+  ranked_score: number;
+  performance: number;
+}
+
+export interface TeamDetailResponse {
+  team: Team;
+  members: User[];
+}
 
 // Server stats types
 export interface ServerStats {

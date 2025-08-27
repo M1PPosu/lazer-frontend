@@ -217,7 +217,7 @@ const Navbar: React.FC = () => {
     { path: '/', title: '主页', icon: FiHome },
     { path: '/rankings', title: '排行榜', icon: FiTrendingUp, requireAuth: true },
     { path: '/beatmaps', title: '谱面', icon: FiMusic, requireAuth: true },
-    { path: '/team', title: '战队', icon: FiUsers, requireAuth: true },
+    { path: '/teams', title: '战队', icon: FiUsers, requireAuth: true },
     { path: '/profile', title: '个人资料', icon: FiUser, requireAuth: true },
   ], []);
 
