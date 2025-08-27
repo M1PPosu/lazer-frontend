@@ -46,6 +46,13 @@ export function useFriendRelationship(targetUserId: number, selfUserId: number) 
       setStatus(prev => ({ ...prev, loading: false }));
       return;
     }
+    
+    // 验证 selfUserId 是否有效
+    if (!isValidUserId(selfUserId)) {
+      console.error('Cannot make API call with invalid selfUserId:', selfUserId);
+      setStatus(prev => ({ ...prev, loading: false }));
+      return;
+    }
 
     try {
       console.log('Making API call to check relationship for userId:', targetUserId);
@@ -56,14 +63,24 @@ export function useFriendRelationship(targetUserId: number, selfUserId: number) 
       
       if (!mountedRef.current) return;
 
-      // 如果成功获取到关系数据，说明不是自己
+      // 映射 API 响应字段到组件状态
       setStatus({
-        isFriend: !!res?.isFriend,
-        isBlocked: !!res?.isBlocked,
-        isMutual: !!res?.isMutual,
-        followsMe: !!res?.followsMe,
+        isFriend: !!res?.is_following,    // 我是否关注对方
+        isBlocked: !!res?.isBlocked,      // 是否屏蔽（API 可能不返回此字段）
+        isMutual: !!res?.mutual,          // 是否互相关注
+        followsMe: !!res?.is_followed,    // 对方是否关注我
         loading: false,
         isSelf: false,
+      });
+      
+      console.log('Mapped status:', {
+        original: res,
+        mapped: {
+          isFriend: !!res?.is_following,
+          isBlocked: !!res?.isBlocked,
+          isMutual: !!res?.mutual,
+          followsMe: !!res?.is_followed,
+        }
       });
     } catch (err: any) {
       console.log('API call failed:', err);
@@ -143,11 +160,25 @@ export function useFriendRelationship(targetUserId: number, selfUserId: number) 
 
   // 创建操作函数
   const add = useCallback(() => {
-    if (currentIsSelf) return Promise.resolve();
+    console.log('Add friend called:', { targetUserId, currentIsSelf, isValidTargetUserId: isValidUserId(targetUserId) });
+    
+    if (currentIsSelf) {
+      console.log('Cannot add self as friend');
+      return Promise.resolve();
+    }
+    
+    if (!isValidUserId(targetUserId)) {
+      console.error('Cannot add friend - invalid targetUserId:', targetUserId);
+      toast.error('无效的用户ID');
+      return Promise.reject(new Error('Invalid targetUserId'));
+    }
     
     return withOptimisticUpdate(
       (s) => ({ ...s, isFriend: true }),
-      () => friendsAPI.addFriend(targetUserId),
+      () => {
+        console.log('Calling friendsAPI.addFriend with targetUserId:', targetUserId);
+        return friendsAPI.addFriend(targetUserId);
+      },
       '已关注该用户'
     );
   }, [targetUserId, currentIsSelf, withOptimisticUpdate]);

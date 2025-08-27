@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FiUserPlus,
   FiShield,
@@ -8,11 +8,10 @@ import {
   FiUsers,
   FiUser,
   FiUserCheck,
-  FiX,
-  FiChevronUp,
+  FiUserMinus,
 } from "react-icons/fi";
 import { FaUserFriends } from "react-icons/fa";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 
 /** ===================== 类型定义 ===================== */
@@ -36,233 +35,13 @@ interface FriendActionsProps {
   isSelf?: boolean;
 }
 
-/** ===================== 常量与工具 ===================== */
-const MENU_WIDTH_PX = 176; // w-44
-const GAP_PX = 8;
-
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
-
-/** ===================== 子组件（稳定引用） ===================== */
 type MenuItem = {
   key: string;
   label: string;
   icon: React.ReactNode;
   action: () => void | Promise<void>;
+  className?: string;
 };
-
-type MobileSheetProps = {
-  open: boolean;
-  loading: boolean;
-  isSelf: boolean;
-  isSmallScreen: boolean;
-  menuItems: MenuItem[];
-  onClose: () => void;
-  onClickItem: (fn: () => void | Promise<void>) => void;
-};
-
-const MobileSheet = React.memo(function MobileSheet({
-  open,
-  loading,
-  isSelf,
-  isSmallScreen,
-  menuItems,
-  onClose,
-  onClickItem,
-}: MobileSheetProps) {
-  if (!open || loading || isSelf || !isSmallScreen) return null;
-
-  return createPortal(
-    <AnimatePresence initial={false}>
-      <div className="fixed inset-0 z-[10000]" style={{ position: "fixed" }}>
-        {/* 背景遮罩 */}
-        <motion.div
-          initial={false}
-          className="absolute inset-0 bg-black/50"
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 1,
-          }}
-        />
-
-        {/* 抽屉内容 */}
-        <motion.div
-          role="menu"
-          aria-label="好友操作"
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ duration: 0.25, ease: [0.25, 0.8, 0.25, 1] }}
-          className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-1xl"
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 2,
-            borderTopLeftRadius: "16px",
-            borderTopRightRadius: "16px",
-            backgroundColor: "white",
-            boxShadow:
-              "0 -10px 25px -3px rgba(0, 0, 0, 0.1), 0 -4px 6px -2px rgba(0, 0, 0, 0.05)",
-          }}
-        >
-          {/* 顶部把手和关闭按钮 */}
-          <div className="flex items-center justify-center px-4 pt-4 pb-2 relative">
-            <div
-              className="h-1.5 w-12 rounded-full bg-gray-300 dark:bg-gray-600"
-              style={{
-                height: "6px",
-                width: "48px",
-                borderRadius: "3px",
-                backgroundColor: "#d1d5db",
-              }}
-            />
-            <button
-              aria-label="关闭"
-              className="absolute right-4 top-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              onClick={onClose}
-              style={{
-                position: "absolute",
-                right: "16px",
-                top: "12px",
-                padding: "8px",
-                borderRadius: "50%",
-                backgroundColor: "transparent",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              <FiX className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* 菜单项列表 */}
-          {menuItems.length > 0 && (
-            <div className="pb-6 pt-2">
-              {menuItems.map((item) => (
-                <button
-                  key={item.key}
-                  role="menuitem"
-                  onClick={() => onClickItem(item.action)}
-                  className="w-full flex items-center gap-4 px-6 py-4 text-left text-base text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700 transition-colors"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    padding: "16px 24px",
-                    textAlign: "left",
-                    fontSize: "16px",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#1f2937",
-                  }}
-                >
-                  <span className="flex-shrink-0">{item.icon}</span>
-                  <span className="flex-1">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      </div>
-    </AnimatePresence>,
-    document.body
-  );
-});
-
-type DesktopMenuProps = {
-  open: boolean;
-  loading: boolean;
-  isSelf: boolean;
-  isSmallScreen: boolean;
-  menuRect: { top: number; left: number };
-  menuItems: MenuItem[];
-  onClickItem: (fn: () => void | Promise<void>) => void;
-};
-
-const DesktopMenu = React.memo(function DesktopMenu({
-  open,
-  loading,
-  isSelf,
-  isSmallScreen,
-  menuRect,
-  menuItems,
-  onClickItem,
-}: DesktopMenuProps) {
-  if (!open || loading || isSelf || isSmallScreen) return null;
-
-  return createPortal(
-    <AnimatePresence initial={false}>
-      <motion.div
-        role="menu"
-        aria-label="好友操作"
-        initial={{ opacity: 0, y: 6, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 6, scale: 0.98 }}
-        transition={{ duration: 0.16, ease: [0.2, 0.8, 0.2, 1] }}
-        className="fixed w-44 z-[10000]"
-        style={{
-          top: menuRect.top,
-          left: menuRect.left,
-          position: "fixed",
-          width: "176px",
-          zIndex: 10000,
-        }}
-      >
-        <div
-          className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-white/95 dark:bg-gray-900/95 shadow-1xl"
-          style={{
-            borderRadius: "12px",
-            backgroundColor: "rgba(255, 255, 255, 0.95)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid rgba(0, 0, 0, 0.1)",
-            boxShadow:
-              "0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)",
-          }}
-        >
-          <div className="py-1">
-            {menuItems.map((item) => (
-              <button
-                key={item.key}
-                role="menuitem"
-                onClick={() => onClickItem(item.action)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 focus:outline-none focus:bg-gray-100/80 dark:focus:bg-gray-800/60 transition-colors"
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  padding: "10px 12px",
-                  textAlign: "left",
-                  fontSize: "14px",
-                  backgroundColor: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-    </AnimatePresence>,
-    document.body
-  );
-});
 
 /** ===================== 主组件 ===================== */
 const FriendActions: React.FC<FriendActionsProps> = ({
@@ -276,410 +55,499 @@ const FriendActions: React.FC<FriendActionsProps> = ({
   isSelf = false,
 }) => {
   const { isFriend, isBlocked, isMutual, followsMe, loading } = status;
+  
+  const [isOpen, setIsOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const [open, setOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [menuRect, setMenuRect] = useState({ top: 0, left: 0 });
-  const rootRef = useRef<HTMLDivElement>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
-
-  // 小屏判断
-  const [isSmallScreen, setIsSmallScreen] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.innerWidth <= 768;
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const updateScreenSize = () => {
-      const newIsSmall = window.innerWidth <= 768;
-      setIsSmallScreen(newIsSmall);
-    };
-
-    updateScreenSize();
-
-    window.addEventListener("resize", updateScreenSize);
-    const onOC = () => setTimeout(updateScreenSize, 100);
-    window.addEventListener("orientationchange", onOC);
-
-    const mediaQuery = window.matchMedia("(max-width: 768px)");
-    const handleMediaChange = (e: MediaQueryListEvent) => {
-      setIsSmallScreen(e.matches);
-    };
-
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", handleMediaChange);
-    } else {
-      // 兼容旧浏览器
-      (mediaQuery as any).addListener(handleMediaChange);
-    }
-
-    return () => {
-      window.removeEventListener("resize", updateScreenSize);
-      window.removeEventListener("orientationchange", onOC);
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener("change", handleMediaChange);
-      } else {
-        (mediaQuery as any).removeListener(handleMediaChange);
-      }
-    };
-  }, []);
-
-  // 计算菜单位置
-  const updateMenuPosition = () => {
-    if (!btnRef.current) return;
-    const rect = btnRef.current.getBoundingClientRect();
-
-    const vv = (window as any).visualViewport as VisualViewport | undefined;
-    const pageTop =
-      vv?.pageTop ??
-      (window.scrollY || document.documentElement.scrollTop || 0);
-    const pageLeft =
-      vv?.pageLeft ??
-      (window.scrollX || document.documentElement.scrollLeft || 0);
-    const vw = vv?.width ?? window.innerWidth;
-
-    let left = rect.right + pageLeft - MENU_WIDTH_PX;
-    left = clamp(
-      left,
-      GAP_PX + pageLeft,
-      pageLeft + vw - GAP_PX - MENU_WIDTH_PX
-    );
-    const top = rect.bottom + pageTop + GAP_PX;
-
-    setMenuRect({ top, left });
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    updateMenuPosition();
-
-    const handleUpdate = () => updateMenuPosition();
-
-    window.addEventListener("scroll", handleUpdate, { passive: true });
-    window.addEventListener("resize", handleUpdate);
-
-    const vv = (window as any).visualViewport;
-    if (vv) {
-      vv.addEventListener("resize", handleUpdate);
-      vv.addEventListener("scroll", handleUpdate as any, { passive: true } as any);
-    }
-
-    return () => {
-      window.removeEventListener("scroll", handleUpdate as any);
-      window.removeEventListener("resize", handleUpdate as any);
-      if (vv) {
-        vv.removeEventListener("resize", handleUpdate as any);
-        vv.removeEventListener("scroll", handleUpdate as any);
-      }
-    };
-  }, [open]);
-
-  // 外部点击关闭
-  useEffect(() => {
-    if (!open) return;
-
-    const handleClickOutside = (e: Event) => {
-      const target = e.target as Node | null;
-      if (rootRef.current && target && !rootRef.current.contains(target)) {
-        setOpen(false);
-      }
-    };
-
-    const timeoutId = setTimeout(() => {
-      document.addEventListener("touchstart", handleClickOutside, {
-        passive: true,
-        capture: true,
-      });
-      document.addEventListener("mousedown", handleClickOutside, {
-        capture: true,
-      });
-      document.addEventListener("pointerdown", handleClickOutside, {
-        capture: true,
-      });
-    }, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener("touchstart", handleClickOutside as any);
-      document.removeEventListener("mousedown", handleClickOutside as any);
-      document.removeEventListener("pointerdown", handleClickOutside as any);
-    };
-  }, [open]);
-
-  // ESC 关闭
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
-
+  // osu! 单向好友系统菜单配置
   const menuItems: MenuItem[] = useMemo(() => {
     if (isSelf) return [];
 
+    // 已屏蔽状态
     if (isBlocked) {
       return [
         {
           key: "unblock",
           label: "取消屏蔽",
-          icon: <FiShieldOff className="w-4 h-4" />,
+          icon: (
+            <span className="relative flex items-center justify-center w-4 h-4">
+              <FiShieldOff className="w-4 h-4" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
+            </span>
+          ),
           action: onUnblock,
+          className: "text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10 font-medium",
         },
       ];
     }
+    
+    // 已关注状态 (我关注了对方)
     if (isFriend) {
-      return [
+      const items = [
         {
           key: "remove",
-          label: isMutual ? "取消互关" : "取消关注",
+          label: isMutual ? "取消互相关注" : "取消关注",
           icon: (
-            <span className="relative flex items-center justify-center w-5 h-5">
+            <span className="relative flex items-center justify-center w-4 h-4">
               {isMutual ? (
+                // 互相关注 - 双人图标 + 心形
                 <>
-                  <FiUsers className="w-4 h-4" />
-                  <FiHeart className="absolute -top-0.5 -right-0.5 w-2 h-2 text-pink-400" />
+                  <FiUsers className="w-4 h-4 text-pink-500" />
+                  <FiHeart className="absolute -top-0.5 -right-0.5 w-2 h-2 text-pink-400 fill-current" />
                 </>
               ) : (
+                // 单向关注 - 用户图标 + 减号
                 <>
                   <FiUser className="w-4 h-4" />
-                  <FiUserCheck className="absolute -top-0.5 -right-0.5 w-2 h-2 text-green-400" />
+                  <FiUserMinus className="absolute -top-0.5 -right-0.5 w-2 h-2 text-orange-500" />
                 </>
               )}
             </span>
           ),
           action: onRemove,
-        },
-        {
-          key: "block",
-          label: "屏蔽",
-          icon: <FiShield className="w-4 h-4" />,
-          action: onBlock,
+          className: isMutual 
+            ? "text-pink-600 hover:bg-pink-50 dark:text-pink-400 dark:hover:bg-pink-500/10 font-medium" 
+            : "text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-500/10 font-medium",
         },
       ];
+
+      // 添加屏蔽选项
+      items.push({
+        key: "block",
+        label: "屏蔽用户",
+        icon: (
+          <span className="relative flex items-center justify-center w-4 h-4">
+            <FiShield className="w-4 h-4" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          </span>
+        ),
+        action: onBlock,
+        className: "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 font-medium",
+      });
+
+      return items;
     }
-    return [
+    
+    // 未关注状态
+    const items = [
       {
         key: "add",
-        label: followsMe ? "回关" : "关注",
+        label: followsMe ? "回关 (互相关注)" : "关注",
         icon: (
-          <span className="relative flex items-center justify-center w-5 h-5">
+          <span className="relative flex items-center justify-center w-4 h-4">
             {followsMe ? (
+              // 对方关注了我，我可以回关
               <>
-                <FiUsers className="w-4 h-4" />
-                <FiHeart className="absolute -top-0.5 -right-0.5 w-2 h-2 text-pink-400 opacity-50" />
+                <FiUsers className="w-4 h-4 text-blue-500" />
+                <FiHeart className="absolute -top-0.5 -right-0.5 w-2 h-2 text-blue-400" />
               </>
             ) : (
+              // 普通关注
               <>
                 <FiUser className="w-4 h-4" />
-                <FiUserPlus className="absolute -top-0.5 -right-0.5 w-2 h-2 text-blue-400" />
+                <FiUserPlus className="absolute -top-0.5 -right-0.5 w-2 h-2 text-green-500" />
               </>
             )}
           </span>
         ),
         action: onAdd,
-      },
-      {
-        key: "block",
-        label: "屏蔽",
-        icon: <FiShield className="w-4 h-4" />,
-        action: onBlock,
+        className: followsMe 
+          ? "text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10 font-medium" 
+          : "text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10 font-medium",
       },
     ];
+
+    // 添加屏蔽选项
+    items.push({
+      key: "block",
+      label: "屏蔽用户",
+      icon: (
+        <span className="relative flex items-center justify-center w-4 h-4">
+          <FiShield className="w-4 h-4" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </span>
+      ),
+      action: onBlock,
+      className: "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 font-medium",
+    });
+
+    return items;
   }, [isSelf, isBlocked, isFriend, isMutual, followsMe, onAdd, onRemove, onBlock, onUnblock]);
 
-  const triggerAria = isSelf
-    ? "自己"
-    : isBlocked
-    ? "已屏蔽"
-    : isFriend
-    ? isMutual
-      ? "互关中"
-      : "已关注"
-    : followsMe
-    ? "回关"
-    : "关注";
+  // 调试信息
+  console.log('FriendActions render:', { 
+    isSelf, 
+    loading, 
+    isOpen, 
+    status,
+    followerCount,
+    menuItemsCount: menuItems.length,
+    menuItems: menuItems.map(item => item.key)
+  });
 
-  // 点击
-  const handleButtonClick = (e: React.MouseEvent) => {
+  // 计算菜单位置 - 优化滚动处理
+  const updateMenuPosition = useCallback(() => {
+    if (!buttonRef.current) return;
+    
+    const rect = buttonRef.current.getBoundingClientRect();
+    
+    // 获取更准确的滚动位置
+    const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const scrollX = window.scrollX || window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    
+    // 视口尺寸
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    
+    const menuWidth = 192; // w-48 = 12rem = 192px
+    const gap = 8; // 菜单与按钮的间距
+    
+    // 动态计算菜单高度
+    let menuHeight = 120; // 默认高度
+    if (menuRef.current) {
+      menuHeight = menuRef.current.offsetHeight;
+    } else {
+      // 根据菜单项数量估算高度
+      const itemHeight = 44; // 每个菜单项约 44px
+      const padding = 8; // 上下 padding
+      menuHeight = menuItems.length * itemHeight + padding;
+    }
+    
+    // 基础位置计算（相对于文档）
+    let left = rect.right + scrollX - menuWidth; // 右对齐
+    let top = rect.bottom + scrollY + gap; // 按钮下方
+    
+    // 水平边界检查
+    const minLeft = scrollX + gap;
+    const maxLeft = scrollX + viewportWidth - menuWidth - gap;
+    
+    if (left < minLeft) {
+      left = minLeft;
+    } else if (left > maxLeft) {
+      left = maxLeft;
+    }
+    
+    // 垂直边界检查 - 如果下方空间不够，显示在上方
+    const maxTop = scrollY + viewportHeight - menuHeight - gap;
+    if (top > maxTop) {
+      // 显示在按钮上方
+      top = rect.top + scrollY - menuHeight - gap;
+      
+      // 如果上方也不够空间，则强制显示在视口内
+      if (top < scrollY + gap) {
+        top = scrollY + gap;
+      }
+    }
+    
+    console.log('Menu position calculated:', { 
+      top, 
+      left, 
+      buttonRect: rect,
+      scroll: { scrollX, scrollY },
+      viewport: { viewportWidth, viewportHeight }
+    });
+    
+    setMenuPosition({ top, left });
+  }, []);
+
+  // 移除了复杂的外部点击处理，使用透明背景层代替
+
+  // 监听滚动和窗口变化，实时更新菜单位置
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let rafId: number;
+    
+    const handlePositionUpdate = () => {
+      // 使用 requestAnimationFrame 防止频繁更新
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      rafId = requestAnimationFrame(() => {
+        updateMenuPosition();
+      });
+    };
+
+    // 监听多种滚动事件
+    document.addEventListener('scroll', handlePositionUpdate, { passive: true });
+    window.addEventListener('scroll', handlePositionUpdate, { passive: true });
+    window.addEventListener('resize', handlePositionUpdate);
+    
+    // 监听视觉视口变化（移动端）
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handlePositionUpdate);
+      window.visualViewport.addEventListener('scroll', handlePositionUpdate);
+    }
+
+    return () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      document.removeEventListener('scroll', handlePositionUpdate);
+      window.removeEventListener('scroll', handlePositionUpdate);
+      window.removeEventListener('resize', handlePositionUpdate);
+      
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handlePositionUpdate);
+        window.visualViewport.removeEventListener('scroll', handlePositionUpdate);
+      }
+    };
+  }, [isOpen, updateMenuPosition]);
+
+  // 监听按钮是否在视口内，如果不可见则关闭菜单
+  useEffect(() => {
+    if (!isOpen || !buttonRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry.isIntersecting) {
+          console.log('Button is out of viewport, closing menu');
+          setIsOpen(false);
+        }
+      },
+      {
+        threshold: 0,
+        rootMargin: '-10px'
+      }
+    );
+
+    observer.observe(buttonRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isOpen]);
+
+  // ESC 关闭菜单
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen]);
+
+  // 按钮点击处理
+  const handleToggle = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isSelf || loading) return;
-    if (!open) updateMenuPosition();
-    setOpen((v) => !v);
-  };
+    
+    console.log('Button clicked! isSelf:', isSelf, 'loading:', loading, 'menuItems:', menuItems.length);
+    
+    // 如果是自己或正在加载，直接返回不做任何操作
+    if (isSelf || loading) {
+      console.log('Cannot toggle menu: isSelf =', isSelf, 'loading =', loading);
+      return;
+    }
+    
+    console.log('Toggling menu, current state:', isOpen);
+    
+    if (!isOpen) {
+      // 在打开菜单前计算位置
+      updateMenuPosition();
+    }
+    
+    setIsOpen(prev => {
+      const newState = !prev;
+      console.log('Setting isOpen from', prev, 'to', newState);
+      return newState;
+    });
+  }, [isSelf, loading, isOpen, menuItems]);
 
-  // 菜单项点击
-  const handleMenuItemClick = async (action: () => void | Promise<void>) => {
-    setOpen(false);
+  // 菜单项点击处理
+  const handleMenuItemClick = useCallback(async (action: () => void | Promise<void>) => {
+    console.log('Menu item clicked, executing action...');
+    setIsOpen(false);
     try {
       await action();
+      console.log('Action completed successfully');
     } catch (error) {
       console.error("Action failed:", error);
     }
+  }, []);
+
+  // 获取主按钮的图标 - osu! 单向好友系统
+  const getMainIcon = () => {
+    if (loading) {
+      return <FiLoader className="w-4 h-4 animate-spin text-blue-500" />;
+    }
+
+    if (isSelf) {
+      return (
+        <span className="relative flex items-center justify-center">
+          <FiUser className="w-4 h-4 text-gray-500" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-gray-400 rounded-full"></span>
+        </span>
+      );
+    }
+
+    if (isBlocked) {
+      return (
+        <span className="relative flex items-center justify-center">
+          <FiShield className="w-4 h-4 text-red-500" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+        </span>
+      );
+    }
+
+    if (isFriend) {
+      if (isMutual) {
+        // 互相关注 - 双人图标 + 粉色心形 + 脉冲效果
+        return (
+          <span className="relative flex items-center justify-center">
+            <FiUsers className="w-4 h-4 text-pink-500" />
+            <FiHeart className="absolute -top-0.5 -right-0.5 w-2 h-2 text-pink-400 fill-current animate-pulse" />
+          </span>
+        );
+      } else {
+        // 单向关注 - 用户图标 + 蓝色勾选
+        return (
+          <span className="relative flex items-center justify-center">
+            <FiUser className="w-4 h-4 text-blue-500" />
+            <FiUserCheck className="absolute -top-0.5 -right-0.5 w-2 h-2 text-emerald-500" />
+          </span>
+        );
+      }
+    }
+
+    if (followsMe) {
+      // 对方关注了我 - 橙色双人图标 + 心形提示
+      return (
+        <span className="relative flex items-center justify-center">
+          <FiUsers className="w-4 h-4 text-orange-500" />
+          <FiHeart className="absolute -top-0.5 -right-0.5 w-2 h-2 text-orange-400 opacity-80" />
+        </span>
+      );
+    }
+
+    // 未关注 - 默认用户图标
+    return (
+      <span className="relative flex items-center justify-center">
+        <FaUserFriends className="w-4 h-4 text-gray-600" />
+      </span>
+    );
   };
 
-  /** ========== 用 useMemo 缓存动画对象，避免“新对象触发重动画” ========== */
-  const buttonAnimate = useMemo(() => {
-    const hasMenu = !isSelf && !loading && menuItems.length > 0;
-    return {
-      paddingLeft: (isHovered || open) && hasMenu ? "1rem" : "0.75rem",
-      paddingRight: (isHovered || open) && hasMenu ? "1.5rem" : "0.75rem",
-    };
-  }, [isHovered, open, isSelf, loading, menuItems.length]);
+  // 获取按钮状态文本 - osu! 单向好友系统
+  const getButtonStatusText = () => {
+    if (isSelf) return "自己的资料";
+    if (isBlocked) return "已屏蔽该用户";
+    if (isFriend) {
+      if (isMutual) {
+        return "互相关注 - 你们相互关注";
+      } else {
+        return "已关注 - 你关注了此用户";
+      }
+    }
+    if (followsMe) return "关注你的用户 - 对方关注了你";
+    return "未关注 - 点击查看关注选项";
+  };
 
-  const buttonTransition = useMemo(
-    () => ({ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] as any }),
-    []
-  );
+  // 是否显示下拉箭头
+  const showDropdownArrow = !isSelf && !loading && menuItems.length > 0;
 
-  const iconContainerAnimate = useMemo(() => {
-    const hasMenu = !isSelf && !loading && menuItems.length > 0;
-    return { x: (isHovered || open) && hasMenu ? -2 : 0 };
-  }, [isHovered, open, isSelf, loading, menuItems.length]);
-
-  const iconContainerTransition = useMemo(
-    () => ({ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] as any }),
-    []
-  );
-
-  const userIconAnimate = useMemo(() => {
-    return {
-      rotate: loading ? 0 : isHovered && !open ? 2 : 0,
-      scale: loading ? 1 : isHovered && !open ? 1.05 : 1,
-    };
-  }, [loading, isHovered, open]);
-
-  const userIconTransition = useMemo(
-    () => ({ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] as any }),
-    []
-  );
-
-  const showArrow = !isSelf && !loading && menuItems.length > 0;
-  const arrowAnimate = useMemo(
-    () => ({
-      opacity: isHovered || open ? 1 : 0,
-      scale: isHovered || open ? 1 : 0.8,
-      x: isHovered || open ? 0 : 4,
-    }),
-    [isHovered, open]
-  );
-
-  const arrowTransition = useMemo(
-    () => ({ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] as any }),
-    []
-  );
-
-  const chevronAnimate = useMemo(
-    () => ({ rotate: open ? 180 : 0, scale: open ? 1.1 : 1 }),
-    [open]
-  );
-
-  const chevronTransition = useMemo(
-    () => ({ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] as any }),
-    []
-  );
-
-  /** ===================== 渲染 ===================== */
   return (
-    <div ref={rootRef} className={"relative inline-flex " + className}>
-      {/* 触发按钮 */}
+    <div className={`relative inline-flex z-50 ${className}`} ref={containerRef}>
+      {/* 主按钮 */}
       <motion.button
-        ref={btnRef}
+        ref={buttonRef}
         type="button"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label={triggerAria}
         disabled={loading || isSelf}
-        onClick={handleButtonClick}
-        onMouseEnter={() => !open && setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onTouchEnd={(e) => {
-          // 防止触摸设备上的双重触发
-          e.preventDefault();
-        }}
-        title={isSelf ? "不能对自己进行此操作" : undefined}
+        onClick={handleToggle}
+        aria-label={getButtonStatusText()}
         whileHover={{ scale: !isSelf && !loading ? 1.02 : 1 }}
         whileTap={{ scale: !isSelf && !loading ? 0.98 : 1 }}
-        initial={false} /** 关键：关闭初帧动画，避免反复播放 */
-        animate={buttonAnimate}
-        transition={buttonTransition}
-        className={[
-          "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700",
-          "py-2 rounded-full flex items-center gap-2 text-sm",
-          "text-gray-700 dark:text-gray-300",
-          "disabled:opacity-50 disabled:cursor-not-allowed select-none",
-          "transition-colors duration-200",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500/20",
-          open ? "ring-2 ring-blue-500/20" : "",
-        ].join(" ")}
-        style={{
-          WebkitTapHighlightColor: "transparent",
-          touchAction: "manipulation",
-        }}
+        className={`
+          bg-gray-100 dark:bg-gray-800 
+          ${!isSelf && !loading ? 'hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer' : 'cursor-default'}
+          px-3 py-2 rounded-full flex items-center gap-2 text-sm
+          text-gray-700 dark:text-gray-300
+          disabled:opacity-50 disabled:cursor-not-allowed select-none
+          transition-all duration-200
+          ${!isSelf && !loading ? 'focus:outline-none focus:ring-2 focus:ring-blue-500/20' : ''}
+          ${isOpen && !isSelf ? 'ring-2 ring-blue-500/20' : ''}
+          ${showDropdownArrow ? 'pr-4' : ''}
+        `}
       >
-        {/* 图标和数字容器 */}
-        <motion.div
-          className="flex items-center gap-2"
-          initial={false}
-          animate={iconContainerAnimate}
-          transition={iconContainerTransition}
-        >
-          {loading ? (
-            <FiLoader className="w-4 h-4 animate-spin" />
-          ) : (
-            <motion.div
-              initial={false}
-              animate={userIconAnimate}
-              transition={userIconTransition}
-            >
-              <FaUserFriends className="w-4 h-4" />
-            </motion.div>
-          )}
-          <span>{followerCount ?? 0}</span>
-        </motion.div>
+        {/* 图标和数字 */}
+        <div className="flex items-center gap-2">
+          {getMainIcon()}
+          <span>{followerCount}</span>
+        </div>
 
-        {/* 箭头指示器 - 只在非自己且有菜单项时显示 */}
-        {showArrow && (
+        {/* 下拉箭头 - 只在非自己且有菜单项时显示 */}
+        {showDropdownArrow && (
           <motion.div
-            className="absolute right-3 flex items-center justify-center"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={arrowAnimate}
-            transition={arrowTransition}
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="ml-1"
           >
-            <motion.div
-              initial={false}
-              animate={chevronAnimate}
-              transition={chevronTransition}
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <FiChevronUp className="w-3 h-3" />
-            </motion.div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
           </motion.div>
         )}
       </motion.button>
 
-      {/* 菜单渲染（将存在性变化隔离到各自 Portal 的 AnimatePresence 内） */}
-      {/* 这里不用外层 AnimatePresence 避免影响其它区域 */}
-      <MobileSheet
-        open={open}
-        loading={loading}
-        isSelf={isSelf}
-        isSmallScreen={isSmallScreen}
-        menuItems={menuItems}
-        onClose={() => setOpen(false)}
-        onClickItem={handleMenuItemClick}
-      />
-      <DesktopMenu
-        open={open}
-        loading={loading}
-        isSelf={isSelf}
-        isSmallScreen={isSmallScreen}
-        menuRect={menuRect}
-        menuItems={menuItems}
-        onClickItem={handleMenuItemClick}
-      />
+      {/* 下拉菜单 - 使用 Portal 渲染到 body 避免被遮挡 */}
+      {isOpen && !isSelf && !loading && menuItems.length > 0 && createPortal(
+        <>
+          {/* 透明背景层，确保层级正确 */}
+          <div 
+            className="fixed inset-0"
+            style={{ zIndex: 99998 }}
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* 菜单内容 */}
+          <div 
+            ref={menuRef}
+            className="fixed w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 overflow-hidden"
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+              zIndex: 99999,
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 25px 25px -18px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {menuItems.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => handleMenuItemClick(item.action)}
+                className={`
+                  w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium
+                  transition-all duration-200
+                  ${item.className || 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}
+                `}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </>,
+        document.body
+      )}
     </div>
   );
 };

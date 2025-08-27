@@ -55,5 +55,5 @@ export default function PaginationControls({ total, currentPage, onPageChange }:
     );
   }
 
-  return <div className="flex items-center justify-center gap-2 mt-8">{pages}</div>;
+  return <div className="flex items-center justify-center gap-2 mt-8 px-4 sm:px-0">{pages}</div>;
 }

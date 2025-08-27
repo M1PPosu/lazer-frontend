@@ -348,19 +348,21 @@ export const friendsAPI = {
           followsMe = false;
         }
         
+        // 返回与新 API 格式一致的字段
         return {
-          isFriend,
-          isBlocked,
-          isMutual,
-          followsMe
+          is_following: isFriend,   // 我是否关注对方
+          isBlocked: isBlocked,     // 是否屏蔽
+          mutual: isMutual,         // 是否互相关注
+          is_followed: followsMe    // 对方是否关注我
         };
       } catch (fallbackError) {
         console.error('备用方法也失败:', fallbackError);
+        // 返回与新 API 格式一致的默认值
         return {
-          isFriend: false,
-          isBlocked: false,
-          isMutual: false,
-          followsMe: false
+          is_following: false,  // 我是否关注对方
+          isBlocked: false,     // 是否屏蔽
+          mutual: false,        // 是否互相关注
+          is_followed: false    // 对方是否关注我
         };
       }
     }
