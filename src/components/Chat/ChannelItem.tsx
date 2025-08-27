@@ -32,9 +32,27 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
   const getChannelIcon = () => {
     switch (channel.type) {
       case 'PM':
+        // 对于私聊频道，优先使用 user_info 中的头像信息
+        if (channel.user_info) {
+          return (
+            <div className="w-10 h-10 rounded-lg overflow-hidden">
+              <img 
+                src={channel.user_info.avatar_url} 
+                alt={channel.user_info.username}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // 如果头像加载失败，显示默认头像
+                  (e.target as HTMLImageElement).src = `/default.jpg`;
+                }}
+              />
+            </div>
+          );
+        }
+        // 如果没有用户信息，使用默认的头像组件
+        const targetUserId = channel.users.find(id => id !== 0) || channel.users[0] || 0;
         return (
           <Avatar 
-            userId={channel.users[0] || 0} 
+            userId={targetUserId} 
             username={channel.name}
             size="sm"
           />

@@ -342,6 +342,13 @@ export interface ChatChannel {
   recent_messages: ChatMessage[];
   users: number[];
   message_length_limit: number;
+  // 可选的用户信息，用于私聊频道
+  user_info?: {
+    id: number;
+    username: string;
+    avatar_url: string;
+    cover_url: string;
+  };
 }
 
 export interface ChatUserAttributes {

@@ -554,7 +554,11 @@ export const chatAPI = {
 
   // 标记消息为已读
   markAsRead: async (channelId: string | number, messageId: number) => {
-    const response = await api.put(`/api/v2/chat/channels/${channelId}/mark-as-read/${messageId}`);
+    const response = await api.put(`/api/v2/chat/channels/${channelId}/mark-as-read/${messageId}`, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     return response.data;
   },
 
@@ -627,7 +631,11 @@ export const notificationsAPI = {
 
   // 标记通知为已读
   markAsRead: async (notificationId: number) => {
-    const response = await api.patch(`/api/v2/notifications/${notificationId}/read`);
+    const response = await api.patch(`/api/v2/notifications/${notificationId}/read`, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     return response.data;
   },
 
@@ -641,6 +649,34 @@ export const notificationsAPI = {
   getTeamRequests: async () => {
     const response = await api.get('/api/private/team-requests');
     return response.data;
+  },
+
+  // 通过 object_id 分组去重通知
+  getGroupedNotifications: async () => {
+    const response = await api.get('/api/v2/notifications');
+    const notifications = response.data.notifications || [];
+    
+    // 使用 object_id 进行分组和去重
+    const groupedMap = new Map<string, typeof notifications[0]>();
+    
+    notifications.forEach((notification: any) => {
+      const key = `${notification.object_type}-${notification.object_id}`;
+      
+      // 如果已存在相同 object_id 的通知，保留时间最新的
+      if (!groupedMap.has(key) || 
+          new Date(notification.created_at) > new Date(groupedMap.get(key)!.created_at)) {
+        groupedMap.set(key, notification);
+      }
+    });
+    
+    // 返回去重后的通知，按时间倒序排序
+    const deduplicatedNotifications = Array.from(groupedMap.values())
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    return {
+      ...response.data,
+      notifications: deduplicatedNotifications
+    };
   },
 };
 

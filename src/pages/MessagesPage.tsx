@@ -14,7 +14,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { useNotifications } from '../hooks/useNotifications';
 import { useWebSocketNotifications } from '../hooks/useWebSocketNotifications';
-import { chatAPI, teamsAPI, friendsAPI } from '../utils/api';
+import { chatAPI, teamsAPI, userAPI } from '../utils/api';
 
 import MessageBubble from '../components/Chat/MessageBubble';
 import ChannelItem from '../components/Chat/ChannelItem';
@@ -55,6 +55,9 @@ const MessagesPage: React.FC = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const [showNewPMModal, setShowNewPMModal] = useState(false);
   const [showFriendsList, setShowFriendsList] = useState(false);
+  
+  // 用户信息缓存
+  const [userInfoCache, setUserInfoCache] = useState<Map<number, any>>(new Map());
 
   // 调试好友列表状态
   useEffect(() => {
@@ -85,12 +88,15 @@ const MessagesPage: React.FC = () => {
     notifications, 
     unreadCount, 
     isConnected: notificationConnected,
-    markAsRead 
-  } = useNotifications(isAuthenticated);
+    markAsRead,
+    refresh,
+    removeNotificationByObject
+  } = useNotifications(isAuthenticated, user);
 
         // 使用WebSocket处理实时消息
       const { isConnected: chatConnected } = useWebSocketNotifications({
         isAuthenticated,
+        currentUser: user,
         onNewMessage: (message) => {
           // 过滤自己的消息，不显示推送
           if (message.sender_id === user?.id) {
@@ -115,15 +121,6 @@ const MessagesPage: React.FC = () => {
       
       if (shouldAddToCurrentChannel) {
         console.log('添加消息到当前频道，当前列表长度:', messages.length);
-        
-        // 清除对应的回退定时器（如果存在）
-        const fallbackTimers = (window as any).messageFallbackTimers;
-        if (fallbackTimers && fallbackTimers.has(message.message_id)) {
-          clearTimeout(fallbackTimers.get(message.message_id));
-          fallbackTimers.delete(message.message_id);
-          console.log('清除回退定时器:', message.message_id);
-        }
-        
         addMessageToList(message, 'websocket');
       } else if (currentSelectedChannel) {
         console.log('消息不属于当前频道，当前频道:', currentSelectedChannel.channel_id, '消息频道:', message.channel_id);
@@ -230,21 +227,57 @@ const MessagesPage: React.FC = () => {
           })));
         }
         
-        // 过滤并排序频道：私聊优先，然后按类型分组
-        const sortedChannels = (channelsData || []).sort((a: ChatChannel, b: ChatChannel) => {
-          // 私聊频道优先
-          if (a.type === 'PM' && b.type !== 'PM') return -1;
-          if (a.type !== 'PM' && b.type === 'PM') return 1;
-          
-          // 然后按类型排序：私聊 > 团队 > 公共
-          const typeOrder: Record<string, number> = { 'PM': 0, 'TEAM': 1, 'PUBLIC': 2, 'PRIVATE': 3 };
+        // 为私聊频道获取用户信息
+        const channelsWithUserInfo = await Promise.all(
+          (channelsData || []).map(async (channel: ChatChannel) => {
+            if (channel.type === 'PM' && channel.users.length > 0) {
+              try {
+                // 获取私聊对象的用户ID
+                const targetUserId = channel.users.find(id => id !== user?.id);
+                if (targetUserId) {
+                  console.log('为私聊频道获取用户信息:', targetUserId);
+                  
+                  // 检查缓存
+                  let userInfo = userInfoCache.get(targetUserId);
+                  if (!userInfo) {
+                    userInfo = await userAPI.getUser(targetUserId);
+                    // 更新缓存
+                    setUserInfoCache(prev => new Map(prev.set(targetUserId, userInfo)));
+                  }
+                  
+                  return {
+                    ...channel,
+                    name: `私聊: ${userInfo.username}`,
+                    user_info: {
+                      id: userInfo.id,
+                      username: userInfo.username,
+                      avatar_url: userInfo.avatar_url || userAPI.getAvatarUrl(userInfo.id),
+                      cover_url: userInfo.cover_url || userInfo.cover?.url || ''
+                    }
+                  };
+                }
+              } catch (error) {
+                console.error('获取用户信息失败:', error);
+              }
+            }
+            return channel;
+          })
+        );
+        
+        // 过滤并排序频道：倒序排列，频道在前，最下面是第一个
+        const sortedChannels = channelsWithUserInfo.sort((a: ChatChannel, b: ChatChannel) => {
+          // 优先级：公共频道 > 私聊 > 团队 > 私有
+          const typeOrder: Record<string, number> = { 'PUBLIC': 0, 'PM': 1, 'TEAM': 2, 'PRIVATE': 3 };
           const aOrder = typeOrder[a.type] || 4;
           const bOrder = typeOrder[b.type] || 4;
           
-          if (aOrder !== bOrder) return aOrder - bOrder;
+          if (aOrder !== bOrder) {
+            // 倒序排列：较大的 order 值在前
+            return bOrder - aOrder;
+          }
           
-          // 最后按名称排序
-          return a.name.localeCompare(b.name);
+          // 同类型内按名称倒序排列
+          return b.name.localeCompare(a.name);
         });
         
         console.log('排序后的频道列表:', sortedChannels.map((ch: ChatChannel) => ({ id: ch.channel_id, name: ch.name, type: ch.type })));
@@ -255,10 +288,18 @@ const MessagesPage: React.FC = () => {
           cleanupDuplicatePrivateChannels();
         }, 100);
         
-        // 如果没有选中频道且有可用频道，自动选择第一个
+        // 如果没有选中频道且有可用频道，优先选择 osu! 频道
         if (!selectedChannel && sortedChannels.length > 0) {
-          console.log('自动选择第一个频道:', sortedChannels[0].name, '类型:', sortedChannels[0].type);
-          selectChannel(sortedChannels[0]);
+          // 查找 osu! 频道
+          const osuChannel = sortedChannels.find(ch => 
+            ch.name.toLowerCase().includes('osu') || 
+            ch.name.toLowerCase().includes('#osu') ||
+            ch.name === 'osu!'
+          );
+          
+          const channelToSelect = osuChannel || sortedChannels[0];
+          console.log('自动选择频道:', channelToSelect.name, '类型:', channelToSelect.type);
+          selectChannel(channelToSelect);
         }
       } catch (error) {
         console.error('加载频道失败:', error);
@@ -281,18 +322,23 @@ const MessagesPage: React.FC = () => {
     if (notifications.length > 0) {
       console.log('检测到新通知，数量:', notifications.length);
       
-      // 使用Set来跟踪已处理的通知，避免重复处理
-      const processedNotifications = new Set<number>();
+      // 使用 object_id 进行分组去重
+      const processedObjectIds = new Set<string>();
       
-      // 处理所有私聊通知
+      // 处理所有私聊通知，按 object_id 去重
       notifications.forEach(notification => {
         if (notification.name === 'channel_message' && 
-            notification.details?.type === 'pm' && 
-            !processedNotifications.has(notification.id)) {
+            notification.details?.type === 'pm') {
           
-          console.log('处理私聊通知:', notification.id, notification.details.title);
-          processedNotifications.add(notification.id);
-          handlePrivateMessageNotification(notification);
+          const objectKey = `${notification.object_type}-${notification.object_id}`;
+          
+          if (!processedObjectIds.has(objectKey)) {
+            console.log('处理私聊通知:', notification.id, objectKey, notification.details.title);
+            processedObjectIds.add(objectKey);
+            handlePrivateMessageNotification(notification);
+          } else {
+            console.log('跳过重复的通知对象:', objectKey);
+          }
         }
       });
     }
@@ -396,15 +442,40 @@ const MessagesPage: React.FC = () => {
       setShowSidebar(false);
     }
 
-    // 如果是私聊频道，尝试获取用户信息
+    // 如果是私聊频道，尝试获取用户信息并更新频道显示
     if (channel.type === 'PM' && channel.users.length > 0) {
       try {
         // 获取私聊对象的用户信息
         const targetUserId = channel.users.find(id => id !== user?.id);
-        if (targetUserId) {
-          const userInfo = await friendsAPI.getUser(targetUserId);
+        if (targetUserId && !channel.user_info) {
+          console.log('获取私聊用户信息:', targetUserId);
+          
+          // 检查缓存
+          let userInfo = userInfoCache.get(targetUserId);
+          if (!userInfo) {
+            userInfo = await userAPI.getUser(targetUserId);
+            // 更新缓存
+            setUserInfoCache(prev => new Map(prev.set(targetUserId, userInfo)));
+          }
+          
           console.log('私聊用户信息:', userInfo);
-          // 可以在这里更新频道的显示名称
+          
+          // 更新频道信息
+          setChannels(prev => prev.map(ch => {
+            if (ch.channel_id === channel.channel_id) {
+              return {
+                ...ch,
+                name: `私聊: ${userInfo.username}`,
+                user_info: {
+                  id: userInfo.id,
+                  username: userInfo.username,
+                  avatar_url: userInfo.avatar_url || userAPI.getAvatarUrl(userInfo.id),
+                  cover_url: userInfo.cover_url || userInfo.cover?.url || ''
+                }
+              };
+            }
+            return ch;
+          }));
         }
       } catch (error) {
         console.error('获取私聊用户信息失败:', error);
@@ -483,17 +554,10 @@ const MessagesPage: React.FC = () => {
         messageText.trim()
       );
       
-      console.log('消息发送成功，等待WebSocket确认:', message.message_id);
+      console.log('消息发送成功，立即显示:', message.message_id);
       
-      // 设置一个超时回退机制：如果3秒内WebSocket没有推送消息，手动添加
-      const fallbackTimer = setTimeout(() => {
-        console.log('WebSocket超时，手动添加消息:', message.message_id);
-        addMessageToList(message, 'api');
-      }, 3000);
-      
-      // 存储定时器，以便在WebSocket收到消息时清除
-      (window as any).messageFallbackTimers = (window as any).messageFallbackTimers || new Map();
-      (window as any).messageFallbackTimers.set(message.message_id, fallbackTimer);
+      // 立即显示消息，不等待WebSocket确认
+      addMessageToList(message, 'api');
       
     } catch (error) {
       console.error('发送消息失败:', error);
@@ -531,6 +595,23 @@ const MessagesPage: React.FC = () => {
             
             // 更新频道列表中的已读状态
             updateChannelReadStatus(channelId, messageId);
+            
+            // 查找并删除相关通知
+            const relatedNotifications = notifications.filter(notification => 
+              notification.name === 'channel_message' && 
+              notification.object_id === channelId.toString()
+            );
+            
+            // 删除相关通知
+            for (const notification of relatedNotifications) {
+              try {
+                console.log(`删除相关通知: ${notification.id}`);
+                removeNotificationByObject(notification.object_id, notification.object_type);
+              } catch (error) {
+                console.error(`删除通知失败: ${notification.id}`, error);
+              }
+            }
+            
           } catch (error) {
             console.error(`标记已读失败: 频道${channelId}, 消息${messageId}`, error);
           } finally {
@@ -539,8 +620,151 @@ const MessagesPage: React.FC = () => {
         }, 500); // 500ms防抖
       };
     })(),
-    []
+    [notifications, removeNotificationByObject]
   );
+
+  // 消息可见性检测 - 当用户真正"看到"消息时自动标记已读
+  useEffect(() => {
+    if (!selectedChannel || messages.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && selectedChannel) {
+            const messageElement = entry.target as HTMLElement;
+            const messageId = parseInt(messageElement.dataset.messageId || '0');
+            const channelId = selectedChannel.channel_id;
+            
+            // 确保消息ID有效且大于当前已读ID
+            if (messageId > 0 && messageId > (selectedChannel.last_read_id || 0)) {
+              console.log(`消息 ${messageId} 在频道 ${channelId} 中进入可视区域，准备标记为已读`);
+              
+              // 延迟一点时间确保用户真的看到了消息
+              const timeoutId = setTimeout(() => {
+                // 再次检查是否仍然是当前选中的频道
+                if (selectedChannel && selectedChannel.channel_id === channelId) {
+                  console.log(`延迟后标记消息 ${messageId} 为已读`);
+                  throttledMarkAsRead(channelId, messageId);
+                }
+              }, 1000); // 1秒后标记为已读
+              
+              // 存储 timeout ID 以便在需要时清除
+              messageElement.dataset.readTimeout = timeoutId.toString();
+            }
+          } else {
+            // 消息离开可视区域时，清除等待中的标记已读操作
+            const messageElement = entry.target as HTMLElement;
+            const timeoutId = messageElement.dataset.readTimeout;
+            if (timeoutId) {
+              clearTimeout(parseInt(timeoutId));
+              delete messageElement.dataset.readTimeout;
+            }
+          }
+        });
+      },
+      {
+        root: null, // 使用视窗作为根
+        rootMargin: '0px',
+        threshold: 0.6 // 当消息60%可见时触发，确保用户真的看到了
+      }
+    );
+
+    // 观察当前频道的所有消息元素
+    const messageElements = document.querySelectorAll(`[data-message-id]`);
+    messageElements.forEach((element) => {
+      observer.observe(element);
+    });
+
+    return () => {
+      // 清除所有观察和等待中的timeout
+      messageElements.forEach((element) => {
+        const timeoutId = (element as HTMLElement).dataset.readTimeout;
+        if (timeoutId) {
+          clearTimeout(parseInt(timeoutId));
+        }
+      });
+      observer.disconnect();
+    };
+  }, [messages, selectedChannel, throttledMarkAsRead]);
+
+  // 处理通知标记已读并跳转到聊天
+  const handleNotificationMarkAsRead = useCallback(async (notification: typeof notifications[0]) => {
+    try {
+      console.log('处理通知标记已读:', notification.id, notification.name);
+      
+      // 先调用API标记通知为已读（确保服务器状态更新）
+      await markAsRead(notification.id);
+      
+      // 如果是频道消息通知，跳转到对应聊天
+      if (notification.name === 'channel_message') {
+        const channelId = parseInt(notification.object_id);
+        
+        // 查找对应的频道
+        const targetChannel = channels.find(channel => channel.channel_id === channelId);
+        
+        if (targetChannel) {
+          console.log(`跳转到频道: ${targetChannel.name} (${channelId})`);
+          setSelectedChannel(targetChannel);
+          if (isMobile) {
+            setShowSidebar(false); // 在移动端关闭侧边栏
+          }
+          
+          // 可选：延迟删除通知，确保用户看到跳转效果
+          setTimeout(() => {
+            removeNotificationByObject(notification.object_id, notification.object_type);
+          }, 500);
+        } else {
+          console.log(`未找到频道ID为 ${channelId} 的频道`);
+        }
+      }
+    } catch (error) {
+      console.error('处理通知标记已读失败:', error);
+    }
+  }, [markAsRead, channels, removeNotificationByObject, setSelectedChannel, setShowSidebar, isMobile, notifications]);
+
+  // 监控未读计数变化
+  useEffect(() => {
+    console.log('未读计数更新:', unreadCount);
+  }, [unreadCount]);
+
+  // 获取用户信息
+  const fetchUserInfo = useCallback(async (userId: number) => {
+    // 如果已经缓存了就直接返回
+    if (userInfoCache.has(userId)) {
+      return userInfoCache.get(userId);
+    }
+
+    try {
+      console.log(`获取用户信息: ${userId}`);
+      const userInfo = await userAPI.getUser(userId);
+      
+      // 缓存用户信息
+      setUserInfoCache(prev => new Map(prev.set(userId, userInfo)));
+      
+      return userInfo;
+    } catch (error) {
+      console.error(`获取用户信息失败: ${userId}`, error);
+      return null;
+    }
+  }, [userInfoCache]);
+
+  // 批量获取通知相关的用户信息
+  useEffect(() => {
+    if (!notifications.length) return;
+
+    const userIdsToFetch = new Set<number>();
+    
+    notifications.forEach(notification => {
+      if (notification.source_user_id && !userInfoCache.has(notification.source_user_id)) {
+        userIdsToFetch.add(notification.source_user_id);
+      }
+    });
+
+    // 批量获取用户信息
+    Array.from(userIdsToFetch).forEach(userId => {
+      fetchUserInfo(userId);
+    });
+  }, [notifications, userInfoCache, fetchUserInfo]);
 
   // 清理重复的私聊频道
   const cleanupDuplicatePrivateChannels = () => {
@@ -588,10 +812,9 @@ const MessagesPage: React.FC = () => {
         
         // 从通知中获取用户信息
         const sourceUserId = notification.source_user_id;
-        const userName = notification.details.title;
         
-        if (!sourceUserId || !userName) {
-          console.log('通知中缺少必要信息，跳过处理');
+        if (!sourceUserId) {
+          console.log('通知中缺少源用户ID，跳过处理');
           return;
         }
         
@@ -611,7 +834,30 @@ const MessagesPage: React.FC = () => {
           return;
         }
         
-        console.log('未找到现有私聊频道，创建新的私聊频道');
+        console.log('未找到现有私聊频道，获取用户信息并创建新的私聊频道');
+        
+        // 获取用户详细信息
+        let userName = notification.details.title as string || '未知用户';
+        let userAvatarUrl = '';
+        let userCoverUrl = '';
+        
+        try {
+          // 检查缓存
+          let userInfo = userInfoCache.get(sourceUserId);
+          if (!userInfo) {
+            userInfo = await userAPI.getUser(sourceUserId);
+            // 更新缓存
+            setUserInfoCache(prev => new Map(prev.set(sourceUserId, userInfo)));
+          }
+          
+          console.log('获取到用户信息:', userInfo);
+          userName = userInfo.username || userName;
+          userAvatarUrl = userInfo.avatar_url || userAPI.getAvatarUrl(sourceUserId);
+          userCoverUrl = userInfo.cover_url || userInfo.cover?.url || '';
+        } catch (error) {
+          console.error('获取用户信息失败，使用默认值:', error);
+          userAvatarUrl = userAPI.getAvatarUrl(sourceUserId);
+        }
         
         // 创建新的私聊频道对象
         const newPrivateChannel: ChatChannel = {
@@ -629,14 +875,21 @@ const MessagesPage: React.FC = () => {
           last_read_id: 0,
           last_message_id: 0,
           recent_messages: [],
-          message_length_limit: 1000
+          message_length_limit: 1000,
+          // 添加用户信息到频道对象中以便显示
+          user_info: {
+            id: sourceUserId,
+            username: userName,
+            avatar_url: userAvatarUrl,
+            cover_url: userCoverUrl
+          }
         };
         
         console.log('创建新的私聊频道对象:', newPrivateChannel);
         
         // 添加到频道列表，确保不重复
         setChannels(prev => {
-          // 检查是否已经存在相同的私聊频道
+          // 再次检查是否已经存在相同的私聊频道（防止竞态条件）
           const isDuplicate = prev.some(ch => {
             if (ch.type !== 'PM') return false;
             
@@ -655,17 +908,20 @@ const MessagesPage: React.FC = () => {
           console.log('添加新的私聊频道到列表');
           const newChannels = [...prev, newPrivateChannel];
           
-          // 重新排序，私聊优先
+          // 重新排序：倒序排列，频道在前，最下面是第一个
           return newChannels.sort((a: ChatChannel, b: ChatChannel) => {
-            if (a.type === 'PM' && b.type !== 'PM') return -1;
-            if (a.type !== 'PM' && b.type === 'PM') return 1;
-            
-            const typeOrder: Record<string, number> = { 'PM': 0, 'TEAM': 1, 'PUBLIC': 2, 'PRIVATE': 3 };
+            // 优先级：公共频道 > 私聊 > 团队 > 私有
+            const typeOrder: Record<string, number> = { 'PUBLIC': 0, 'PM': 1, 'TEAM': 2, 'PRIVATE': 3 };
             const aOrder = typeOrder[a.type] || 4;
             const bOrder = typeOrder[b.type] || 4;
             
-            if (aOrder !== bOrder) return aOrder - bOrder;
-            return a.name.localeCompare(b.name);
+            if (aOrder !== bOrder) {
+              // 倒序排列：较大的 order 值在前
+              return bOrder - aOrder;
+            }
+            
+            // 同类型内按名称倒序排列
+            return b.name.localeCompare(a.name);
           });
         });
         
@@ -680,6 +936,10 @@ const MessagesPage: React.FC = () => {
 
   // 获取通知标题
   const getNotificationTitle = (notification: APINotification): string => {
+    // 获取用户信息
+    const userInfo = notification.source_user_id ? userInfoCache.get(notification.source_user_id) : null;
+    const userName = userInfo?.username || '未知用户';
+
     switch (notification.name) {
       case 'team_application_store':
         return `团队加入申请`;
@@ -690,11 +950,11 @@ const MessagesPage: React.FC = () => {
       case 'channel_message':
         // 根据类型显示不同的标题
         if (notification.details?.type === 'pm') {
-          return `新私聊消息: ${notification.details.title || '来自用户'}`;
+          return `新私聊消息: ${userName}`;
         } else if (notification.details?.type === 'team') {
           return `新团队消息: ${notification.details.title || '团队频道'}`;
         }
-        return `新私聊消息`;
+        return `新私聊消息: ${userName}`;
       case 'channel_team':
         return `新团队消息: ${notification.details?.title || '团队频道'}`;
       case 'channel_public':
@@ -720,9 +980,13 @@ const MessagesPage: React.FC = () => {
 
   // 获取通知内容
   const getNotificationContent = (notification: APINotification): string => {
+    // 获取用户信息
+    const userInfo = notification.source_user_id ? userInfoCache.get(notification.source_user_id) : null;
+    const userName = userInfo?.username || '未知用户';
+
     switch (notification.name) {
       case 'team_application_store':
-        return `${notification.details.title} 申请加入您的团队`;
+        return `${userName} 申请加入您的团队`;
       case 'team_application_accept':
         return `您已成功加入团队 ${notification.details.title}`;
       case 'team_application_reject':
@@ -730,7 +994,7 @@ const MessagesPage: React.FC = () => {
       case 'channel_message':
         // 根据类型显示不同的内容
         if (notification.details?.type === 'pm') {
-          return `来自用户: ${notification.details.title || '未知用户'}`;
+          return `来自 ${userName} 的消息`;
         } else if (notification.details?.type === 'team') {
           return `团队频道: ${notification.details.title || '团队消息'}`;
         }
@@ -960,17 +1224,20 @@ const MessagesPage: React.FC = () => {
                             })));
                           }
                           
-                          // 重新排序频道
+                          // 重新排序频道：倒序排列，频道在前，最下面是第一个
                           const sortedChannels = channels.sort((a: ChatChannel, b: ChatChannel) => {
-                            if (a.type === 'PM' && b.type !== 'PM') return -1;
-                            if (a.type !== 'PM' && b.type === 'PM') return 1;
-                            
-                            const typeOrder: Record<string, number> = { 'PM': 0, 'TEAM': 1, 'PUBLIC': 2, 'PRIVATE': 3 };
+                            // 优先级：公共频道 > 私聊 > 团队 > 私有
+                            const typeOrder: Record<string, number> = { 'PUBLIC': 0, 'PM': 1, 'TEAM': 2, 'PRIVATE': 3 };
                             const aOrder = typeOrder[a.type] || 4;
                             const bOrder = typeOrder[b.type] || 4;
                             
-                            if (aOrder !== bOrder) return aOrder - bOrder;
-                            return a.name.localeCompare(b.name);
+                            if (aOrder !== bOrder) {
+                              // 倒序排列：较大的 order 值在前
+                              return bOrder - aOrder;
+                            }
+                            
+                            // 同类型内按名称倒序排列
+                            return b.name.localeCompare(a.name);
                           });
                           
                           setChannels(sortedChannels);
@@ -1038,76 +1305,117 @@ const MessagesPage: React.FC = () => {
                 </div>
               ) : (
                 /* 通知列表 */
-                <div className="flex-1 overflow-y-auto min-h-0">
-                  {notifications.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                      暂无通知
-                    </div>
-                  ) : (
-                    <div className="space-y-1 p-2">
-                      {notifications.map((notification, index) => (
-                        <div
-                          key={`notification-${notification.id}-${index}`}
-                          className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-                        >
-                          <div className="flex items-start space-x-3">
-                            <div className="flex-shrink-0">
-                              {notification.name.includes('team_application') && (
-                                <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
-                                  <FiUserPlus className="text-orange-500" size={20} />
+                <div className="flex flex-col h-full">
+                  {/* 通知操作按钮 */}
+                  <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={() => {
+                        console.log('手动刷新通知列表');
+                        refresh(); // 调用通知刷新函数
+                      }}
+                      className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 rounded-lg transition-colors text-sm font-medium"
+                      title="刷新通知列表"
+                    >
+                      <FiRefreshCw size={16} />
+                      <span>刷新通知</span>
+                    </button>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto min-h-0">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                        暂无通知
+                      </div>
+                    ) : (
+                      <div className="space-y-1 p-2">
+                        {notifications.map((notification, index) => (
+                          <div
+                            key={`notification-${notification.id}-${index}`}
+                            className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                          >
+                            <div className="flex items-start space-x-3">
+                              <div className="flex-shrink-0">
+                                {/* 显示用户头像或默认图标 */}
+                                {notification.source_user_id && userInfoCache.has(notification.source_user_id) ? (
+                                  <img
+                                    src={userAPI.getAvatarUrl(notification.source_user_id)}
+                                    alt="用户头像"
+                                    className="w-10 h-10 rounded-lg object-cover"
+                                    onError={(e) => {
+                                      // 如果头像加载失败，显示默认图标
+                                      e.currentTarget.style.display = 'none';
+                                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                  />
+                                ) : null}
+                                
+                                {/* 默认图标 - 在没有用户信息或头像加载失败时显示 */}
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                  notification.source_user_id && userInfoCache.has(notification.source_user_id) ? 'hidden' : ''
+                                } ${
+                                  notification.name.includes('team_application') 
+                                    ? 'bg-orange-500/20' 
+                                    : notification.name.includes('channel') 
+                                    ? 'bg-blue-500/20' 
+                                    : 'bg-gray-500/20'
+                                }`}>
+                                  {notification.name.includes('team_application') && (
+                                    <FiUserPlus className="text-orange-500" size={20} />
+                                  )}
+                                  {notification.name.includes('channel') && (
+                                    <FiMessageCircle className="text-blue-500" size={20} />
+                                  )}
+                                  {!notification.name.includes('team_application') && !notification.name.includes('channel') && (
+                                    <FiBell className="text-gray-500" size={20} />
+                                  )}
                                 </div>
-                              )}
-                              {notification.name.includes('channel') && (
-                                <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                                  <FiMessageCircle className="text-blue-500" size={20} />
-                                </div>
-                              )}
-                            </div>
-                            
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-medium text-gray-900 dark:text-white">
-                                {getNotificationTitle(notification)}
-                              </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                {getNotificationContent(notification)}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                {new Date(notification.created_at).toLocaleString()}
-                              </p>
+                              </div>
                               
-                              {notification.name === 'team_application_store' && (
-                                <div className="flex space-x-2 mt-3">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium text-gray-900 dark:text-white">
+                                  {getNotificationTitle(notification)}
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                  {getNotificationContent(notification)}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                  {new Date(notification.created_at).toLocaleString()}
+                                </p>
+                                
+                                {notification.name === 'team_application_store' && (
+                                  <div className="flex space-x-2 mt-3">
+                                    <button
+                                      onClick={() => handleTeamRequest(notification, 'accept')}
+                                      className="flex items-center space-x-1 px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
+                                    >
+                                      <FiCheck size={14} />
+                                      <span>接受</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleTeamRequest(notification, 'reject')}
+                                      className="flex items-center space-x-1 px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
+                                    >
+                                      <FiX size={14} />
+                                      <span>拒绝</span>
+                                    </button>
+                                  </div>
+                                )}
+                                
+                                {!notification.is_read && (
                                   <button
-                                    onClick={() => handleTeamRequest(notification, 'accept')}
-                                    className="flex items-center space-x-1 px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
+                                    onClick={() => handleNotificationMarkAsRead(notification)}
+                                    className="text-xs text-osu-pink hover:text-osu-pink/80 mt-2"
                                   >
-                                    <FiCheck size={14} />
-                                    <span>接受</span>
+                                    标记为已读
                                   </button>
-                                  <button
-                                    onClick={() => handleTeamRequest(notification, 'reject')}
-                                    className="flex items-center space-x-1 px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
-                                  >
-                                    <FiX size={14} />
-                                    <span>拒绝</span>
-                                  </button>
-                                </div>
-                              )}
-                              
-                              {!notification.is_read && (
-                                <button
-                                  onClick={() => markAsRead(notification.id)}
-                                  className="text-xs text-osu-pink hover:text-osu-pink/80 mt-2"
-                                >
-                                  标记为已读
-                                </button>
-                              )}
-                            </div>
+                                )}
+                              </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1161,12 +1469,13 @@ const MessagesPage: React.FC = () => {
                 }
                 
                 return (
-                  <MessageBubble
-                    key={`message-${message.message_id}-${index}`}
-                    message={message}
-                    currentUser={user || undefined}
-                    isGrouped={isGrouped}
-                  />
+                  <div key={`message-${message.message_id}-${index}`} data-message-id={message.message_id}>
+                    <MessageBubble
+                      message={message}
+                      currentUser={user || undefined}
+                      isGrouped={isGrouped}
+                    />
+                  </div>
                 );
               })}
               <div ref={messagesEndRef} />
@@ -1230,17 +1539,20 @@ const MessagesPage: React.FC = () => {
               const channels = await chatAPI.getChannels();
               console.log('重新加载后的频道列表:', channels);
               
-              // 过滤并排序频道
+              // 过滤并排序频道：倒序排列，频道在前，最下面是第一个
               const sortedChannels = channels.sort((a: ChatChannel, b: ChatChannel) => {
-                if (a.type === 'PM' && b.type !== 'PM') return -1;
-                if (a.type !== 'PM' && b.type === 'PM') return 1;
-                
-                const typeOrder: Record<string, number> = { 'PM': 0, 'TEAM': 1, 'PUBLIC': 2, 'PRIVATE': 3 };
+                // 优先级：公共频道 > 私聊 > 团队 > 私有
+                const typeOrder: Record<string, number> = { 'PUBLIC': 0, 'PM': 1, 'TEAM': 2, 'PRIVATE': 3 };
                 const aOrder = typeOrder[a.type] || 4;
                 const bOrder = typeOrder[b.type] || 4;
                 
-                if (aOrder !== bOrder) return aOrder - bOrder;
-                return a.name.localeCompare(b.name);
+                if (aOrder !== bOrder) {
+                  // 倒序排列：较大的 order 值在前
+                  return bOrder - aOrder;
+                }
+                
+                // 同类型内按名称倒序排列
+                return b.name.localeCompare(a.name);
               });
               
               setChannels(sortedChannels);

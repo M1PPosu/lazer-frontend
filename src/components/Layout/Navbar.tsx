@@ -212,7 +212,7 @@ MobileNavItem.displayName = 'MobileNavItem';
 const Navbar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
-  const { unreadCount, isConnected } = useNotifications(isAuthenticated);
+  const { unreadCount, isConnected } = useNotifications(isAuthenticated, user);
   //const location = useLocation();
 
   const navItems: NavItem[] = React.useMemo(() => [

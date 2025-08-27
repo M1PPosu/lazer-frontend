@@ -5,18 +5,21 @@ import type {
   ChatEvent, 
   NotificationEvent, 
   APINotification,
-  ChatMessage
+  ChatMessage,
+  User
 } from '../types';
 import toast from 'react-hot-toast';
 
 interface UseWebSocketNotificationsProps {
   isAuthenticated: boolean;
+  currentUser?: User | null;
   onNewMessage?: (message: ChatMessage) => void;
   onNewNotification?: (notification: APINotification) => void;
 }
 
 export const useWebSocketNotifications = ({
   isAuthenticated,
+  currentUser,
   onNewMessage,
   onNewNotification
 }: UseWebSocketNotificationsProps) => {
@@ -235,7 +238,15 @@ export const useWebSocketNotifications = ({
               }
             };
             
-            console.log(`创建${defaultTitle}通知对象:`, notification);
+            console.log(`创建${defaultTitle}通知对象:`, notification, '根据source_user_id判断是不是自己消息 - source_user_id:', notification.source_user_id);
+            
+            // 检查是否是自己的消息，如果是则不创建通知
+            if (notification.source_user_id && currentUser && notification.source_user_id === currentUser.id) {
+              console.log(`✓ 在WebSocket层过滤自己的消息通知: ${notification.id}, 发送者ID: ${notification.source_user_id}, 当前用户ID: ${currentUser.id}`);
+              return; // 直接返回，不调用 onNewNotification
+            }
+            
+            console.log(`✓ 准备发送他人的消息通知: ${notification.id}`);
             onNewNotification?.(notification);
             
             // 显示通知提示
