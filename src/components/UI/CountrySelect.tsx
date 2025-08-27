@@ -102,7 +102,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
             onChange={handleInputChange}
             onFocus={() => setIsOpen(true)}
             placeholder={placeholder}
-            className="w-full px-3 py-2 pr-10 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-sm sm:text-base"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 pr-10 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm min-h-[44px] sm:min-h-[48px] focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-sm sm:text-base"
           />
           
           {/* 国旗显示 */}
@@ -133,7 +133,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
         {value && (
           <button
             onClick={handleClear}
-            className="px-3 py-2 bg-gray-500 text-white rounded-lg sm:rounded-xl hover:bg-gray-600 transition-colors shadow-sm font-medium text-sm sm:text-base"
+            className="px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-500 text-white rounded-lg sm:rounded-xl hover:bg-gray-600 transition-colors shadow-sm font-medium text-sm sm:text-base min-h-[44px] sm:min-h-[48px] flex items-center justify-center"
           >
             清除
           </button>
