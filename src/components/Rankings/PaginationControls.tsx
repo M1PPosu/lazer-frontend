@@ -34,7 +34,7 @@ export default function PaginationControls({ total, currentPage, onPageChange }:
         onClick={() => onPageChange(i)}
         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
           i === currentPage
-            ? 'bg-blue-600 text-white border border-blue-600'
+            ? 'bg-osu-pink text-white border border-osu-pink'
             : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
         }`}
       >

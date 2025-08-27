@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiLoader, FiUsers, FiCalendar, FiAward } from 'react-icons/fi';
 import { teamsAPI, handleApiError } from '../utils/api';
 import TeamDetailUserCard from '../components/Rankings/TeamDetailUserCard';
+import TeamActions from '../components/Teams/TeamActions';
+import MemberActions from '../components/Teams/MemberActions';
 import type { TeamDetailResponse, User } from '../types';
 
 const TeamDetailPage: React.FC = () => {
@@ -47,6 +49,23 @@ const TeamDetailPage: React.FC = () => {
     return teamDetail.members.filter(member => member.id !== teamDetail.team.leader_id);
   };
 
+  const handleTeamUpdate = () => {
+    if (!teamId) return;
+    const loadTeamDetail = async () => {
+      setIsLoading(true);
+      try {
+        const response = await teamsAPI.getTeam(parseInt(teamId));
+        setTeamDetail(response);
+      } catch (error) {
+        handleApiError(error);
+        console.error('加载战队详情失败:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadTeamDetail();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -71,7 +90,7 @@ const TeamDetailPage: React.FC = () => {
           </p>
           <Link
             to="/teams"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 transition-colors"
           >
             <FiArrowLeft className="mr-2" />
             返回战队列表
@@ -100,9 +119,9 @@ const TeamDetailPage: React.FC = () => {
         </div>
 
         {/* 战队头部信息 */}
-        <div className="-mx-4 sm:mx-0 sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 overflow-hidden mb-8">
+        <div className="-mx-4 sm:mx-0 sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 mb-8">
           {/* 封面图片 */}
-          <div className="relative h-32 sm:h-48 bg-gradient-to-r from-blue-500 to-purple-600">
+          <div className="relative h-32 sm:h-48 bg-gradient-to-r from-blue-500 to-purple-600 sm:rounded-t-xl overflow-hidden">
             <img
               src={team.cover_url}
               alt={`${team.name} cover`}
@@ -115,7 +134,7 @@ const TeamDetailPage: React.FC = () => {
           </div>
 
           {/* 战队信息 */}
-          <div className="relative px-4 sm:px-6 py-6 sm:bg-white sm:dark:bg-gray-800">
+          <div className="relative px-4 sm:px-6 py-6 sm:bg-white sm:dark:bg-gray-800 sm:rounded-b-xl">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               {/* 战队旗帜 - 2:1 比例 (240:120) */}
               <div className="w-32 h-16 sm:w-40 sm:h-20 rounded-xl overflow-hidden border-4 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-700 flex-shrink-0 -mt-12 sm:-mt-16">
@@ -143,14 +162,25 @@ const TeamDetailPage: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <FiCalendar className="w-4 h-4" />
-                      <span>创建于 {formatDate(team.created_at)}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-1">
+                        <FiCalendar className="w-4 h-4" />
+                        <span>创建于 {formatDate(team.created_at)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <FiUsers className="w-4 h-4" />
+                        <span>{members.length} 名成员</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <FiUsers className="w-4 h-4" />
-                      <span>{members.length} 名成员</span>
+                    
+                    {/* 战队操作按钮 */}
+                    <div className="relative overflow-visible">
+                      <TeamActions
+                        team={team}
+                        members={members}
+                        onTeamUpdate={handleTeamUpdate}
+                      />
                     </div>
                   </div>
                 </div>
@@ -193,7 +223,7 @@ const TeamDetailPage: React.FC = () => {
 
             <div className="-mx-4 sm:-mx-6 sm:divide-y divide-gray-200 dark:divide-gray-700 sm:border sm:border-gray-200 sm:dark:border-gray-700 overflow-hidden">
               {nonLeaderMembers.map((member: User, index: number) => (
-                <div key={member.id}>
+                <div key={member.id} className="relative">
                   <TeamDetailUserCard
                     ranking={{
                       user: member,
@@ -203,6 +233,15 @@ const TeamDetailPage: React.FC = () => {
                     selectedMode="osu"
                     rankingType="performance"
                   />
+                  
+                  {/* 成员操作按钮 */}
+                  <div className="absolute top-4 right-4 sm:right-6">
+                    <MemberActions
+                      member={member}
+                      team={team}
+                      onMemberRemoved={handleTeamUpdate}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

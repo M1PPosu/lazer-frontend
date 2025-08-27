@@ -252,7 +252,7 @@ const RankingsPage: React.FC = () => {
                 onChange={(e) => setRankingType(e.target.value as RankingType)}
                 className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm min-h-[44px] sm:min-h-[48px]
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-sm sm:text-base"
+                         focus:ring-2 focus:ring-osu-pink focus:border-transparent font-medium text-sm sm:text-base"
               >
                 <option value="performance">表现分数 (pp)</option>
                 <option value="score">总分</option>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiLoader } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import { FiLoader, FiPlus } from 'react-icons/fi';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
+import { useAuth } from '../hooks/useAuth';
 import { rankingsAPI, handleApiError } from '../utils/api';
 import TeamRankingsList from '../components/Rankings/TeamRankingsList';
 import PaginationControls from '../components/Rankings/PaginationControls';
@@ -18,6 +20,7 @@ import type {
 } from '../types';
 
 const TeamsPage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [selectedMode, setSelectedMode] = useState<GameMode>('osu');
   const [selectedMainMode, setSelectedMainMode] = useState<MainGameMode>('osu');
   const [showSubModes, setShowSubModes] = useState<MainGameMode | null>(null);
@@ -103,12 +106,26 @@ const TeamsPage: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* 页面标题 */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            战队排行榜
-          </h1>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
-            查看各个战队的表现和实力排名
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                战队排行榜
+              </h1>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
+                查看各个战队的表现和实力排名
+              </p>
+            </div>
+            
+            {isAuthenticated && (
+              <Link
+                to="/teams/create"
+                className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 transition-colors self-start sm:self-auto"
+              >
+                <FiPlus className="mr-2" />
+                创建战队
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* 控制面板：模式选择 + 筛选选项 */}
@@ -193,7 +210,7 @@ const TeamsPage: React.FC = () => {
               onChange={(e) => setRankingType(e.target.value as RankingType)}
               className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl
                        bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm min-h-[44px] sm:min-h-[48px]
-                       focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-sm sm:text-base"
+                       focus:ring-2 focus:ring-osu-pink focus:border-transparent font-medium text-sm sm:text-base"
             >
               <option value="performance">表现分数 (pp)</option>
               <option value="score">总分</option>
