@@ -11,7 +11,22 @@ interface ChannelItemProps {
 }
 
 const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick }) => {
-  const hasUnreadMessages = (channel.last_read_id || 0) < (channel.last_message_id || 0);
+  // 改进未读消息检测逻辑
+  const hasUnreadMessages = React.useMemo(() => {
+    // 如果有last_read_id和last_message_id，直接比较
+    if (channel.last_read_id !== undefined && channel.last_message_id !== undefined) {
+      return channel.last_read_id < channel.last_message_id;
+    }
+    
+    // 如果没有这些字段，检查recent_messages中是否有未读消息
+    if (channel.recent_messages && channel.recent_messages.length > 0) {
+      // 这里可以根据需要添加更复杂的未读检测逻辑
+      return false; // 暂时返回false，因为recent_messages可能不包含未读状态
+    }
+    
+    return false;
+  }, [channel.last_read_id, channel.last_message_id, channel.recent_messages]);
+  
   const lastMessage = channel.recent_messages?.[0];
 
   const getChannelIcon = () => {
