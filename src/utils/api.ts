@@ -2,7 +2,7 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
 
 // API base URL - adjust this to match your osu! API server
-const API_BASE_URL = 'https://lazer-api.g0v0.top';
+const API_BASE_URL = 'https://lazer.gu-osu.gmoe.cc';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -372,6 +372,14 @@ export const friendsAPI = {
   getUserFollowers: async (userId: number) => {
     const response = await api.get(`/api/v2/relationship/followers/${userId}`);
     return response.data;
+  },
+
+
+
+  // 获取用户详情
+  getUser: async (userId: number) => {
+    const response = await api.get(`/api/v2/users/${userId}`);
+    return response.data;
   }
 };
 
@@ -506,30 +514,133 @@ export const statsAPI = {
   },
 };
 
-// Notifications API functions (待实现)
+// Chat API functions
+export const chatAPI = {
+  // 获取频道列表
+  getChannels: async () => {
+    const response = await api.get('/api/v2/chat/channels');
+    return response.data;
+  },
+
+  // 获取频道消息
+  getChannelMessages: async (channelId: string | number, limit: number = 50, since: number = 0, until?: number) => {
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    params.append('since', since.toString());
+    if (until !== undefined) {
+      params.append('until', until.toString());
+    }
+    
+    const response = await api.get(`/api/v2/chat/channels/${channelId}/messages?${params}`);
+    return response.data;
+  },
+
+  // 发送消息
+  sendMessage: async (channelId: string | number, message: string, isAction: boolean = false, uuid?: string) => {
+    const formData = new URLSearchParams();
+    formData.append('message', message);
+    formData.append('is_action', isAction.toString());
+    if (uuid) {
+      formData.append('uuid', uuid);
+    }
+
+    const response = await api.post(`/api/v2/chat/channels/${channelId}/messages`, formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+    return response.data;
+  },
+
+  // 标记消息为已读
+  markAsRead: async (channelId: string | number, messageId: number) => {
+    const response = await api.put(`/api/v2/chat/channels/${channelId}/mark-as-read/${messageId}`);
+    return response.data;
+  },
+
+  // 创建新的私聊
+  createPrivateMessage: async (targetId: number, message: string, isAction: boolean = false, uuid?: string) => {
+    const formData = new URLSearchParams();
+    formData.append('target_id', targetId.toString());
+    formData.append('message', message);
+    formData.append('is_action', isAction.toString());
+    if (uuid) {
+      formData.append('uuid', uuid);
+    }
+
+    const response = await api.post('/api/v2/chat/new', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+    return response.data;
+  },
+
+  // 加入频道
+  joinChannel: async (channelId: string | number) => {
+    const response = await api.post(`/api/v2/chat/channels/${channelId}/join`);
+    return response.data;
+  },
+
+  // 离开频道
+  leaveChannel: async (channelId: string | number) => {
+    const response = await api.post(`/api/v2/chat/channels/${channelId}/leave`);
+    return response.data;
+  },
+
+  // 获取私聊频道（如果存在）
+  getPrivateChannel: async (targetUserId: number) => {
+    try {
+      const response = await api.get(`/api/v2/chat/private/${targetUserId}`);
+      return response.data;
+    } catch (error: any) {
+      // 如果私聊频道不存在，返回null
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  // 保持连接活跃
+  keepAlive: async (historySince?: number, since?: number) => {
+    const params = new URLSearchParams();
+    if (historySince !== undefined) {
+      params.append('history_since', historySince.toString());
+    }
+    if (since !== undefined) {
+      params.append('since', since.toString());
+    }
+
+    const response = await api.post(`/api/v2/chat/ack?${params}`);
+    return response.data;
+  },
+};
+
+// Notifications API functions
 export const notificationsAPI = {
-  // 获取通知列表
+  // 获取通知列表和WebSocket端点
   getNotifications: async () => {
-    // TODO: 实现通知获取功能
-    // const response = await api.get('/api/private/notifications');
-    // return response.data;
-    throw new Error('通知API尚未实现');
+    const response = await api.get('/api/v2/notifications');
+    return response.data;
   },
 
   // 标记通知为已读
   markAsRead: async (notificationId: number) => {
-    // TODO: 实现标记已读功能
-    // const response = await api.patch(`/api/private/notifications/${notificationId}/read`);
-    // return response.data;
-    throw new Error('通知API尚未实现');
+    const response = await api.patch(`/api/v2/notifications/${notificationId}/read`);
+    return response.data;
   },
 
   // 获取未读通知数量
   getUnreadCount: async () => {
-    // TODO: 实现未读数量获取功能
-    // const response = await api.get('/api/private/notifications/unread-count');
-    // return response.data;
-    throw new Error('通知API尚未实现');
+    const response = await api.get('/api/v2/notifications/unread-count');
+    return response.data;
+  },
+
+  // 获取团队加入请求通知
+  getTeamRequests: async () => {
+    const response = await api.get('/api/private/team-requests');
+    return response.data;
   },
 };
 

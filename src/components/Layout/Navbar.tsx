@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers } from 'react-icons/fi';
+import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers, FiMessageCircle } from 'react-icons/fi';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
+import { useNotifications } from '../../hooks/useNotifications';
 import UserDropdown from '../UI/UserDropdown';
 import Avatar from '../UI/Avatar';
 import type { NavItem } from '../../types';
@@ -211,6 +212,7 @@ MobileNavItem.displayName = 'MobileNavItem';
 const Navbar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
+  const { unreadCount, isConnected } = useNotifications(isAuthenticated);
   //const location = useLocation();
 
   const navItems: NavItem[] = React.useMemo(() => [
@@ -218,6 +220,7 @@ const Navbar: React.FC = () => {
     { path: '/rankings', title: '排行榜', icon: FiTrendingUp, requireAuth: true },
     { path: '/beatmaps', title: '谱面', icon: FiMusic, requireAuth: true },
     { path: '/teams', title: '战队', icon: FiUsers, requireAuth: true },
+    { path: '/messages', title: '消息', icon: FiMessageCircle, requireAuth: true },
     { path: '/profile', title: '个人资料', icon: FiUser, requireAuth: true },
   ], []);
 
@@ -284,21 +287,36 @@ const Navbar: React.FC = () => {
             <div className="flex items-center justify-end space-x-3">
               {/* Notification (if authenticated) */}
               {isAuthenticated && (
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="relative p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 group"
-                  onClick={() => {
-                    toast.success("别急，还在写呢，等我咕咕咕一下！");
-                  }}
-                >
-                  <FiBell size={18} />
-                  <motion.div 
-                    className="absolute top-2 right-2 w-2 h-2 bg-osu-pink rounded-full"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </motion.button>
+                <Link to="/messages">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={`
+                      relative p-2.5 rounded-xl transition-all duration-200 group
+                      ${isConnected 
+                        ? 'text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50' 
+                        : 'text-gray-400 dark:text-gray-500'
+                      }
+                    `}
+                    title={isConnected ? '实时通知已连接' : '实时通知未连接'}
+                  >
+                    <FiBell size={18} />
+                    {unreadCount.total > 0 && (
+                      <motion.div 
+                        className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium"
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        {unreadCount.total > 99 ? '99+' : unreadCount.total}
+                      </motion.div>
+                    )}
+                    {/* WebSocket连接状态指示器 */}
+                    <div className={`
+                      absolute bottom-0 right-0 w-2 h-2 rounded-full
+                      ${isConnected ? 'bg-green-500' : 'bg-red-500'}
+                    `} />
+                  </motion.button>
+                </Link>
               )}
 
               {/* Theme toggle */}
@@ -383,18 +401,35 @@ const Navbar: React.FC = () => {
           <div className="flex items-center space-x-2">
             {/* Notification (if authenticated) */}
             {isAuthenticated && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="relative p-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200"
-              >
-                <FiBell size={16} />
-                <motion.div 
-                  className="absolute top-2 right-2 w-1.5 h-1.5 bg-osu-pink rounded-full"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              </motion.button>
+              <Link to="/messages">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className={`
+                    relative p-2.5 rounded-xl transition-all duration-200
+                    ${isConnected 
+                      ? 'text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50' 
+                      : 'text-gray-400 dark:text-gray-500'
+                    }
+                  `}
+                >
+                  <FiBell size={16} />
+                  {unreadCount.total > 0 && (
+                    <motion.div 
+                      className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-medium"
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      {unreadCount.total > 9 ? '9+' : unreadCount.total}
+                    </motion.div>
+                  )}
+                  {/* WebSocket连接状态指示器 */}
+                  <div className={`
+                    absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full
+                    ${isConnected ? 'bg-green-500' : 'bg-red-500'}
+                  `} />
+                </motion.button>
+              </Link>
             )}
 
             {/* Theme toggle */}

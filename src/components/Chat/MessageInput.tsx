@@ -1,0 +1,128 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { FiSend } from 'react-icons/fi';
+
+interface MessageInputProps {
+  onSendMessage: (message: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  maxLength?: number;
+}
+
+const MessageInput: React.FC<MessageInputProps> = ({ 
+  onSendMessage, 
+  disabled = false,
+  placeholder = "输入消息...",
+  maxLength = 1000
+}) => {
+  const [message, setMessage] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 自动调整输入框高度
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    }
+  }, [message]);
+
+  const handleSend = () => {
+    if (!message.trim() || disabled) return;
+    
+    onSendMessage(message.trim());
+    setMessage('');
+    
+    // 重置输入框高度
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    // 处理粘贴事件，确保不超过最大长度
+    const pastedText = e.clipboardData.getData('text');
+    const currentLength = message.length;
+    const remainingLength = maxLength - currentLength;
+    
+    if (pastedText.length > remainingLength) {
+      e.preventDefault();
+      const truncatedText = pastedText.substring(0, remainingLength);
+      setMessage(prev => prev + truncatedText);
+    }
+  };
+
+  return (
+    <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex items-end space-x-3">
+        {/* 消息输入区域 */}
+        <div className="flex-1 relative">
+          <textarea
+            ref={textareaRef}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            onPaste={handlePaste}
+            placeholder={placeholder}
+            disabled={disabled}
+            maxLength={maxLength}
+            className={`
+              w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 
+              border border-gray-200 dark:border-gray-600 rounded-lg 
+              resize-none text-gray-900 dark:text-white 
+              placeholder-gray-500 dark:placeholder-gray-400 
+              focus:outline-none focus:ring-2 focus:ring-osu-pink focus:border-transparent
+              transition-all duration-200
+              ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
+            rows={1}
+            style={{ minHeight: '40px', maxHeight: '100px' }}
+          />
+          
+          {/* 字符计数 */}
+          {message.length > maxLength * 0.8 && (
+            <div className={`
+              absolute right-3 top-1 text-xs
+              ${message.length >= maxLength ? 'text-red-500' : 'text-gray-400'}
+            `}>
+              {message.length}/{maxLength}
+            </div>
+          )}
+        </div>
+
+        {/* 发送按钮 */}
+        <motion.button
+          whileHover={{ scale: disabled ? 1 : 1.05 }}
+          whileTap={{ scale: disabled ? 1 : 0.95 }}
+          onClick={handleSend}
+          disabled={!message.trim() || disabled}
+          className={`
+            p-2.5 rounded-lg transition-all duration-200 flex-shrink-0
+            ${!message.trim() || disabled
+              ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+              : 'bg-osu-pink text-white hover:bg-osu-pink/90 shadow-lg shadow-osu-pink/25'
+            }
+          `}
+        >
+          <FiSend size={16} />
+        </motion.button>
+      </div>
+      
+      {/* 简化的提示文字 */}
+      {disabled && (
+        <div className="mt-2 text-xs text-red-400">
+          无法发送消息
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MessageInput;

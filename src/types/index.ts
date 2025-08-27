@@ -324,3 +324,130 @@ export interface OnlineHistoryResponse {
   history: OnlineHistoryEntry[];
   current_stats: ServerStats;
 }
+
+// Chat types
+export type ChannelType = 'PUBLIC' | 'PRIVATE' | 'MULTIPLAYER' | 'SPECTATOR' | 'TEMPORARY' | 'PM' | 'GROUP' | 'SYSTEM' | 'ANNOUNCE' | 'TEAM';
+
+export interface ChatChannel {
+  channel_id: number;
+  name: string;
+  description: string;
+  icon?: string;
+  type: ChannelType;
+  moderated: boolean;
+  uuid?: string;
+  current_user_attributes?: ChatUserAttributes;
+  last_read_id?: number;
+  last_message_id?: number;
+  recent_messages: ChatMessage[];
+  users: number[];
+  message_length_limit: number;
+}
+
+export interface ChatUserAttributes {
+  can_message: boolean;
+  can_message_error?: string;
+  last_read_id: number;
+}
+
+export interface ChatMessage {
+  message_id: number;
+  channel_id: number;
+  content: string;
+  timestamp: string;
+  sender_id: number;
+  sender?: User;
+  is_action: boolean;
+  uuid?: string;
+}
+
+export interface ChatMessageRequest {
+  message: string;
+  is_action?: boolean;
+  uuid?: string;
+}
+
+export interface PrivateMessageRequest {
+  target_id: number;
+  message: string;
+  is_action?: boolean;
+  uuid?: string;
+}
+
+export interface NewPrivateMessageResponse {
+  channel: ChatChannel;
+  message: ChatMessage;
+  new_channel_id: number;
+}
+
+// Notification types based on osu! server structure
+export interface APINotification {
+  id: number;
+  name: string;
+  created_at: string;
+  object_type: string;
+  object_id: string;
+  source_user_id?: number;
+  is_read: boolean;
+  details: Record<string, unknown>;
+}
+
+export interface NotificationsResponse {
+  has_more: boolean;
+  notifications: APINotification[];
+  unread_count: number;
+  notification_endpoint: string;
+}
+
+export interface UnreadCount {
+  total: number;
+  team_requests: number;
+  private_messages: number;
+  friend_requests: number;
+}
+
+// WebSocket message types
+export interface SocketMessage {
+  event: string;
+  data?: Record<string, unknown>;
+  error?: string;
+}
+
+export interface ChatEvent extends SocketMessage {
+  event: 'chat.message.new' | 'chat.start' | 'chat.end';
+  data?: {
+    messages?: ChatMessage[];
+    users?: User[];
+  };
+}
+
+export interface NotificationEvent extends SocketMessage {
+  event: 'new_private_notification';
+  data?: {
+    name: string;
+    object_type: string;
+    object_id: number;
+    source_user_id: number;
+    details: Record<string, unknown>;
+  };
+}
+
+// 好友关系类型
+export interface FriendRelation {
+  target_id: number;
+  relation_type: 'friend' | 'block';
+  mutual: boolean;
+  target?: User;
+}
+
+// 私聊频道创建响应
+export interface PrivateMessageResponse {
+  channel: ChatChannel;
+  message: ChatMessage;
+}
+
+// 用户搜索响应
+export interface UserSearchResponse {
+  users: User[];
+  total: number;
+}

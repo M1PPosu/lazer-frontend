@@ -12,6 +12,7 @@ import RankingsPage from './pages/RankingsPage';
 import TeamsPage from './pages/TeamsPage';
 import TeamDetailPage from './pages/TeamDetailPage';
 import CreateTeamPage from './pages/CreateTeamPage';
+import MessagesPage from './pages/MessagesPage';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="teams/create" element={<CreateTeamPage />} />
             <Route path="teams/:teamId" element={<TeamDetailPage />} />
             <Route path="teams/:teamId/edit" element={<CreateTeamPage />} />
+            <Route path="messages" element={<MessagesPage />} />
             <Route
               path="beatmaps"
               element={
