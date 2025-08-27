@@ -151,7 +151,7 @@ const RankingsPage: React.FC = () => {
                 <div key={mainMode} className="relative">
                   <button
                     onClick={() => handleMainModeChange(mainMode)}
-                    className={`relative p-2 sm:p-3 rounded-md sm:rounded-lg transition-all duration-200 focus:outline-none ${
+                    className={`relative px-3 py-2 sm:px-4 sm:py-2.5 rounded-md sm:rounded-lg transition-all duration-200 focus:outline-none ${
                       selectedMainMode === mainMode
                         ? 'sm:scale-105 shadow-sm sm:shadow-md'
                         : 'hover:scale-102 opacity-70 hover:opacity-100'
@@ -220,23 +220,23 @@ const RankingsPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 sm:gap-4 xl:flex-1">
           {/* 标签页切换 */}
           <div className="flex-1">
-            <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 sm:p-1">
+            <div className="inline-flex bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-sm border border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setSelectedTab('users')}
-                className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-md sm:rounded-lg font-medium transition-colors text-sm sm:text-base ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg font-medium transition-colors text-sm sm:text-base ${
                   selectedTab === 'users'
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
               >
                 用户排行榜
               </button>
               <button
                 onClick={() => setSelectedTab('countries')}
-                className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-md sm:rounded-lg font-medium transition-colors text-sm sm:text-base ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg font-medium transition-colors text-sm sm:text-base ${
                   selectedTab === 'countries'
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
               >
                 国家排行榜
@@ -250,8 +250,8 @@ const RankingsPage: React.FC = () => {
               <select
                 value={rankingType}
                 onChange={(e) => setRankingType(e.target.value as RankingType)}
-                className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg 
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
+                className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl
+                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm
                          focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-sm sm:text-base"
               >
                 <option value="performance">表现分数 (pp)</option>

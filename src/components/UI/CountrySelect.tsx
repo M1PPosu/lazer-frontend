@@ -102,7 +102,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
             onChange={handleInputChange}
             onFocus={() => setIsOpen(true)}
             placeholder={placeholder}
-            className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 pr-10 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-sm sm:text-base"
           />
           
           {/* 国旗显示 */}
@@ -133,7 +133,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
         {value && (
           <button
             onClick={handleClear}
-            className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="px-3 py-2 bg-gray-500 text-white rounded-lg sm:rounded-xl hover:bg-gray-600 transition-colors shadow-sm font-medium text-sm sm:text-base"
           >
             清除
           </button>
@@ -142,7 +142,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
 
       {/* 下拉列表 */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl shadow-lg max-h-60 overflow-y-auto">
           {filteredCountries.length > 0 ? (
             filteredCountries.map((country) => (
               <button
