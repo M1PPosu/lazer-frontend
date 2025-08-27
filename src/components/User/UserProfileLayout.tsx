@@ -106,12 +106,12 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
   const [isUpdatingMode] = useState(false);
 
   return (
-    <main className="max-w-6xl mx-auto px-2 md:px-4 lg:px-8 py-4 md:py-6">
+    <main className="max-w-6xl mx-auto px-0 md:px-4 lg:px-8 py-4 md:py-6">
       {/* 主卡片 */}
-      <div className="bg-white/95 dark:bg-gray-900/85 main-card-shadow rounded-t-2xl rounded-b-2xl overflow-hidden border border-gray-100/70 dark:border-white/10">
+      <div className="bg-transparent md:bg-white/95 md:dark:bg-gray-900/85 md:main-card-shadow md:rounded-t-2xl md:rounded-b-2xl overflow-hidden md:border md:border-gray-100/70 md:dark:border-white/10">
         {/* 头部栏 + 模式选择（与头图同容器） */}
         <div className="relative overflow-hidden">
-          <div className="bg-white/95 dark:bg-gray-900/85 text-gray-900 dark:text-gray-100 px-3 md:px-4 py-2 flex items-center justify-between rounded-t-2xl border-b border-gray-100/70 dark:border-white/10">
+          <div className="bg-white/95 dark:bg-gray-900/85 text-gray-900 dark:text-gray-100 px-3 md:px-4 py-2 flex items-center justify-between md:rounded-t-2xl border-b border-gray-100/70 dark:border-white/10">
             <div className="text-base md:text-lg font-bold">玩家信息</div>
             <div className="flex items-center gap-2 md:gap-3">
               {/* 右侧模式按钮们（来自你的 GameModeSelector） */}
@@ -134,53 +134,54 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
         </div>
 
         {/* 头像与基本信息条 */}
-        <div className="bg-white/95 dark:bg-gray-900/85 px-6 md:px-8 py-2 flex items-center gap-6 border-b border-gray-200/60 dark:border-white/10 relative">
+        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-8 py-4 md:py-6 flex items-center gap-4 md:gap-6 border-b border-gray-200/60 dark:border-white/10 relative">
           {/* 头像：渐变边 + 阴影，左下沉覆盖 */}
           <div className="-mt-16">
             <Avatar
               userId={user.id}
               username={user.username}
               avatarUrl={user.avatar_url}
-              size="2xl"
+              size="xl"
               shape="rounded"
-              className=""
+              className="mt-[10px]  md:mt-[1px] md:!w-32 md:!h-32 md:!min-w-32 md:!min-h-32"
             />
           </div>
           {/* 用户名 + 国家 + 团队旗帜 */}
           <div className="flex-1">
-            <h1 className="mt-[-15px] ml-[-10px] text-2xl md:text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+            <h1 className="mt-[-12px] md:mt-[-15px] ml-0 md:ml-[-10px] text-xl md:text-3xl font-bold mb-3 md:mb-2 text-gray-900 dark:text-gray-100">
               {user.username}
             </h1>
-            <div className="flex items-center gap-4">
-              {/* 国旗（使用 flagcdn 动态加载） - 修复手机端显示问题 */}
+            <div className="flex mt-[-10px] items-center gap-2 md:gap-4 md:mt-[10px] md:ml-[-8px] flex-wrap">
+              {/* 国旗和国家名 */}
               {user.country?.code && (
-                <img
-                  src={`/image/flag/${user.country.code.toLowerCase()}.svg`}
-                  alt={user.country.name}
-                  className="ml-[-8px] h-[25px] w-auto rounded-sm object-contain"
-                  loading="lazy"
-                  decoding="async"
-                />
-              )}
-
-              <span className="text-gray-600 dark:text-gray-300 ml-[-6px]">
-                {user.country?.name || '国家'}
-              </span>
-
-              {/* 团队旗帜 */}
-              {user.team && (
-                <span className="inline-flex items-center">
+                <div className="flex items-center gap-2">
                   <img
-                    src={user.team.flag_url}
-                    alt="团队旗帜"
-                    className="h-[25px] w-auto rounded-sm object-contain"
+                    src={`/image/flag/${user.country.code.toLowerCase()}.svg`}
+                    alt={user.country.name}
+                    className="h-[20px] md:h-[25px] w-auto rounded-sm object-contain"
                     loading="lazy"
                     decoding="async"
                   />
-                  <span className="text-gray-600 dark:text-gray-300 ml-[10px]">
+                  <span className="text-gray-600 dark:text-gray-300 text-sm md:text-base">
+                    {user.country?.name || '国家'}
+                  </span>
+                </div>
+              )}
+
+              {/* 团队旗帜和名称 */}
+              {user.team && (
+                <div className="flex items-center gap-2">
+                  <img
+                    src={user.team.flag_url}
+                    alt="团队旗帜"
+                    className="h-[20px] md:h-[25px] w-auto rounded-sm object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <span className="text-gray-600 dark:text-gray-300 text-sm md:text-base">
                     {user.team.name}
                   </span>
-                </span>
+                </div>
               )}
             </div>
           </div>
@@ -189,12 +190,12 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
 
 
         {/* 中部：左 3/4（排名+折线+信息），右 1/4（统计） */}
-        <div className="bg-white/95 dark:bg-gray-900/85 px-4 md:px-6 py-4 border-b border-gray-200/60 dark:border-white/10">
+        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 py-4 border-b border-gray-200/60 dark:border-white/10">
           <div className="flex flex-col md:flex-row gap-4">
             {/* 左侧 3/4 */}
             <div className="flex-[3] flex flex-col gap-3">
               {/* 排名 */}
-              <div className="flex gap-8 p-3 rounded-lg rank-card-shadow mb-[20px] ml-[-10px]">
+              <div className="flex gap-8 p-3 md:rounded-lg md:rank-card-shadow mb-[20px] ml-0 md:ml-[-10px]">
                 <div className="text-center">
                   <div className="text-gray-500 dark:text-gray-400 mb-[-5px] mb-1 text-[12px]">全球排名</div>
                   <div className="font-bold text-primary text-[20px]">#{stats?.global_rank ?? '—'}</div>
@@ -229,7 +230,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
 
             {/* 右侧 1/4：统计信息 */}
             <div className="flex-1">
-              <div className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg h-full flex flex-col justify-center stats-card-shadow">
+              <div className="bg-gray-50 dark:bg-gray-800/60 p-3 md:rounded-lg h-full flex flex-col justify-center md:stats-card-shadow">
                 <StatsCard stats={stats} />
               </div>
             </div>
@@ -237,7 +238,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
         </div>
 
         {/* 好友/消息 + 等级进度 */}
-        <div className="bg-white/95 dark:bg-gray-900/85 px-4 md:px-6 lg:px-8 py-4 md:py-6">
+        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 lg:px-8 py-4 md:py-6">
           <div className="flex items-center justify-between">
               <FriendStats user={user} />
             <div className="flex items-center gap-4">
@@ -253,7 +254,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
         </div>
 
         {/* 施工中 */}
-        <div className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-lg h-[500px] flex flex-col justify-center">
+        <div className="bg-gray-50 dark:bg-gray-800/60 p-3 md:rounded-lg h-[500px] flex flex-col justify-center">
           <div className="flex justify-center items-center h-full">
             <p className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
               <FaTools className="text-lg" />
