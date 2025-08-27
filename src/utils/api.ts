@@ -631,7 +631,24 @@ export const notificationsAPI = {
 
   // 标记通知为已读
   markAsRead: async (notificationId: number) => {
-    const response = await api.patch(`/api/v2/notifications/${notificationId}/read`, {}, {
+    const response = await api.post('/api/v2/notifications/mark-read', [{
+      id: notificationId
+    }], {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  },
+
+  // 批量标记通知为已读
+  markMultipleAsRead: async (identities: Array<{
+    id?: number;
+    object_id?: number; 
+    object_type?: number;
+    category?: string;
+  }>) => {
+    const response = await api.post('/api/v2/notifications/mark-read', identities, {
       headers: {
         'Content-Type': 'application/json',
       },

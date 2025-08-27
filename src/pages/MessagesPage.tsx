@@ -4,7 +4,6 @@ import {
   FiMessageCircle, 
   FiBell, 
   FiChevronLeft,
-  FiMoreHorizontal,
   FiX,
   FiCheck,
   FiUserPlus,
@@ -20,12 +19,10 @@ import MessageBubble from '../components/Chat/MessageBubble';
 import ChannelItem from '../components/Chat/ChannelItem';
 import MessageInput from '../components/Chat/MessageInput';
 import PrivateMessageModal from '../components/Chat/PrivateMessageModal';
-import FriendsList from '../components/Chat/FriendsList';
 import type { 
   ChatChannel, 
   ChatMessage, 
-  APINotification,
-  User
+  APINotification
 } from '../types';
 import toast from 'react-hot-toast';
 
@@ -54,15 +51,9 @@ const MessagesPage: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [showNewPMModal, setShowNewPMModal] = useState(false);
-  const [showFriendsList, setShowFriendsList] = useState(false);
   
   // 用户信息缓存
   const [userInfoCache, setUserInfoCache] = useState<Map<number, any>>(new Map());
-
-  // 调试好友列表状态
-  useEffect(() => {
-    console.log('好友列表状态变化:', showFriendsList);
-  }, [showFriendsList]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedChannelRef = useRef<ChatChannel | null>(null);
@@ -336,6 +327,9 @@ const MessagesPage: React.FC = () => {
             console.log('处理私聊通知:', notification.id, objectKey, notification.details.title);
             processedObjectIds.add(objectKey);
             handlePrivateMessageNotification(notification);
+            
+            // 自动标记已存在的私聊消息为已读
+            autoMarkPrivateMessagesAsRead(notification);
           } else {
             console.log('跳过重复的通知对象:', objectKey);
           }
@@ -934,6 +928,297 @@ const MessagesPage: React.FC = () => {
     }
   };
 
+  // 自动标记私聊消息为已读
+  const autoMarkPrivateMessagesAsRead = async (notification: APINotification) => {
+    if (notification.name !== 'channel_message' || notification.details?.type !== 'pm') {
+      return;
+    }
+
+    // 计算文本相似度的简单函数
+    const calculateTextSimilarity = (text1: string, text2: string): number => {
+      if (text1 === text2) return 1.0;
+      if (text1.length === 0 || text2.length === 0) return 0.0;
+
+      // 使用最长公共子序列算法
+      const longerText = text1.length > text2.length ? text1 : text2;
+      const shorterText = text1.length > text2.length ? text2 : text1;
+      
+      let matches = 0;
+      const shorterLength = shorterText.length;
+      
+      // 简单的滑动窗口匹配
+      for (let i = 0; i <= longerText.length - shorterLength; i++) {
+        const window = longerText.substring(i, i + shorterLength);
+        if (window === shorterText) {
+          matches = shorterLength;
+          break;
+        }
+        
+        // 计算字符匹配数
+        let charMatches = 0;
+        for (let j = 0; j < shorterLength; j++) {
+          if (window[j] === shorterText[j]) {
+            charMatches++;
+          }
+        }
+        matches = Math.max(matches, charMatches);
+      }
+      
+      return matches / shorterLength;
+    };
+
+    // 消息去重函数
+    const deduplicateMessages = (messages: ChatMessage[]): ChatMessage[] => {
+      const uniqueMessages: ChatMessage[] = [];
+      const seenContents = new Set<string>();
+      
+      messages.forEach(message => {
+        const normalizedContent = message.content
+          .trim()
+          .replace(/\s+/g, ' ')
+          .toLowerCase();
+        
+        // 检查是否已经有相似的内容
+        let isDuplicate = false;
+        for (const seenContent of seenContents) {
+          const similarity = calculateTextSimilarity(normalizedContent, seenContent);
+          if (similarity > 0.9) { // 90%以上相似度认为是重复
+            isDuplicate = true;
+            console.log('发现重复消息:', {
+              messageId: message.message_id,
+              content: message.content.substring(0, 30),
+              similarity: similarity.toFixed(2)
+            });
+            break;
+          }
+        }
+        
+        if (!isDuplicate) {
+          uniqueMessages.push(message);
+          seenContents.add(normalizedContent);
+        }
+      });
+      
+      console.log(`消息去重: 原始 ${messages.length} 条，去重后 ${uniqueMessages.length} 条`);
+      return uniqueMessages;
+    };
+
+    try {
+      const channelId = parseInt(notification.object_id.toString());
+      const notificationTitle = notification.details?.title as string;
+      
+      console.log('开始自动标记私聊消息为已读:', {
+        channelId,
+        notificationTitle,
+        notificationId: notification.id
+      });
+
+      // 查找对应的私聊频道
+      const targetChannel = channels.find(ch => ch.channel_id === channelId && ch.type === 'PM');
+      
+      if (!targetChannel) {
+        console.log('未找到对应的私聊频道，跳过自动标记');
+        return;
+      }
+
+      // 获取频道的所有消息
+      const channelMessages = await chatAPI.getChannelMessages(channelId);
+      
+      if (!channelMessages || channelMessages.length === 0) {
+        console.log('频道没有消息，跳过自动标记');
+        return;
+      }
+
+      console.log(`频道 ${channelId} 共有 ${channelMessages.length} 条消息`);
+
+      // 检查是否是当前选中的频道，如果是，用户已经"看到"了消息
+      const isCurrentlyViewingChannel = selectedChannel?.channel_id === channelId;
+      
+      // 清理和标准化文本的函数
+      const normalizeText = (text: string) => {
+        return text
+          .trim()                          // 移除前后空白
+          .replace(/\s+/g, ' ')           // 多个空格合并为一个
+          .replace(/[^\w\s\u4e00-\u9fff]/g, '') // 移除特殊字符，保留中文、字母、数字
+          .toLowerCase();                  // 转换为小写
+      };
+
+      // 查找包含通知标题内容的消息
+      const matchingMessages = channelMessages.filter((message: ChatMessage) => {
+        if (!notificationTitle || !message.content) {
+          return false;
+        }
+
+        // 标准化文本进行比较
+        const normalizedTitle = normalizeText(notificationTitle);
+        const normalizedContent = normalizeText(message.content);
+        
+        // 多种匹配策略
+        const exactMatch = normalizedContent === normalizedTitle;
+        const contentIncludesTitle = normalizedContent.includes(normalizedTitle);
+        const titleIncludesContent = normalizedTitle.includes(normalizedContent);
+        
+        // 相似度匹配（简单版本）
+        const similarity = calculateTextSimilarity(normalizedTitle, normalizedContent);
+        const similarityMatch = similarity > 0.8; // 80%以上相似度
+        
+        const isMatch = exactMatch || contentIncludesTitle || titleIncludesContent || similarityMatch;
+        
+        if (isMatch) {
+          console.log('找到匹配的消息:', {
+            messageId: message.message_id,
+            content: message.content.substring(0, 50),
+            notificationTitle,
+            matchType: exactMatch ? 'exact' : 
+                      contentIncludesTitle ? 'content_includes_title' :
+                      titleIncludesContent ? 'title_includes_content' : 
+                      'similarity',
+            similarity: similarity.toFixed(2)
+          });
+        }
+        
+        return isMatch;
+      });
+
+      // 对匹配的消息进行去重（基于内容相似性）
+      const uniqueMessages = deduplicateMessages(matchingMessages);
+
+      let shouldMarkAsRead = false;
+      let maxMessageIdToMark = 0;
+
+      if (uniqueMessages.length > 0) {
+        // 如果找到匹配的消息，标记到最新的匹配消息
+        maxMessageIdToMark = Math.max(...uniqueMessages.map((m: ChatMessage) => m.message_id));
+        shouldMarkAsRead = true;
+        console.log(`找到 ${uniqueMessages.length} 条唯一匹配消息（原始 ${matchingMessages.length} 条），将标记到消息ID: ${maxMessageIdToMark}`);
+      } else if (isCurrentlyViewingChannel) {
+        // 如果用户正在查看该频道，标记所有消息为已读
+        maxMessageIdToMark = Math.max(...channelMessages.map((m: ChatMessage) => m.message_id));
+        shouldMarkAsRead = true;
+        console.log(`用户正在查看频道 ${channelId}，标记所有消息为已读，最大消息ID: ${maxMessageIdToMark}`);
+      }
+
+      if (shouldMarkAsRead && maxMessageIdToMark > 0) {
+        // 检查是否需要更新已读状态
+        const currentLastReadId = targetChannel.last_read_id || 0;
+        
+        if (maxMessageIdToMark > currentLastReadId) {
+          console.log(`准备标记频道 ${channelId} 消息 ${maxMessageIdToMark} 为已读 (当前已读: ${currentLastReadId})`);
+          
+          // 调用API标记为已读
+          await chatAPI.markAsRead(channelId, maxMessageIdToMark);
+          console.log(`成功标记频道 ${channelId} 消息 ${maxMessageIdToMark} 为已读`);
+          
+          // 更新本地频道状态
+          updateChannelReadStatus(channelId, maxMessageIdToMark);
+          
+          // 删除相关通知
+          try {
+            console.log(`删除已处理的通知: ${notification.id}`);
+            await removeNotificationByObject(notification.object_id, notification.object_type);
+          } catch (error) {
+            console.error(`删除通知失败: ${notification.id}`, error);
+          }
+        } else {
+          console.log(`消息 ${maxMessageIdToMark} 已经被标记为已读 (当前已读: ${currentLastReadId})`);
+        }
+      } else {
+        console.log('没有找到需要标记的消息或用户未查看该频道');
+      }
+      
+    } catch (error) {
+      console.error('自动标记私聊消息已读失败:', error);
+    }
+  };
+
+  // 批量处理私聊通知标记已读
+  const batchMarkPrivateNotificationsAsRead = async () => {
+    console.log('开始批量处理私聊通知...');
+    let privateNotifications = notifications.filter(notification => 
+      notification.name === 'channel_message' && 
+      notification.details?.type === 'pm'
+    );
+
+    console.log(`找到 ${privateNotifications.length} 个私聊通知需要处理`);
+
+    if (privateNotifications.length === 0) {
+      toast('没有需要处理的私聊通知');
+      return;
+    }
+
+    // 对通知进行去重处理（基于频道ID和内容相似性）
+    const deduplicatedNotifications = deduplicateNotifications(privateNotifications);
+    console.log(`通知去重: 原始 ${privateNotifications.length} 个，去重后 ${deduplicatedNotifications.length} 个`);
+
+    let processedCount = 0;
+    let errorCount = 0;
+
+    for (const notification of deduplicatedNotifications) {
+      try {
+        console.log(`处理私聊通知 ${notification.id}: ${notification.details?.title}`);
+        await autoMarkPrivateMessagesAsRead(notification);
+        processedCount++;
+        
+        // 添加小延迟避免API请求过快
+        await new Promise(resolve => setTimeout(resolve, 200));
+      } catch (error) {
+        console.error(`处理通知 ${notification.id} 失败:`, error);
+        errorCount++;
+      }
+    }
+
+    // 显示处理结果
+    const resultMessage = `处理完成: 成功 ${processedCount}，失败 ${errorCount}`;
+    console.log(resultMessage);
+    
+    if (errorCount > 0) {
+      toast.error(resultMessage);
+    } else {
+      toast.success(resultMessage);
+    }
+
+    // 刷新通知列表
+    setTimeout(() => {
+      refresh();
+    }, 1000);
+  };
+
+  // 通知去重函数
+  const deduplicateNotifications = (notifications: APINotification[]): APINotification[] => {
+    const uniqueNotifications: APINotification[] = [];
+    const seenCombinations = new Set<string>();
+    
+    notifications.forEach(notification => {
+      // 创建基于频道ID和标题的唯一标识
+      const channelId = notification.object_id;
+      const title = (notification.details?.title as string) || '';
+      const normalizedTitle = title.trim().replace(/\s+/g, ' ').toLowerCase();
+      
+      // 组合键：频道ID + 标准化标题
+      const combinationKey = `${channelId}-${normalizedTitle}`;
+      
+      if (!seenCombinations.has(combinationKey)) {
+        seenCombinations.add(combinationKey);
+        uniqueNotifications.push(notification);
+        console.log('保留通知:', {
+          id: notification.id,
+          channelId,
+          title: title.substring(0, 30),
+          combinationKey
+        });
+      } else {
+        console.log('跳过重复通知:', {
+          id: notification.id,
+          channelId,
+          title: title.substring(0, 30),
+          combinationKey
+        });
+      }
+    });
+    
+    return uniqueNotifications;
+  };
+
   // 获取通知标题
   const getNotificationTitle = (notification: APINotification): string => {
     // 获取用户信息
@@ -994,7 +1279,26 @@ const MessagesPage: React.FC = () => {
       case 'channel_message':
         // 根据类型显示不同的内容
         if (notification.details?.type === 'pm') {
-          return `来自 ${userName} 的消息`;
+          // 尝试获取完整的消息内容
+          const messageContent = notification.details.title as string;
+          const messageUrl = notification.details.url as string;
+          
+          // 如果有详细的消息内容，显示它
+          if (messageContent && messageContent !== '来自用户' && messageContent !== userName) {
+            // 如果消息被截断（通常36字符），尝试显示完整内容
+            if (messageContent.length >= 36) {
+              return `${userName}: ${messageContent}... (可能有更多内容)`;
+            } else {
+              return `${userName}: ${messageContent}`;
+            }
+          }
+          
+          // 如果有URL信息，尝试从中提取更多信息
+          if (messageUrl) {
+            return `来自 ${userName} 的私聊消息 (ID: ${notification.object_id})`;
+          }
+          
+          return `来自 ${userName} 的私聊消息`;
         } else if (notification.details?.type === 'team') {
           return `团队频道: ${notification.details.title || '团队消息'}`;
         }
@@ -1019,36 +1323,6 @@ const MessagesPage: React.FC = () => {
         return `公告频道: ${notification.details?.title || '公告消息'}`;
       default:
         return JSON.stringify(notification.details);
-    }
-  };
-
-  // 处理私聊开始
-  const handleStartPrivateChat = async (user: User) => {
-    try {
-      console.log('开始与用户私聊:', user.username);
-      
-      // 首先检查是否已经存在私聊频道
-      const existingChannel = await chatAPI.getPrivateChannel(user.id);
-      
-      if (existingChannel) {
-        console.log('找到现有私聊频道:', existingChannel.name);
-        // 选择现有频道
-        selectChannel(existingChannel);
-        setShowFriendsList(false);
-        return;
-      }
-      
-      // 如果没有现有频道，创建新的私聊
-      console.log('创建新的私聊频道');
-      setShowFriendsList(false);
-      setShowNewPMModal(true);
-      // 将选中的用户传递给私聊模态框
-      (window as any).selectedUserForPM = user;
-    } catch (error) {
-      console.error('开始私聊失败:', error);
-      toast.error('开始私聊失败');
-      // 确保好友列表关闭
-      setShowFriendsList(false);
     }
   };
 
@@ -1268,15 +1542,6 @@ const MessagesPage: React.FC = () => {
                       <FiPlus size={16} />
                       <span>新建私聊</span>
                     </button>
-                    
-                    {/* 好友管理按钮 */}
-                    <button
-                      onClick={() => setShowFriendsList(true)}
-                      className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 rounded-lg transition-colors text-sm font-medium"
-                    >
-                      <FiUserPlus size={16} />
-                      <span>好友管理</span>
-                    </button>
                   </div>
 
                   {/* 频道列表 */}
@@ -1307,7 +1572,7 @@ const MessagesPage: React.FC = () => {
                 /* 通知列表 */
                 <div className="flex flex-col h-full">
                   {/* 通知操作按钮 */}
-                  <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                  <div className="p-2 border-b border-gray-200 dark:border-gray-700 space-y-2">
                     <button
                       onClick={() => {
                         console.log('手动刷新通知列表');
@@ -1318,6 +1583,16 @@ const MessagesPage: React.FC = () => {
                     >
                       <FiRefreshCw size={16} />
                       <span>刷新通知</span>
+                    </button>
+                    
+                    {/* 批量标记私聊已读按钮 */}
+                    <button
+                      onClick={batchMarkPrivateNotificationsAsRead}
+                      className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 rounded-lg transition-colors text-sm font-medium"
+                      title="批量标记私聊消息为已读"
+                    >
+                      <FiCheck size={16} />
+                      <span>标记私聊已读</span>
                     </button>
                   </div>
                   
@@ -1378,6 +1653,17 @@ const MessagesPage: React.FC = () => {
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                   {getNotificationContent(notification)}
                                 </p>
+                                
+                                {/* 显示发送者信息 */}
+                                {notification.source_user_id && userInfoCache.has(notification.source_user_id) && (
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">来自:</span>
+                                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
+                                      {userInfoCache.get(notification.source_user_id)?.username || '未知用户'}
+                                    </span>
+                                  </div>
+                                )}
+                                
                                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                                   {new Date(notification.created_at).toLocaleString()}
                                 </p>
@@ -1428,7 +1714,7 @@ const MessagesPage: React.FC = () => {
         {selectedChannel ? (
           <>
             {/* 聊天头部 */}
-            <div className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 flex-shrink-0">
+            <div className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 flex-shrink-0">
               <div className="flex items-center space-x-3">
                 {isMobile && (
                   <button
@@ -1448,10 +1734,6 @@ const MessagesPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              
-              <button className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                <FiMoreHorizontal size={20} />
-              </button>
             </div>
 
             {/* 消息列表 */}
@@ -1571,15 +1853,6 @@ const MessagesPage: React.FC = () => {
         }}
         currentUser={user || undefined}
       />
-
-      {/* 好友管理模态框 */}
-      {showFriendsList && (
-        <FriendsList
-          currentUser={user || undefined}
-          onStartPrivateChat={handleStartPrivateChat}
-          onClose={() => setShowFriendsList(false)}
-        />
-      )}
     </div>
   );
 };

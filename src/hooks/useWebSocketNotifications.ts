@@ -307,16 +307,30 @@ export const useWebSocketNotifications = ({
               let toastMessage = '';
               switch (channelType) {
                 case 'pm':
-                  toastMessage = '发送了一条私聊消息';
+                  // 显示实际的消息内容
+                  const messageContent = data.details?.title as string;
+                  if (messageContent && messageContent.length > 0 && messageContent !== '来自用户') {
+                    // 如果消息被截断，显示提示
+                    if (messageContent.length >= 36) {
+                      toastMessage = `${messageContent}... (可能有更多内容)`;
+                    } else {
+                      toastMessage = messageContent;
+                    }
+                  } else {
+                    toastMessage = '发送了一条私聊消息';
+                  }
                   break;
                 case 'team':
-                  toastMessage = '在团队频道发送了消息';
+                  const teamMessage = data.details?.title as string;
+                  toastMessage = teamMessage || '在团队频道发送了消息';
                   break;
                 case 'public':
-                  toastMessage = '在公共频道发送了消息';
+                  const publicMessage = data.details?.title as string;
+                  toastMessage = publicMessage || '在公共频道发送了消息';
                   break;
                 default:
-                  toastMessage = '发送了一条消息';
+                  const generalMessage = data.details?.title as string;
+                  toastMessage = generalMessage || '发送了一条消息';
                   break;
               }
               

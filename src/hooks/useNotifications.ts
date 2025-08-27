@@ -256,51 +256,73 @@ export const useNotifications = (isAuthenticated: boolean, currentUser?: User | 
   }, []);
 
   // 根据 object_id 和 object_type 删除相关通知
-  const removeNotificationByObject = useCallback((objectId: string, objectType: string) => {
+  const removeNotificationByObject = useCallback(async (objectId: string, objectType: string) => {
     console.log(`准备删除通知: objectId=${objectId}, objectType=${objectType}`);
     
-    setNotifications(prev => {
-      const notificationsToRemove = prev.filter(n => 
+    try {
+      // 找到匹配的通知
+      const notificationsToRemove = notifications.filter(n => 
         n.object_id === objectId && n.object_type === objectType
       );
       
       console.log(`找到 ${notificationsToRemove.length} 个匹配的通知需要删除:`, notificationsToRemove.map(n => n.id));
       
-      // 更新未读数量
-      const unreadNotificationsToRemove = notificationsToRemove.filter(n => !n.is_read);
-      console.log(`其中 ${unreadNotificationsToRemove.length} 个是未读通知`);
-      
-      if (unreadNotificationsToRemove.length > 0) {
-        setUnreadCount(prevCount => {
-          const newCount = { ...prevCount };
-          console.log(`删除前未读计数:`, prevCount);
-          
-          unreadNotificationsToRemove.forEach(notification => {
-            switch (notification.name) {
-              case 'team_application_store':
-              case 'team_application_accept':
-              case 'team_application_reject':
-                newCount.team_requests = Math.max(0, newCount.team_requests - 1);
-                console.log(`减少团队请求计数，当前: ${newCount.team_requests}`);
-                break;
-              case 'channel_message':
-                newCount.private_messages = Math.max(0, newCount.private_messages - 1);
-                console.log(`减少私聊消息计数，当前: ${newCount.private_messages}`);
-                break;
-            }
-          });
-          
-          newCount.total = newCount.team_requests + newCount.private_messages + newCount.friend_requests;
-          console.log(`删除后未读计数:`, newCount);
-          return newCount;
-        });
+      if (notificationsToRemove.length === 0) {
+        console.log('没有找到匹配的通知，跳过删除');
+        return;
       }
       
-      const remainingNotifications = prev.filter(n => !(n.object_id === objectId && n.object_type === objectType));
-      console.log(`删除后剩余通知数量: ${remainingNotifications.length}`);
-      return remainingNotifications;
-    });
-  }, []);
+      // 调用API批量标记为已读
+      await notificationsAPI.markMultipleAsRead([{
+        object_id: parseInt(objectId),
+        object_type: parseInt(objectType)
+      }]);
+      
+      // 更新本地状态
+      setNotifications(prev => {
+        const unreadNotificationsToRemove = notificationsToRemove.filter(n => !n.is_read);
+        console.log(`其中 ${unreadNotificationsToRemove.length} 个是未读通知`);
+        
+        if (unreadNotificationsToRemove.length > 0) {
+          setUnreadCount(prevCount => {
+            const newCount = { ...prevCount };
+            console.log(`删除前未读计数:`, prevCount);
+            
+            unreadNotificationsToRemove.forEach(notification => {
+              switch (notification.name) {
+                case 'team_application_store':
+                case 'team_application_accept':
+                case 'team_application_reject':
+                  newCount.team_requests = Math.max(0, newCount.team_requests - 1);
+                  console.log(`减少团队请求计数，当前: ${newCount.team_requests}`);
+                  break;
+                case 'channel_message':
+                  newCount.private_messages = Math.max(0, newCount.private_messages - 1);
+                  console.log(`减少私聊消息计数，当前: ${newCount.private_messages}`);
+                  break;
+              }
+            });
+            
+            newCount.total = newCount.team_requests + newCount.private_messages + newCount.friend_requests;
+            console.log(`删除后未读计数:`, newCount);
+            return newCount;
+          });
+        }
+        
+        // 将匹配的通知标记为已读，而不是删除
+        const updatedNotifications = prev.map(n => 
+          (n.object_id === objectId && n.object_type === objectType) 
+            ? { ...n, is_read: true } 
+            : n
+        );
+        
+        console.log(`标记后通知数量: ${updatedNotifications.length}`);
+        return updatedNotifications;
+      });
+    } catch (error) {
+      console.error('批量标记通知已读失败:', error);
+    }
+  }, [notifications]);
 
   return {
     unreadCount,
