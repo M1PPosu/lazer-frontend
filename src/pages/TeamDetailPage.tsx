@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiArrowLeft, FiLoader, FiUsers, FiCalendar, FiAward, FiExternalLink } from 'react-icons/fi';
+import { FiArrowLeft, FiLoader, FiUsers, FiCalendar, FiAward } from 'react-icons/fi';
 import { teamsAPI, handleApiError } from '../utils/api';
-import UserRankingCard from '../components/Rankings/UserRankingCard';
+import TeamDetailUserCard from '../components/Rankings/TeamDetailUserCard';
 import type { TeamDetailResponse, User } from '../types';
 
 const TeamDetailPage: React.FC = () => {
@@ -42,6 +42,11 @@ const TeamDetailPage: React.FC = () => {
     return teamDetail.members.find(member => member.id === teamDetail.team.leader_id);
   };
 
+  const getNonLeaderMembers = () => {
+    if (!teamDetail) return [];
+    return teamDetail.members.filter(member => member.id !== teamDetail.team.leader_id);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -78,6 +83,7 @@ const TeamDetailPage: React.FC = () => {
 
   const { team, members } = teamDetail;
   const leader = getLeader();
+  const nonLeaderMembers = getNonLeaderMembers();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -94,7 +100,7 @@ const TeamDetailPage: React.FC = () => {
         </div>
 
         {/* 战队头部信息 */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
+        <div className="-mx-4 sm:mx-0 sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 overflow-hidden mb-8">
           {/* 封面图片 */}
           <div className="relative h-32 sm:h-48 bg-gradient-to-r from-blue-500 to-purple-600">
             <img
@@ -109,10 +115,10 @@ const TeamDetailPage: React.FC = () => {
           </div>
 
           {/* 战队信息 */}
-          <div className="relative px-6 py-6">
+          <div className="relative px-4 sm:px-6 py-6 sm:bg-white sm:dark:bg-gray-800">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              {/* 战队旗帜 */}
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-4 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-700 flex-shrink-0 -mt-12 sm:-mt-16">
+              {/* 战队旗帜 - 2:1 比例 (240:120) */}
+              <div className="w-32 h-16 sm:w-40 sm:h-20 rounded-xl overflow-hidden border-4 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-700 flex-shrink-0 -mt-12 sm:-mt-16">
                 <img
                   src={team.flag_url}
                   alt={`${team.name} flag`}
@@ -137,7 +143,7 @@ const TeamDetailPage: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-1">
                       <FiCalendar className="w-4 h-4" />
                       <span>创建于 {formatDate(team.created_at)}</span>
@@ -155,19 +161,18 @@ const TeamDetailPage: React.FC = () => {
 
         {/* 队长信息 */}
         {leader && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 sm:p-6 mb-8">
+            <div className="flex items-center gap-3 mb-4 px-4 sm:px-0">
               <FiAward className="w-5 h-5 text-yellow-500" />
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">队长</h2>
             </div>
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-              <UserRankingCard
+            <div className="-mx-4 sm:-mx-6 sm:border sm:border-gray-200 sm:dark:border-gray-700 overflow-hidden">
+              <TeamDetailUserCard
                 ranking={{
                   user: leader,
                   ranked_score: leader.statistics?.ranked_score,
                   pp: leader.statistics?.pp
                 }}
-                rank={0}
                 selectedMode="osu"
                 rankingType="performance"
               />
@@ -176,40 +181,33 @@ const TeamDetailPage: React.FC = () => {
         )}
 
         {/* 团队成员 */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <FiUsers className="w-5 h-5 text-blue-500" />
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">团队成员</h2>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              ({members.length} 人)
-            </span>
-          </div>
+        {nonLeaderMembers.length > 0 && (
+          <div className="sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 sm:p-6">
+            <div className="flex items-center gap-3 mb-6 px-4 sm:px-0">
+              <FiUsers className="w-5 h-5 text-blue-500" />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">团队成员</h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                ({nonLeaderMembers.length} 人)
+              </span>
+            </div>
 
-          <div className="divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-            {members.map((member: User, index: number) => (
-              <div key={member.id} className="relative">
-                <UserRankingCard
-                  ranking={{
-                    user: member,
-                    ranked_score: member.statistics?.ranked_score,
-                    pp: member.statistics?.pp
-                  }}
-                  rank={index + 1}
-                  selectedMode="osu"
-                  rankingType="performance"
-                />
-                {member.id === team.leader_id && (
-                  <div className="absolute top-4 right-4 sm:right-6">
-                    <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-md text-xs font-medium">
-                      <FiAward className="w-3 h-3" />
-                      队长
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+            <div className="-mx-4 sm:-mx-6 sm:divide-y divide-gray-200 dark:divide-gray-700 sm:border sm:border-gray-200 sm:dark:border-gray-700 overflow-hidden">
+              {nonLeaderMembers.map((member: User, index: number) => (
+                <div key={member.id}>
+                  <TeamDetailUserCard
+                    ranking={{
+                      user: member,
+                      ranked_score: member.statistics?.ranked_score,
+                      pp: member.statistics?.pp
+                    }}
+                    selectedMode="osu"
+                    rankingType="performance"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
