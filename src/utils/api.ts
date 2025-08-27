@@ -318,7 +318,7 @@ export const friendsAPI = {
   checkRelationship: async (targetUserId: number) => {
     try {
       // 使用新的专用 API 端点来获取关系状态
-      const response = await api.get(`/api/v2/relationship/check/${targetUserId}`);
+      const response = await api.get(`/api/private/relationship/check/${targetUserId}`);
       return response.data;
     } catch (error) {
       console.error('检查用户关系失败:', error);
@@ -348,19 +348,21 @@ export const friendsAPI = {
           followsMe = false;
         }
         
+        // 返回与新 API 格式一致的字段
         return {
-          isFriend,
-          isBlocked,
-          isMutual,
-          followsMe
+          is_following: isFriend,   // 我是否关注对方
+          isBlocked: isBlocked,     // 是否屏蔽
+          mutual: isMutual,         // 是否互相关注
+          is_followed: followsMe    // 对方是否关注我
         };
       } catch (fallbackError) {
         console.error('备用方法也失败:', fallbackError);
+        // 返回与新 API 格式一致的默认值
         return {
-          isFriend: false,
-          isBlocked: false,
-          isMutual: false,
-          followsMe: false
+          is_following: false,  // 我是否关注对方
+          isBlocked: false,     // 是否屏蔽
+          mutual: false,        // 是否互相关注
+          is_followed: false    // 对方是否关注我
         };
       }
     }
@@ -415,6 +417,78 @@ export const rankingsAPI = {
     const response = await api.get(`/api/v2/rankings/${ruleset}/country?${params}`);
     return response.data;
   },
+
+  // 获取战队排行榜
+  getTeamRankings: async (
+    ruleset: string, 
+    sort: 'performance' | 'score', 
+    page: number = 1
+  ) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    
+    const response = await api.get(`/api/v2/rankings/${ruleset}/team/${sort}?${params}`);
+    return response.data;
+  },
+};
+
+// Teams API functions
+export const teamsAPI = {
+  // 获取战队详情
+  getTeam: async (teamId: number) => {
+    const response = await api.get(`/api/private/team/${teamId}`);
+    return response.data;
+  },
+
+  // 创建战队
+  createTeam: async (teamData: FormData) => {
+    const response = await api.post('/api/private/team', teamData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // 修改战队
+  updateTeam: async (teamId: number, teamData: FormData) => {
+    const response = await api.patch(`/api/private/team/${teamId}`, teamData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // 删除战队
+  deleteTeam: async (teamId: number) => {
+    const response = await api.delete(`/api/private/team/${teamId}`);
+    return response.data;
+  },
+
+  // 请求加入战队
+  requestJoinTeam: async (teamId: number) => {
+    const response = await api.post(`/api/private/team/${teamId}/request`);
+    return response.data;
+  },
+
+  // 接受加入请求
+  acceptJoinRequest: async (teamId: number, userId: number) => {
+    const response = await api.post(`/api/private/team/${teamId}/${userId}/request`);
+    return response.data;
+  },
+
+  // 拒绝加入请求
+  rejectJoinRequest: async (teamId: number, userId: number) => {
+    const response = await api.delete(`/api/private/team/${teamId}/${userId}/request`);
+    return response.data;
+  },
+
+  // 踢出成员 / 退出战队
+  removeMember: async (teamId: number, userId: number) => {
+    const response = await api.delete(`/api/private/team/${teamId}/${userId}`);
+    return response.data;
+  },
 };
 
 // Stats API functions
@@ -429,6 +503,33 @@ export const statsAPI = {
   getOnlineHistory: async () => {
     const response = await api.get('/api/v2/stats/history');
     return response.data;
+  },
+};
+
+// Notifications API functions (待实现)
+export const notificationsAPI = {
+  // 获取通知列表
+  getNotifications: async () => {
+    // TODO: 实现通知获取功能
+    // const response = await api.get('/api/private/notifications');
+    // return response.data;
+    throw new Error('通知API尚未实现');
+  },
+
+  // 标记通知为已读
+  markAsRead: async (notificationId: number) => {
+    // TODO: 实现标记已读功能
+    // const response = await api.patch(`/api/private/notifications/${notificationId}/read`);
+    // return response.data;
+    throw new Error('通知API尚未实现');
+  },
+
+  // 获取未读通知数量
+  getUnreadCount: async () => {
+    // TODO: 实现未读数量获取功能
+    // const response = await api.get('/api/private/notifications/unread-count');
+    // return response.data;
+    throw new Error('通知API尚未实现');
   },
 };
 

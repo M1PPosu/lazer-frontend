@@ -102,14 +102,14 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
             onChange={handleInputChange}
             onFocus={() => setIsOpen(true)}
             placeholder={placeholder}
-            className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 pr-10 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm min-h-[44px] sm:min-h-[48px] focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-sm sm:text-base"
           />
           
           {/* 国旗显示 */}
           {selectedCountry && (
             <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
               <img
-                src={`https://flagcdn.com/20x15/${selectedCountry.code.toLowerCase()}.png`}
+                src={`/image/flag/${selectedCountry.code.toLowerCase()}.svg`}
                 alt={selectedCountry.code}
                 className="w-5 h-4 rounded-sm"
                 title={selectedCountry.name}
@@ -133,7 +133,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
         {value && (
           <button
             onClick={handleClear}
-            className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-500 text-white rounded-lg sm:rounded-xl hover:bg-gray-600 transition-colors shadow-sm font-medium text-sm sm:text-base min-h-[44px] sm:min-h-[48px] flex items-center justify-center"
           >
             清除
           </button>
@@ -142,7 +142,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
 
       {/* 下拉列表 */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl shadow-lg max-h-60 overflow-y-auto">
           {filteredCountries.length > 0 ? (
             filteredCountries.map((country) => (
               <button
@@ -151,7 +151,7 @@ const CountrySelect: React.FC<CountrySelectProps> = ({
                 className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 focus:bg-gray-100 dark:focus:bg-gray-600 focus:outline-none flex items-center gap-3"
               >
                 <img
-                  src={`https://flagcdn.com/20x15/${country.code.toLowerCase()}.png`}
+                  src={`/image/flag/${country.code.toLowerCase()}.svg`}
                   alt={country.code}
                   className="w-5 h-4 rounded-sm"
                 />

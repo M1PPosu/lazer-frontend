@@ -130,29 +130,31 @@ const RankingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* 页面标题 */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
             排行榜
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
             查看全球顶尖玩家和国家的表现
           </p>
         </div>
 
-        {/* 游戏模式选择 */}
-        <div className="mb-6">
-          <div className="flex justify-center" ref={modeSelectRef}>
-            <div className="flex gap-2 bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700">
+        {/* 控制面板：模式选择 + 标签页和筛选选项 */}
+        <div className="flex flex-col xl:flex-row xl:items-center gap-4 sm:gap-6 mb-4 sm:mb-6">
+          
+          {/* 游戏模式选择 */}
+          <div className="flex justify-start" ref={modeSelectRef}>
+            <div className="inline-flex gap-1 sm:gap-2 bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-sm border border-gray-200 dark:border-gray-700 min-h-[44px] sm:min-h-[48px] items-center">
               {(Object.keys(GAME_MODE_GROUPS) as MainGameMode[]).map((mainMode) => (
                 <div key={mainMode} className="relative">
                   <button
                     onClick={() => handleMainModeChange(mainMode)}
-                    className={`relative p-3 rounded-lg transition-all duration-200 focus:outline-none ${
+                    className={`relative px-3 py-2 sm:px-4 sm:py-2.5 rounded-md sm:rounded-lg transition-all duration-200 focus:outline-none flex items-center justify-center min-h-[32px] sm:min-h-[36px] ${
                       selectedMainMode === mainMode
-                        ? 'scale-105 shadow-md'
-                        : 'hover:scale-102 opacity-70 hover:opacity-100'
+                        ? 'shadow-sm sm:shadow-md'
+                        : 'opacity-70 hover:opacity-100'
                     }`}
                     data-tooltip-id={`main-mode-${mainMode}`}
                     data-tooltip-content={mainMode === 'osu' ? 'osu!' : 
@@ -161,7 +163,7 @@ const RankingsPage: React.FC = () => {
                                         'osu!mania'}
                   >
                     <div
-                      className="absolute inset-0 rounded-lg transition-all duration-200"
+                      className="absolute inset-0 rounded-md sm:rounded-lg transition-all duration-200"
                       style={{
                         background: selectedMainMode === mainMode
                           ? `linear-gradient(135deg, ${GAME_MODE_COLORS[GAME_MODE_GROUPS[mainMode][0]]} 0%, ${GAME_MODE_COLORS[GAME_MODE_GROUPS[mainMode][0]]}CC 100%)`
@@ -169,7 +171,7 @@ const RankingsPage: React.FC = () => {
                       }}
                     />
                     <i
-                      className={`${MAIN_MODE_ICONS[mainMode]} relative z-10 text-2xl transition-colors duration-200`}
+                      className={`${MAIN_MODE_ICONS[mainMode]} relative z-10 text-xl sm:text-2xl transition-colors duration-200`}
                       style={{
                         color: selectedMainMode === mainMode ? '#fff' : 'var(--text-primary)'
                       }}
@@ -178,12 +180,12 @@ const RankingsPage: React.FC = () => {
 
                   {/* 子模式弹出选项 */}
                   {showSubModes === mainMode && (
-                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-2 min-w-32 shadow-xl z-30">
+                    <div className="absolute top-full mt-1 sm:mt-2 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl p-1.5 sm:p-2 min-w-28 sm:min-w-32 shadow-lg sm:shadow-xl z-30">
                       {GAME_MODE_GROUPS[mainMode].map((mode) => (
                         <button
                           key={mode}
                           onClick={() => handleSubModeSelect(mode)}
-                          className={`w-full text-left px-3 py-2 rounded-lg font-medium transition-all duration-200 text-sm block ${
+                          className={`w-full text-left px-2 sm:px-3 py-1.5 sm:py-2 rounded-md sm:rounded-lg font-medium transition-all duration-200 text-xs sm:text-sm block ${
                             selectedMode === mode
                               ? 'text-white shadow-sm'
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -213,29 +215,28 @@ const RankingsPage: React.FC = () => {
               />
             ))}
           </div>
-        </div>
 
-        {/* 标签页和筛选选项 */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-6">
+          {/* 标签页和筛选选项 */}
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 sm:gap-4 xl:flex-1">
           {/* 标签页切换 */}
           <div className="flex-1">
-            <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <div className="inline-flex bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-sm border border-gray-200 dark:border-gray-700 min-h-[44px] sm:min-h-[48px] items-center">
               <button
                 onClick={() => setSelectedTab('users')}
-                className={`px-6 py-2.5 rounded-lg font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-md sm:rounded-lg font-medium transition-colors text-sm sm:text-base ${
                   selectedTab === 'users'
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
               >
                 用户排行榜
               </button>
               <button
                 onClick={() => setSelectedTab('countries')}
-                className={`px-6 py-2.5 rounded-lg font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-md sm:rounded-lg font-medium transition-colors text-sm sm:text-base ${
                   selectedTab === 'countries'
-                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
               >
                 国家排行榜
@@ -245,19 +246,19 @@ const RankingsPage: React.FC = () => {
 
           {/* 用户排行榜的筛选选项 */}
           {selectedTab === 'users' && (
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <select
                 value={rankingType}
                 onChange={(e) => setRankingType(e.target.value as RankingType)}
-                className="px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg 
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+                className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl
+                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm min-h-[44px] sm:min-h-[48px]
+                         focus:ring-2 focus:ring-osu-pink focus:border-transparent font-medium text-sm sm:text-base"
               >
                 <option value="performance">表现分数 (pp)</option>
                 <option value="score">总分</option>
               </select>
 
-              <div className="w-64">
+              <div className="w-full sm:w-64">
                 <CountrySelect
                   value={selectedCountry}
                   onChange={setSelectedCountry}
@@ -266,12 +267,13 @@ const RankingsPage: React.FC = () => {
               </div>
             </div>
           )}
+          </div>
         </div>
 
         {/* 排行榜内容 */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="-mx-4 sm:mx-0 sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 sm:p-6">
           {isLoading ? (
-            <div className="flex items-center justify-center py-16">
+            <div className="flex items-center justify-center py-16 px-4 sm:px-0">
               <div className="text-center">
                 <FiLoader className="animate-spin h-12 w-12 text-blue-500 mx-auto mb-4" />
                 <p className="text-gray-500 dark:text-gray-400 font-medium">加载排行榜数据中...</p>

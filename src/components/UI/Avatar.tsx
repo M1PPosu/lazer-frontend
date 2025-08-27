@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FiCamera } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import { userAPI } from '../../utils/api';
+import AvatarUpload from './AvatarUpload';
+import { useAuth } from '../../contexts/AuthContext';
 
-// 开发环境调试工具
 const debugLog = (message: string, data?: unknown) => {
-  if (import.meta.env.DEV) {
-    console.log(message, data);
-  }
+  if (import.meta.env.DEV) console.log(message, data);
 };
 
 interface AvatarProps {
@@ -14,99 +15,267 @@ interface AvatarProps {
   avatarUrl?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
+  shape?: 'circle' | 'rounded';
+  isCurrentUser?: boolean;
+  currentUserId?: number;
+  editable?: boolean;
+  showUploadHint?: boolean;
+  onAvatarUpdate?: (newAvatarUrl: string) => void;
 }
 
-const Avatar: React.FC<AvatarProps> = ({ 
-  userId, 
-  username, 
-  avatarUrl, 
-  size = 'md', 
-  className = '' 
+/** 关键点一：把图片独立成 memo 组件，避免 hover 状态变更导致重新渲染 */
+const ImageBlock = React.memo(function ImageBlock({
+  src,
+  alt,
+  radiusClass,
+  isLoading,
+  onLoad,
+  onError,
+}: {
+  src: string;
+  alt: string;
+  radiusClass: string;
+  isLoading: boolean;
+  onLoad: () => void;
+  onError: () => void;
+}) {
+  return (
+    <div className="relative w-full h-full" style={{ transform: 'translateZ(0)' }}>
+      {isLoading && (
+        <div className={`absolute inset-0 bg-gray-300 dark:bg-gray-700 animate-pulse ${radiusClass}`} />
+      )}
+      <img
+        /** 关键点二：不给 <img> 设置任何会触发重算的 key；hover 时 props 不变、就不会重建节点 */
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        className={`block w-full h-full object-cover transition-opacity duration-200 ${
+          isLoading ? 'opacity-0' : 'opacity-100'
+        } ${radiusClass} will-change-[opacity]`}
+        onLoad={onLoad}
+        onError={onError}
+        draggable={false}
+        style={{ pointerEvents: 'none', backfaceVisibility: 'hidden' }}
+      />
+    </div>
+  );
+});
+
+const Avatar: React.FC<AvatarProps> = ({
+  userId,
+  username,
+  avatarUrl,
+  size = 'md',
+  className = '',
+  shape = 'rounded',
+  isCurrentUser = false,
+  currentUserId,
+  editable = false,
+  showUploadHint = true,
+  onAvatarUpdate,
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const { user: currentUser } = useAuth()
 
-  // 尺寸映射 - 更精确的尺寸定义
+  const isSelf = currentUser && userId && currentUser.id === userId;
+
+  //const shouldShowUpload = Boolean(editable || isSelf);
+
   const sizeClasses = {
     sm: 'w-8 h-8 min-w-8 min-h-8 text-sm',
     md: 'w-12 h-12 min-w-12 min-h-12 text-base',
     lg: 'w-16 h-16 min-w-16 min-h-16 text-lg',
     xl: 'w-24 h-24 min-w-24 min-h-24 text-xl',
     '2xl': 'w-32 h-32 min-w-32 min-h-32 text-2xl',
-  };
+  } as const;
 
-  // 当参数变化时，重置状态并设置新的图片URL
+  const hoverOverlaySizes = {
+    sm: 'text-xs',
+    md: 'text-sm',
+    lg: 'text-base',
+    xl: 'text-lg',
+    '2xl': 'text-xl',
+  } as const;
+
+  const radius = shape === 'circle' ? 'rounded-full' : 'rounded-2xl';
+  const shouldShowUpload = Boolean(editable || isSelf);
+
   useEffect(() => {
-    // 获取头像URL的优先级：
-    // 1. 用户提供的avatarUrl（如果存在且不为空）
-    // 2. 通过userId构建的API头像URL
-    // 3. 默认头像 /default.jpg
+    debugLog('Avatar组件状态:', {
+      shouldShowUpload,
+      editable,
+      isCurrentUser,
+      currentUserId,
+      userId,
+      username,
+    });
+  }, [shouldShowUpload, editable, isCurrentUser, currentUserId, userId, username]);
+
+  useEffect(() => {
     const getImageUrl = () => {
       debugLog('Avatar getImageUrl - avatarUrl:', { avatarUrl, userId, username });
-      if (avatarUrl && avatarUrl.trim() !== '') {
-        debugLog('使用提供的 avatarUrl:', avatarUrl);
-        return avatarUrl;
-      }
-      if (userId) {
-        const apiUrl = userAPI.getAvatarUrl(userId);
-        debugLog('使用 API 构建的头像 URL:', apiUrl);
-        return apiUrl;
-      }
-      debugLog('使用默认头像');
-      return '/default.jpg'; // 使用默认头像
+      if (avatarUrl && avatarUrl.trim() !== '') return avatarUrl;
+      if (userId) return userAPI.getAvatarUrl(userId);
+      return '/default.jpg';
     };
-
     setImageError(false);
     setIsLoading(true);
-    const newUrl = getImageUrl();
-    debugLog('Avatar 设置新的图片 URL:', newUrl);
-    setCurrentImageUrl(newUrl);
+    setCurrentImageUrl(getImageUrl());
   }, [userId, username, avatarUrl]);
 
   const shouldShowImage = currentImageUrl && !imageError;
-  const fallbackLetter = username.charAt(0).toUpperCase();
+  const fallbackLetter = (username || '?').charAt(0).toUpperCase();
 
   const handleImageLoad = () => {
+    debugLog('图片加载成功:', currentImageUrl);
     setIsLoading(false);
   };
 
   const handleImageError = () => {
-    // 如果当前不是默认头像，尝试使用默认头像
+    debugLog('图片加载失败:', currentImageUrl);
     if (currentImageUrl !== '/default.jpg') {
+      debugLog('尝试加载默认图片');
       setCurrentImageUrl('/default.jpg');
       setImageError(false);
       setIsLoading(true);
     } else {
-      // 如果默认头像也加载失败，则显示字母头像
+      debugLog('默认图片也加载失败，显示字母');
       setImageError(true);
       setIsLoading(false);
     }
   };
 
+  const handleUploadSuccess = (newAvatarUrl: string) => {
+    debugLog('Avatar upload success:', newAvatarUrl);
+    setCurrentImageUrl(newAvatarUrl);
+    setImageError(false);
+    setIsLoading(false);
+    onAvatarUpdate?.(newAvatarUrl);
+  };
+
+  const handleAvatarClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    debugLog('Avatar点击事件触发', {
+      shouldShowUpload,
+      editable,
+      isCurrentUser,
+      currentUserId,
+      userId,
+    });
+    if (shouldShowUpload) {
+      setShowUploadModal(true);
+    }
+  };
+
+  /** 关键点三：overlay 的内容用 useMemo（避免重复创建），并用 framer-motion 控制显隐动画 */
+  const Overlay = useMemo(
+    () => (
+      <AnimatePresence initial={false}>
+        {shouldShowUpload && isHovering && (
+          <motion.div
+            key="overlay"
+            className={`absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center ${radius} z-10 will-change-[opacity,transform]`}
+            /** 不抢事件，让容器来处理点击/hover */
+            style={{ pointerEvents: 'none' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'easeInOut' }}
+          >
+            <FiCamera
+              className={`${size === 'sm' || size === 'md' ? 'w-4 h-4' : 'w-6 h-6'} text-white mb-1`}
+            />
+            {showUploadHint && (size === 'lg' || size === 'xl' || size === '2xl') && (
+              <span className={`text-white text-xs ${hoverOverlaySizes[size]} text-center px-1 leading-tight`}>
+                点击上传
+              </span>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    ),
+    [shouldShowUpload, isHovering, radius, size, showUploadHint]
+  );
+
   return (
-    <div className={`${sizeClasses[size]} rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200 dark:border-gray-600 shadow-md ${className}`}>
-      {shouldShowImage ? (
-        <div className="relative w-full h-full">
-          {isLoading && (
-            <div className="absolute inset-0 bg-gray-300 dark:bg-gray-600 animate-pulse rounded-full" />
-          )}
-          <img
+    <>
+      <div
+        className={[
+          sizeClasses[size],
+          radius,
+          'overflow-hidden flex-shrink-0 shadow-md relative',
+          shouldShowUpload ? 'cursor-pointer hover:shadow-lg transition-all duration-200 select-none' : '',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        style={{ display: 'inline-block', transform: 'translateZ(0)' }} // 关键点四：强制合成层，减少抖动
+        onClick={shouldShowUpload ? handleAvatarClick : undefined}
+        onMouseEnter={
+          shouldShowUpload
+            ? () => {
+                debugLog('鼠标进入头像区域');
+                setIsHovering(true);
+              }
+            : undefined
+        }
+        onMouseLeave={
+          shouldShowUpload
+            ? () => {
+                debugLog('鼠标离开头像区域');
+                setIsHovering(false);
+              }
+            : undefined
+        }
+        title={shouldShowUpload ? '点击上传头像' : `${username}的头像`}
+        role={shouldShowUpload ? 'button' : 'img'}
+        tabIndex={shouldShowUpload ? 0 : -1}
+        onKeyDown={
+          shouldShowUpload
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleAvatarClick(e as any);
+                }
+              }
+            : undefined
+        }
+      >
+        {/* 图片渲染与 hover 状态解耦：hover 时 ImageBlock 的 props 不变，不会重建或触发加载 */}
+        {shouldShowImage ? (
+          <ImageBlock
             src={currentImageUrl}
             alt={`${username}的头像`}
-            className={`w-full h-full object-cover transition-opacity duration-200 ${
-              isLoading ? 'opacity-0' : 'opacity-100'
-            }`}
+            radiusClass={radius}
+            isLoading={isLoading}
             onLoad={handleImageLoad}
             onError={handleImageError}
           />
-        </div>
-      ) : (
-        <div className="w-full h-full bg-gradient-to-r from-osu-pink to-osu-purple flex items-center justify-center text-white font-bold">
-          {fallbackLetter}
-        </div>
+        ) : (
+          <div className={`w-full h-full flex items-center justify-center bg-gray-400 text-white font-bold ${radius}`}>
+            {fallbackLetter}
+          </div>
+        )}
+
+        {/* 使用 framer-motion 渐隐渐现的悬浮层，不会影响 <img> 的生命周期 */}
+        {Overlay}
+      </div>
+
+      {showUploadModal && (
+        <AvatarUpload
+          userId={userId}
+          currentAvatarUrl={currentImageUrl}
+          onUploadSuccess={handleUploadSuccess}
+          onClose={() => setShowUploadModal(false)}
+        />
       )}
-    </div>
+    </>
   );
 };
 

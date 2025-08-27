@@ -13,7 +13,7 @@ interface Props {
 const UserRankingsList: React.FC<Props> = ({ rankings, currentPage, selectedMode, rankingType }) => {
   if (!rankings || !rankings.ranking.length) {
     return (
-      <div className="text-center py-20">
+      <div className="text-center py-20 px-4 sm:px-0">
         <div className="bg-gray-100 dark:bg-gray-700 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
           <FiAward className="text-4xl text-gray-400 dark:text-gray-500" />
         </div>
@@ -26,7 +26,7 @@ const UserRankingsList: React.FC<Props> = ({ rankings, currentPage, selectedMode
   const startRank = (currentPage - 1) * 50 + 1;
 
   return (
-    <div className="space-y-3">
+    <div className="divide-y divide-gray-200 dark:divide-gray-700">
       {rankings.ranking.map((ranking: UserRanking, index: number) => (
         <UserRankingCard
           key={ranking.user.id}

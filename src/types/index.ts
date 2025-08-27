@@ -35,6 +35,17 @@ export const GAME_MODE_COLORS: Record<GameMode, string> = {
   mania: '#ED8EA6',
 };
 
+// Team types
+export interface Team {
+  id: number;
+  flag_url: string;
+  created_at: string;
+  short_name: string;
+  name: string;
+  cover_url: string;
+  leader_id: number;
+}
+
 // User types
 export interface User {
   id: number;
@@ -130,7 +141,7 @@ export interface User {
     [key: string]: UserStatistics;
   };
   user_achievements: unknown[];
-  team?: unknown;
+  team?: Team;
   session_verified: boolean;
   daily_challenge_user_stats?: {
     daily_streak_best: number;
@@ -271,7 +282,29 @@ export interface CountryRanking {
 }
 
 export type RankingType = 'performance' | 'score';
-export type TabType = 'users' | 'countries';
+export type TabType = 'users' | 'countries' | 'teams';
+
+// Team Rankings types
+export interface TeamRankingsResponse {
+  ranking: TeamRanking[];
+  cursor?: {
+    page: number;
+  };
+  total: number;
+}
+
+export interface TeamRanking {
+  team_id: number;
+  ruleset_id: number;
+  play_count: number;
+  ranked_score: number;
+  performance: number;
+}
+
+export interface TeamDetailResponse {
+  team: Team;
+  members: User[];
+}
 
 // Server stats types
 export interface ServerStats {

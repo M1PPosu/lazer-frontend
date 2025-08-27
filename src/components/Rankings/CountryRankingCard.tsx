@@ -1,5 +1,6 @@
 import React from 'react';
 import RankBadge from '../UI/RankBadge';
+import LazyFlag from '../UI/LazyFlag';
 import { GAME_MODE_COLORS } from '../../types';
 import type { CountryRanking, GameMode } from '../../types';
 
@@ -14,37 +15,39 @@ const CountryRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode }) =>
 
   return (
     <div
-      className={`group relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-200 ${isTopThree ? 'ring-2 ring-yellow-400/20 bg-gradient-to-r from-yellow-50 to-transparent dark:from-yellow-900/10' : ''}`}
+      className={`relative overflow-hidden hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200 ${
+        isTopThree ? 'bg-gradient-to-r from-yellow-50/50 to-transparent dark:from-yellow-900/10' : ''
+      }`}
     >
-      <div className="flex items-center gap-4 p-5">
+      <div className="flex items-center gap-3 sm:gap-4 px-4 py-3">
         {/* 排名徽章 */}
         <div className="flex-shrink-0">
-          <RankBadge rank={rank} size="md" />
+          <RankBadge rank={rank} size="sm" />
         </div>
 
         {/* 国旗 */}
         <div className="flex-shrink-0">
-          <img
-            src={`https://flagcdn.com/48x36/${ranking.code.toLowerCase()}.png`}
+          <LazyFlag
+            src={`/image/flag/${ranking.code.toLowerCase()}.svg`}
             alt={ranking.code}
-            className="w-12 h-9 rounded border border-gray-200 dark:border-gray-600"
+            className="w-10 h-7 rounded border border-gray-200 dark:border-gray-600"
+            title={ranking.name}
           />
         </div>
 
         {/* 国家信息 */}
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-lg text-gray-900 dark:text-white truncate mb-1">{ranking.name}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {ranking.active_users.toLocaleString()} 活跃用户 • {ranking.play_count.toLocaleString()} 游戏次数
+          <div className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">{ranking.name}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <span>{ranking.active_users.toLocaleString()} 活跃用户 • {ranking.play_count.toLocaleString()} 次游戏</span>
           </div>
         </div>
 
         {/* 统计数据 */}
-        <div className="text-right">
-          <div className="text-xl font-bold" style={{ color: GAME_MODE_COLORS[selectedMode] }}>
+        <div className="text-right flex-shrink-0">
+          <div className="text-base sm:text-lg font-bold" style={{ color: GAME_MODE_COLORS[selectedMode] }}>
             {Math.round(ranking.performance).toLocaleString()}pp
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">总体表现</div>
         </div>
       </div>
     </div>
