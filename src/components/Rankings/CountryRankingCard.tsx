@@ -1,5 +1,6 @@
 import React from 'react';
 import RankBadge from '../UI/RankBadge';
+import LazyFlag from '../UI/LazyFlag';
 import { GAME_MODE_COLORS } from '../../types';
 import type { CountryRanking, GameMode } from '../../types';
 
@@ -26,10 +27,11 @@ const CountryRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode }) =>
 
         {/* 国旗 */}
         <div className="flex-shrink-0">
-          <img
-            src={`https://flagcdn.com/48x36/${ranking.code.toLowerCase()}.png`}
+          <LazyFlag
+            src={`/image/flag/${ranking.code.toLowerCase()}.svg`}
             alt={ranking.code}
             className="w-10 h-7 rounded border border-gray-200 dark:border-gray-600"
+            title={ranking.name}
           />
         </div>
 

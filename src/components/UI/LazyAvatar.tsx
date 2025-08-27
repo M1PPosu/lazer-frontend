@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 interface LazyAvatarProps {
-  src: string;
+  src?: string;
   alt: string;
-  fallbackSrc?: string;
+  fallback?: string;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -11,19 +11,21 @@ interface LazyAvatarProps {
 const LazyAvatar: React.FC<LazyAvatarProps> = ({
   src,
   alt,
-  fallbackSrc = '/default.jpg',
+  fallback = '/default.jpg',
   className = '',
   size = 'md'
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
-  const [imageSrc, setImageSrc] = useState<string>('');
-  const imgRef = useRef<HTMLImageElement>(null);
+  const [hasError, setHasError] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // 尺寸映射
   const sizeClasses = {
     sm: 'w-8 h-8',
-    md: 'w-12 h-12',
-    lg: 'w-16 h-16'
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12'
   };
 
   useEffect(() => {
@@ -34,53 +36,67 @@ const LazyAvatar: React.FC<LazyAvatarProps> = ({
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      {
+        threshold: 0.1,
+        rootMargin: '50px'
+      }
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
-    if (isInView && src) {
-      setImageSrc(src);
-    }
-  }, [isInView, src]);
+    if (!isInView) return;
 
-  const handleLoad = () => {
-    setIsLoaded(true);
-  };
+    // 延迟加载头像，确保排行榜内容先显示
+    const timer = setTimeout(() => {
+      if (src) {
+        const img = new Image();
+        img.onload = () => {
+          setImageSrc(src);
+          setIsLoaded(true);
+          setHasError(false);
+        };
+        img.onerror = () => {
+          setImageSrc(fallback);
+          setHasError(true);
+          setIsLoaded(true);
+        };
+        img.src = src;
+      } else {
+        setImageSrc(fallback);
+        setIsLoaded(true);
+      }
+    }, 100); // 延迟100ms加载头像
 
-  const handleError = () => {
-    setImageSrc(fallbackSrc);
-    setIsLoaded(true);
-  };
+    return () => clearTimeout(timer);
+  }, [isInView, src, fallback]);
 
   return (
     <div 
-      ref={imgRef}
-      className={`${sizeClasses[size]} rounded-full overflow-hidden relative ${className}`}
+      ref={containerRef}
+      className={`${sizeClasses[size]} ${className} relative overflow-hidden rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200`}
     >
-      {/* 占位背景 */}
-      <div className={`absolute inset-0 bg-gray-200 dark:bg-gray-700 ${isLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-1/2 h-1/2 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse" />
+      {/* 占位符背景 - 只在图片未加载时显示 */}
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+          <div className="w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse" />
         </div>
-      </div>
+      )}
       
       {/* 实际图片 */}
       {imageSrc && (
         <img
           src={imageSrc}
           alt={alt}
-          onLoad={handleLoad}
-          onError={handleError}
           className={`w-full h-full object-cover transition-opacity duration-300 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
           }`}
+          loading="lazy"
         />
       )}
     </div>

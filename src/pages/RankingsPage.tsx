@@ -141,10 +141,12 @@ const RankingsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* 游戏模式选择 */}
-        <div className="mb-4 sm:mb-6">
-          <div className="flex justify-center" ref={modeSelectRef}>
-            <div className="flex gap-1 sm:gap-2 bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-sm border border-gray-200 dark:border-gray-700">
+        {/* 控制面板：模式选择 + 标签页和筛选选项 */}
+        <div className="flex flex-col xl:flex-row xl:items-start gap-4 sm:gap-6 mb-4 sm:mb-6">
+          
+          {/* 游戏模式选择 */}
+          <div className="flex justify-start" ref={modeSelectRef}>
+            <div className="inline-flex gap-1 sm:gap-2 bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-sm border border-gray-200 dark:border-gray-700">
               {(Object.keys(GAME_MODE_GROUPS) as MainGameMode[]).map((mainMode) => (
                 <div key={mainMode} className="relative">
                   <button
@@ -213,10 +215,9 @@ const RankingsPage: React.FC = () => {
               />
             ))}
           </div>
-        </div>
 
-        {/* 标签页和筛选选项 */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+          {/* 标签页和筛选选项 */}
+          <div className="flex flex-col lg:flex-row lg:items-center gap-3 sm:gap-4 xl:flex-1">
           {/* 标签页切换 */}
           <div className="flex-1">
             <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 sm:p-1">
@@ -266,6 +267,7 @@ const RankingsPage: React.FC = () => {
               </div>
             </div>
           )}
+          </div>
         </div>
 
         {/* 排行榜内容 */}

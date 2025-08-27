@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import RankBadge from '../UI/RankBadge';
 import LazyBackgroundImage from '../UI/LazyBackgroundImage';
+import LazyAvatar from '../UI/LazyAvatar';
+import LazyFlag from '../UI/LazyFlag';
 import { GAME_MODE_COLORS } from '../../types';
 import type { UserRanking, GameMode, RankingType } from '../../types';
 
@@ -41,14 +43,15 @@ const UserRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode, ranking
             <RankBadge rank={rank} size="sm" />
           </div>
 
-          {/* 用户头像 */}
-          <Link to={`/users/${ranking.user.id}`} className="flex-shrink-0">
-            <img
-              src={ranking.user.avatar_url || '/default.jpg'}
-              alt={ranking.user.username}
-              className="w-10 h-10 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200"
-            />
-          </Link>
+                  {/* 用户头像 */}
+        <Link to={`/users/${ranking.user.id}`} className="flex-shrink-0">
+          <LazyAvatar
+            src={ranking.user.avatar_url}
+            alt={ranking.user.username}
+            size="md"
+            className="hover:border-blue-400 dark:hover:border-blue-500"
+          />
+        </Link>
 
           {/* 用户信息 */}
           <div className="flex-1 min-w-0">
@@ -59,14 +62,14 @@ const UserRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode, ranking
               {ranking.user.username}
             </Link>
             <div className="flex items-center gap-1 mt-0.5">
-              {ranking.user.country_code && (
-                <img
-                  src={`/image/flag/${ranking.user.country_code.toLowerCase()}.svg`}
-                  alt={ranking.user.country_code}
-                  className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0"
-                  title={ranking.user.country?.name || ranking.user.country_code}
-                />
-              )}
+                          {ranking.user.country_code && (
+              <LazyFlag
+                src={`/image/flag/${ranking.user.country_code.toLowerCase()}.svg`}
+                alt={ranking.user.country_code}
+                className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0"
+                title={ranking.user.country?.name || ranking.user.country_code}
+              />
+            )}
               <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
                 {ranking.user.country?.name || ranking.user.country_code}
               </span>
@@ -108,10 +111,11 @@ const UserRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode, ranking
 
         {/* 用户头像 */}
         <Link to={`/users/${ranking.user.id}`} className="flex-shrink-0">
-          <img
-            src={ranking.user.avatar_url || '/default.jpg'}
+          <LazyAvatar
+            src={ranking.user.avatar_url}
             alt={ranking.user.username}
-            className="w-10 h-10 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 transition-colors duration-200"
+            size="md"
+            className="hover:border-blue-400 dark:hover:border-blue-500"
           />
         </Link>
 
@@ -125,7 +129,7 @@ const UserRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode, ranking
           </Link>
           <div className="flex items-center gap-1 mt-0.5">
             {ranking.user.country_code && (
-              <img
+              <LazyFlag
                 src={`/image/flag/${ranking.user.country_code.toLowerCase()}.svg`}
                 alt={ranking.user.country_code}
                 className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0"
