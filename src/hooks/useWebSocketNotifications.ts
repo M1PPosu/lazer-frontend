@@ -8,7 +8,13 @@ import type {
   ChatMessage,
   User
 } from '../types';
-import toast from 'react-hot-toast';
+import { showCustomToast } from '../components/CustomToast';
+
+// 生成唯一通知 ID 的函数
+let notificationIdCounter = 0;
+const generateUniqueNotificationId = (): number => {
+  return Date.now() * 10000 + (++notificationIdCounter % 10000);
+};
 
 interface UseWebSocketNotificationsProps {
   isAuthenticated: boolean;
@@ -79,17 +85,34 @@ export const useWebSocketNotifications = ({
         if (chatEvent.data?.messages) {
           console.log('处理消息数组:', chatEvent.data.messages);
           chatEvent.data.messages.forEach(msg => {
-            console.log('发送消息到回调:', msg);
+            // 过滤自己的消息
+            if (msg.sender_id && currentUser && msg.sender_id === currentUser.id) {
+              console.log(`✓ 过滤自己的聊天消息: ${msg.message_id}, 发送者ID: ${msg.sender_id}`);
+              return;
+            }
+            console.log('发送他人消息到回调:', msg);
             onNewMessage?.(msg);
           });
         } else if ((chatEvent.data as any)?.message) {
           // 可能是单个消息而不是数组
-          console.log('处理单个消息:', (chatEvent.data as any).message);
-          onNewMessage?.((chatEvent.data as any).message as ChatMessage);
+          const msg = (chatEvent.data as any).message as ChatMessage;
+          // 过滤自己的消息
+          if (msg.sender_id && currentUser && msg.sender_id === currentUser.id) {
+            console.log(`✓ 过滤自己的单个聊天消息: ${msg.message_id}, 发送者ID: ${msg.sender_id}`);
+            return;
+          }
+          console.log('处理他人单个消息:', msg);
+          onNewMessage?.(msg);
         } else if (chatEvent.data && typeof chatEvent.data === 'object') {
           // 可能消息数据直接在data中
-          console.log('处理直接消息数据:', chatEvent.data);
-          onNewMessage?.(chatEvent.data as ChatMessage);
+          const msg = chatEvent.data as ChatMessage;
+          // 过滤自己的消息
+          if (msg.sender_id && currentUser && msg.sender_id === currentUser.id) {
+            console.log(`✓ 过滤自己的直接消息数据: ${msg.message_id}, 发送者ID: ${msg.sender_id}`);
+            return;
+          }
+          console.log('处理他人直接消息数据:', msg);
+          onNewMessage?.(msg);
         }
       }
       // 处理直接的消息格式（服务器直接发送ChatMessage格式的数据）
@@ -112,6 +135,13 @@ export const useWebSocketNotifications = ({
           sender: message.data.sender as any,
           uuid: message.data.uuid as string | undefined
         };
+        
+        // 过滤自己的消息
+        if (chatMessage.sender_id && currentUser && chatMessage.sender_id === currentUser.id) {
+          console.log(`✓ 过滤自己的直接ChatMessage: ${chatMessage.message_id}, 发送者ID: ${chatMessage.sender_id}`);
+          return;
+        }
+        
         onNewMessage?.(chatMessage);
       }
       // 如果消息本身就是ChatMessage格式（没有嵌套在data中）
@@ -132,6 +162,13 @@ export const useWebSocketNotifications = ({
           sender: (message as any).sender,
           uuid: (message as any).uuid
         };
+        
+        // 过滤自己的消息
+        if (chatMessage.sender_id && currentUser && chatMessage.sender_id === currentUser.id) {
+          console.log(`✓ 过滤自己的无嵌套消息: ${chatMessage.message_id}, 发送者ID: ${chatMessage.sender_id}`);
+          return;
+        }
+        
         onNewMessage?.(chatMessage);
       }
       
@@ -139,8 +176,14 @@ export const useWebSocketNotifications = ({
       else if (message.event === 'new_private_notification') {
         const notificationEvent = message as NotificationEvent;
         if (notificationEvent.data) {
+          // 检查是否是自己的消息，如果是则不显示通知
+          if (notificationEvent.data.source_user_id && currentUser && notificationEvent.data.source_user_id === currentUser.id) {
+            console.log(`✓ 过滤自己的私人通知: ${notificationEvent.data.source_user_id}, 当前用户ID: ${currentUser.id}`);
+            return;
+          }
+
           const notification: APINotification = {
-            id: notificationEvent.data.object_id * 1000 + Date.now() % 1000, // 更好的临时ID生成
+            id: generateUniqueNotificationId(),
             name: notificationEvent.data.name,
             created_at: new Date().toISOString(),
             object_type: notificationEvent.data.object_type,
@@ -152,10 +195,15 @@ export const useWebSocketNotifications = ({
           
           onNewNotification?.(notification);
           
-          // 显示通知提示
+          // 显示自定义通知提示
           const notificationTitle = getNotificationTitle(notification);
           if (notificationTitle) {
-            toast.success(notificationTitle);
+            showCustomToast({
+              title: notificationTitle,
+              message: '您有新的通知',
+              sourceUserId: notification.source_user_id,
+              type: 'default'
+            });
           }
         }
       }
@@ -224,7 +272,7 @@ export const useWebSocketNotifications = ({
             }
             
             const notification: APINotification = {
-              id: data.id * 1000 + Date.now() % 1000,
+              id: generateUniqueNotificationId(),
               name: notificationName,
               created_at: data.created_at || new Date().toISOString(),
               object_type: data.object_type || 'channel',
@@ -249,10 +297,35 @@ export const useWebSocketNotifications = ({
             console.log(`✓ 准备发送他人的消息通知: ${notification.id}`);
             onNewNotification?.(notification);
             
-            // 显示通知提示
+            // 显示自定义通知提示
             const notificationTitle = getNotificationTitle(notification);
             if (notificationTitle) {
-              toast.success(notificationTitle);
+              const toastType = channelType === 'pm' ? 'pm' : 
+                              channelType === 'team' ? 'team' : 
+                              channelType === 'public' ? 'public' : 'default';
+              
+              let toastMessage = '';
+              switch (channelType) {
+                case 'pm':
+                  toastMessage = '发送了一条私聊消息';
+                  break;
+                case 'team':
+                  toastMessage = '在团队频道发送了消息';
+                  break;
+                case 'public':
+                  toastMessage = '在公共频道发送了消息';
+                  break;
+                default:
+                  toastMessage = '发送了一条消息';
+                  break;
+              }
+              
+              showCustomToast({
+                title: channelType === 'pm' ? '新私聊消息' : notificationTitle,
+                message: toastMessage,
+                sourceUserId: notification.source_user_id,
+                type: toastType
+              });
             }
           }
           // 其他类型的通知
@@ -260,7 +333,7 @@ export const useWebSocketNotifications = ({
             console.log('检测到其他类型通知:', data);
             
             const notification: APINotification = {
-              id: data.id * 1000 + Date.now() % 1000,
+              id: generateUniqueNotificationId(),
               name: data.name || 'unknown',
               created_at: data.created_at || new Date().toISOString(),
               object_type: data.object_type || 'unknown',
@@ -271,12 +344,24 @@ export const useWebSocketNotifications = ({
             };
             
             console.log('创建通用通知对象:', notification);
+            
+            // 检查是否是自己的消息，如果是则不显示通知
+            if (notification.source_user_id && currentUser && notification.source_user_id === currentUser.id) {
+              console.log(`✓ 过滤自己的通用通知: ${notification.id}, 发送者ID: ${notification.source_user_id}`);
+              return;
+            }
+            
             onNewNotification?.(notification);
             
-            // 显示通用通知提示
+            // 显示自定义通用通知提示
             const notificationTitle = getNotificationTitle(notification);
             if (notificationTitle) {
-              toast.success(notificationTitle);
+              showCustomToast({
+                title: notificationTitle,
+                message: '您有新的通知',
+                sourceUserId: notification.source_user_id,
+                type: 'default'
+              });
             }
           }
         }
@@ -291,7 +376,7 @@ export const useWebSocketNotifications = ({
     } catch (error) {
       console.error('Failed to parse WebSocket message:', error);
     }
-  }, [onNewMessage, onNewNotification]);
+  }, [onNewMessage, onNewNotification, currentUser]);
 
   // 获取通知标题
   const getNotificationTitle = (notification: APINotification): string => {

@@ -1330,7 +1330,7 @@ const MessagesPage: React.FC = () => {
                       <div className="space-y-1 p-2">
                         {notifications.map((notification, index) => (
                           <div
-                            key={`notification-${notification.id}-${index}`}
+                            key={`notification-${notification.object_type}-${notification.object_id}-${notification.source_user_id || 'no-user'}-${index}`}
                             className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                           >
                             <div className="flex items-start space-x-3">
@@ -1469,7 +1469,7 @@ const MessagesPage: React.FC = () => {
                 }
                 
                 return (
-                  <div key={`message-${message.message_id}-${index}`} data-message-id={message.message_id}>
+                  <div key={`message-${message.message_id}-${message.channel_id}-${index}`} data-message-id={message.message_id}>
                     <MessageBubble
                       message={message}
                       currentUser={user || undefined}

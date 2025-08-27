@@ -31,14 +31,24 @@ export const useNotifications = (isAuthenticated: boolean, currentUser?: User | 
     console.log('✓ 处理他人的消息通知:', notification.id);
 
     setNotifications(prev => {
-      // 使用 object_id 和 object_type 进行去重
-      const isDuplicate = prev.some(n => 
-        n.id === notification.id || 
-        (n.object_id === notification.object_id && n.object_type === notification.object_type)
-      );
+      // 改进的去重逻辑：基于 object_id, object_type 和 source_user_id 进行去重
+      const isDuplicate = prev.some(n => {
+        // 如果 ID 完全相同
+        if (n.id === notification.id) return true;
+        
+        // 如果是相同类型的通知，具有相同的对象和发送者
+        if (n.object_id === notification.object_id && 
+            n.object_type === notification.object_type &&
+            n.name === notification.name &&
+            n.source_user_id === notification.source_user_id) {
+          return true;
+        }
+        
+        return false;
+      });
       
       if (isDuplicate) {
-        console.log('检测到重复通知，跳过添加:', notification.id, notification.object_id);
+        console.log('检测到重复通知，跳过添加:', notification.id, notification.object_id, notification.name);
         return prev;
       }
       
