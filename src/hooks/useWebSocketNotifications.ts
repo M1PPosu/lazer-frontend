@@ -26,8 +26,11 @@ interface UseWebSocketNotificationsProps {
 // ---------------- 全局单例状态，防止重复建立多个 WebSocket 连接 ----------------
 let globalWsRef: WebSocket | null = null; // 共享连接
 let globalConnecting = false; // 连接中标记
+let globalIsConnected = false; // 全局连接状态
+let globalConnectionError: string | null = null; // 全局连接错误
 const globalMessageListeners = new Set<(m: ChatMessage) => void>();
 const globalNotificationListeners = new Set<(n: APINotification) => void>();
+const globalConnectionStateListeners = new Set<(connected: boolean, error: string | null) => void>(); // 连接状态监听器
 let globalEndpointCache: string | null = null; // 端点缓存
 
 // 分发函数
@@ -45,6 +48,11 @@ const dispatchNotification = (n: APINotification) => {
   }
   globalNotificationListeners.forEach(fn => { try { fn(n); } catch (e) { console.error('分发通知给监听器失败', e); } });
 };
+const dispatchConnectionState = (connected: boolean, error: string | null) => {
+  globalIsConnected = connected;
+  globalConnectionError = error;
+  globalConnectionStateListeners.forEach(fn => { try { fn(connected, error); } catch (e) { console.error('分发连接状态给监听器失败', e); } });
+};
 
 // 缓冲队列（在监听器尚未挂载时暂存）
 const messageBuffer: ChatMessage[] = [];
@@ -56,8 +64,8 @@ export const useWebSocketNotifications = ({
   onNewMessage,
   onNewNotification
 }: UseWebSocketNotificationsProps) => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(globalIsConnected);
+  const [connectionError, setConnectionError] = useState<string | null>(globalConnectionError);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -429,6 +437,13 @@ export const useWebSocketNotifications = ({
 
   // 注册监听器（组件层）
   useEffect(() => {
+    // 注册连接状态监听器
+    const connectionStateListener = (connected: boolean, error: string | null) => {
+      setIsConnected(connected);
+      setConnectionError(error);
+    };
+    globalConnectionStateListeners.add(connectionStateListener);
+    
     if (onNewMessage) {
       globalMessageListeners.add(onNewMessage);
     }
@@ -445,6 +460,7 @@ export const useWebSocketNotifications = ({
       notificationBuffer.splice(0).forEach(n => { try { onNewNotification(n); } catch {} });
     }
     return () => {
+      globalConnectionStateListeners.delete(connectionStateListener);
       if (onNewMessage) globalMessageListeners.delete(onNewMessage);
       if (onNewNotification) globalNotificationListeners.delete(onNewNotification);
       // 不再在每次监听器清理时立即关闭连接，避免由于组件重渲染导致的闪断。
@@ -512,7 +528,11 @@ export const useWebSocketNotifications = ({
     if (globalWsRef && (globalWsRef.readyState === WebSocket.OPEN || globalWsRef.readyState === WebSocket.CONNECTING)) {
       console.log('[WebSocket] 复用已有全局连接');
       wsRef.current = globalWsRef;
-      if (globalWsRef.readyState === WebSocket.OPEN) setIsConnected(true);
+      if (globalWsRef.readyState === WebSocket.OPEN) {
+        // 同步当前连接状态到本地状态
+        setIsConnected(globalIsConnected);
+        setConnectionError(globalConnectionError);
+      }
       return;
     }
     if (globalConnecting) {
@@ -523,17 +543,17 @@ export const useWebSocketNotifications = ({
 
     const endpoint = await getWebSocketEndpoint();
     if (!endpoint) {
-      setConnectionError('Failed to get WebSocket endpoint');
+      dispatchConnectionState(false, 'Failed to get WebSocket endpoint');
       return;
     }
 
     try {
-      setConnectionError(null);
+      dispatchConnectionState(false, null);
       
       // 构建WebSocket URL，添加认证参数
       const token = localStorage.getItem('access_token');
       if (!token) {
-        setConnectionError('No access token available');
+        dispatchConnectionState(false, 'No access token available');
         return;
       }
 
@@ -551,23 +571,20 @@ export const useWebSocketNotifications = ({
   globalWsRef = ws;
       
       ws.onopen = () => {
-  console.log('WebSocket connected (单例)');
-        setIsConnected(true);
-        setConnectionError(null);
-  reconnectAttemptsRef.current = 0;
-  globalConnecting = false;
+        console.log('WebSocket connected (单例)');
+        dispatchConnectionState(true, null);
+        reconnectAttemptsRef.current = 0;
+        globalConnecting = false;
         
         // 发送启动消息
         ws.send(JSON.stringify({
           event: 'chat.start'
         }));
-      };
-
-  ws.onmessage = handleMessage;
+      };  ws.onmessage = handleMessage;
 
       ws.onclose = (event) => {
         console.log('WebSocket disconnected (单例):', event.code, event.reason);
-        setIsConnected(false);
+        dispatchConnectionState(false, null);
         if (wsRef.current === ws) wsRef.current = null;
         if (globalWsRef === ws) globalWsRef = null;
         globalConnecting = false;
@@ -583,7 +600,7 @@ export const useWebSocketNotifications = ({
             connect();
           }, delay);
         } else {
-          setConnectionError('Connection lost and max reconnect attempts reached');
+          dispatchConnectionState(false, 'Connection lost and max reconnect attempts reached');
         }
       };
 
@@ -591,14 +608,14 @@ export const useWebSocketNotifications = ({
         console.error('WebSocket error (单例):', error);
         console.log('WebSocket URL:', wsUrl);
         console.log('Endpoint:', endpoint);
-        setConnectionError(`WebSocket connection error: ${endpoint}`);
+        dispatchConnectionState(false, `WebSocket connection error: ${endpoint}`);
       };
 
       wsRef.current = ws;
       
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error);
-      setConnectionError('Failed to create WebSocket connection');
+      dispatchConnectionState(false, 'Failed to create WebSocket connection');
       globalConnecting = false;
     }
   }, [isAuthenticated, getWebSocketEndpoint, handleMessage]);
@@ -625,8 +642,7 @@ export const useWebSocketNotifications = ({
       wsRef.current = null;
     }
     globalConnecting = false;
-    setIsConnected(false);
-    setConnectionError(null);
+    dispatchConnectionState(false, null);
     reconnectAttemptsRef.current = 0;
     
     // 清理缓存

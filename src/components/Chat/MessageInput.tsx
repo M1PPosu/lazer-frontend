@@ -23,7 +23,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+      const newHeight = Math.min(textarea.scrollHeight, 120);
+      textarea.style.height = `${newHeight}px`;
+      // 确保没有滚动条
+      textarea.style.overflowY = newHeight >= 120 ? 'auto' : 'hidden';
     }
   }, [message]);
 
@@ -36,6 +39,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
     // 重置输入框高度
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = '48px'; // 回到最小高度
+      textareaRef.current.style.overflowY = 'hidden';
     }
   };
 
@@ -61,7 +66,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
   return (
     <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-      <div className="flex items-end space-x-3">
+      <div className="flex items-start space-x-3">
         {/* 消息输入区域 */}
         <div className="flex-1 relative">
           <textarea
@@ -79,11 +84,17 @@ const MessageInput: React.FC<MessageInputProps> = ({
               resize-none text-gray-900 dark:text-white 
               placeholder-gray-500 dark:placeholder-gray-400 
               focus:outline-none focus:ring-2 focus:ring-osu-pink focus:border-transparent
-              transition-all duration-200
+              transition-all duration-200 overflow-hidden
+              [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]
               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
             rows={1}
-            style={{ minHeight: '40px', maxHeight: '100px' }}
+            style={{ 
+              minHeight: '48px', 
+              maxHeight: '120px',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
           />
           
           {/* 字符计数 */}
@@ -104,12 +115,13 @@ const MessageInput: React.FC<MessageInputProps> = ({
           onClick={handleSend}
           disabled={!message.trim() || disabled}
           className={`
-            p-2.5 rounded-lg transition-all duration-200 flex-shrink-0
+            w-12 h-12 rounded-lg transition-all duration-200 flex items-center justify-center flex-shrink-0
             ${!message.trim() || disabled
               ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
               : 'bg-osu-pink text-white hover:bg-osu-pink/90 shadow-lg shadow-osu-pink/25'
             }
           `}
+          style={{ marginTop: '0px' }}
         >
           <FiSend size={16} />
         </motion.button>

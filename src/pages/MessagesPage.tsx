@@ -800,10 +800,20 @@ const MessagesPage: React.FC = () => {
     const isOwnMessage = lastMessage.sender_id === user?.id;
     const isInitial = initialLoadRef.current;
 
-    // 首次加载：不自动滚动，之后重置标记
+    // 首次加载：滚动到底部，然后重置标记
     if (isInitial) {
       initialLoadRef.current = false;
-      return; // 不滚动
+      // 首次加载时也滚动到底部，使用 setTimeout 确保 DOM 已更新
+      setTimeout(() => {
+        const containerEl = scrollContainerRef.current || document.querySelector('#chat-message-scroll-container');
+        if (containerEl) {
+          (containerEl as HTMLElement).scrollTop = (containerEl as HTMLElement).scrollHeight;
+        } else {
+          // 备用：直接使用默认行为的 scrollIntoView（无 smooth）
+          messagesEndRef.current?.scrollIntoView();
+        }
+      }, 50); // 50ms 延迟确保 DOM 完全更新
+      return;
     }
 
     if (!userScrolledUpRef.current || nearBottom || isOwnMessage) {
