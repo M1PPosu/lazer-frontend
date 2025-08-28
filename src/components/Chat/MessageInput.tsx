@@ -22,8 +22,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = 'auto';
-      const newHeight = Math.min(textarea.scrollHeight, 120);
+      // 先重置高度以获取正确的 scrollHeight
+      textarea.style.height = '48px';
+      const newHeight = Math.min(Math.max(textarea.scrollHeight, 48), 120);
       textarea.style.height = `${newHeight}px`;
       // 确保没有滚动条
       textarea.style.overflowY = newHeight >= 120 ? 'auto' : 'hidden';
@@ -66,9 +67,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
   return (
     <div className="px-3 pt-3 pb-2 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-      <div className="flex items-start space-x-3">
+      <div className="flex items-end space-x-3">
         {/* 消息输入区域 */}
-        <div className="mb-3 flex-1 relative">
+        <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
             value={message}
@@ -121,7 +122,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
               : 'bg-osu-pink text-white hover:bg-osu-pink/90 shadow-lg shadow-osu-pink/25'
             }
           `}
-          style={{ marginTop: '0px' }}
         >
           <FiSend size={16} />
         </motion.button>

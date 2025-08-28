@@ -121,42 +121,41 @@ const MessagesPage: React.FC = () => {
   const {
     notifications,
     unreadCount,
-    isConnected: notificationConnected,
     markAsRead,
     refresh,
     removeNotificationByObject,
   } = useNotificationContext();
 
-        // 使用WebSocket处理实时消息
-      const { isConnected: chatConnected } = useWebSocketNotifications({
-        isAuthenticated,
-        currentUser: user,
-        onNewMessage: (message) => {
-          console.log('WebSocket收到消息（处理前）:', {
-            messageId: message.message_id,
-            channelId: message.channel_id,
-            senderId: message.sender_id,
-            userId: user?.id,
-            content: message.content.substring(0, 50),
-            selectedChannelId: selectedChannelRef.current?.channel_id,
-            selectedChannelName: selectedChannelRef.current?.name
-          });
-          
-          // 过滤自己的消息，不显示推送
-          if (message.sender_id === user?.id) {
-            console.log('收到自己的消息，跳过处理:', message.message_id, 'sender_id:', message.sender_id, 'user.id:', user?.id);
-            return;
-          }
-          
-          console.log('WebSocket收到消息（处理后）:', {
-            messageId: message.message_id,
-            channelId: message.channel_id,
-            senderId: message.sender_id,
-            content: message.content.substring(0, 50),
-            selectedChannelId: selectedChannelRef.current?.channel_id,
-            selectedChannelName: selectedChannelRef.current?.name
-          });
+  // 使用WebSocket处理实时消息
+  const { isConnected: chatConnected } = useWebSocketNotifications({
+    isAuthenticated,
+    currentUser: user,
+    onNewMessage: (message) => {
+      console.log('WebSocket收到消息（处理前）:', {
+        messageId: message.message_id,
+        channelId: message.channel_id,
+        senderId: message.sender_id,
+        userId: user?.id,
+        content: message.content.substring(0, 50),
+        selectedChannelId: selectedChannelRef.current?.channel_id,
+        selectedChannelName: selectedChannelRef.current?.name
+      });
       
+      // 过滤自己的消息，不显示推送
+      if (message.sender_id === user?.id) {
+        console.log('收到自己的消息，跳过处理:', message.message_id, 'sender_id:', message.sender_id, 'user.id:', user?.id);
+        return;
+      }
+      
+      console.log('WebSocket收到消息（处理后）:', {
+        messageId: message.message_id,
+        channelId: message.channel_id,
+        senderId: message.sender_id,
+        content: message.content.substring(0, 50),
+        selectedChannelId: selectedChannelRef.current?.channel_id,
+        selectedChannelName: selectedChannelRef.current?.name
+      });
+  
       // messageWithLocalTime变量在此处不再使用，因为我们直接传递原始message给addMessageToList
       
       // 检查是否应该添加到当前频道（使用ref确保获取最新状态）
@@ -1662,14 +1661,8 @@ const MessagesPage: React.FC = () => {
                   </h1>
                   {/* WebSocket连接状态 */}
                   <div className="flex items-center space-x-1">
-                    <div className={`
-                      w-2 h-2 rounded-full
-                      ${notificationConnected ? 'bg-green-500' : 'bg-red-500'}
-                    `} />
-                    <div className={`
-                      w-2 h-2 rounded-full
-                      ${chatConnected ? 'bg-green-500' : 'bg-red-500'}
-                    `} />
+                    {/* <div className={`w-2 h-2 rounded-full ${notificationConnected ? 'bg-green-500' : 'bg-red-500'}`} /> */}
+                    <div className={`w-2 h-2 rounded-full ${chatConnected ? 'bg-green-500' : 'bg-red-500'}`} />
                   </div>
                 </div>
                 {isMobile && (

@@ -8,6 +8,7 @@ interface NotificationContextValue {
   notifications: APINotification[];
   isLoading: boolean;
   isConnected: boolean;
+  chatConnected: boolean; // 添加聊天连接状态
   connectionError: string | null;
   markAsRead: (id: number) => Promise<void> | void;
   removeNotification: (id: number) => void;
@@ -34,12 +35,17 @@ export const NotificationProvider: React.FC<{ isAuthenticated: boolean; user?: U
     refresh,
   } = useNotifications(isAuthenticated, user);
 
+  // chatConnected 应该与 isConnected 相同，因为使用的是同一个 WebSocket 连接
+  // 实际上这两个值在全局单例 WebSocket 实现中应该是相同的
+  const chatConnected = isConnected;
+
   return (
     <NotificationContext.Provider value={{
       unreadCount,
       notifications,
       isLoading,
       isConnected,
+      chatConnected,
       connectionError,
       markAsRead,
       removeNotification,

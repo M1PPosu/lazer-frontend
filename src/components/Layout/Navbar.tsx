@@ -9,10 +9,6 @@ import UserDropdown from '../UI/UserDropdown';
 import Avatar from '../UI/Avatar';
 import type { NavItem } from '../../types';
 
-
-// 彩蛋
-import toast from 'react-hot-toast';
-
 // 将 NavItem 组件提取并使用 memo 优化，防止不必要的重新渲染
 const NavItem = memo<{ item: NavItem }>(({ item }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -215,13 +211,18 @@ const Navbar: React.FC = () => {
   // 通过全局通知上下文获取统一的 unreadCount
   let unreadCount = { total: 0, team_requests: 0, private_messages: 0, friend_requests: 0 } as any;
   let isConnected = false;
+  let chatConnected = false;
   try {
     const ctx = useNotificationContext();
     unreadCount = ctx.unreadCount;
     isConnected = ctx.isConnected;
+    chatConnected = ctx.chatConnected;
   } catch (e) {
     // 如果 Provider 尚未包裹，不影响其它功能
   }
+  
+  // 综合连接状态：通知和聊天都需要连接
+  const isFullyConnected = isConnected && chatConnected;
   //const location = useLocation();
 
   const navItems: NavItem[] = React.useMemo(() => [
@@ -302,12 +303,12 @@ const Navbar: React.FC = () => {
                     whileTap={{ scale: 0.9 }}
                     className={`
                       relative p-2.5 rounded-xl transition-all duration-200 group
-                      ${isConnected 
+                      ${isFullyConnected 
                         ? 'text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50' 
                         : 'text-gray-400 dark:text-gray-500'
                       }
                     `}
-                    title={isConnected ? '实时通知已连接' : '实时通知未连接'}
+                    title={isFullyConnected ? '实时通知已连接' : '实时通知未连接'}
                   >
                     <FiBell size={18} />
                     {unreadCount.total > 0 && (
@@ -322,7 +323,7 @@ const Navbar: React.FC = () => {
                     {/* WebSocket连接状态指示器 */}
                     <div className={`
                       absolute bottom-0 right-0 w-2 h-2 rounded-full
-                      ${isConnected ? 'bg-green-500' : 'bg-red-500'}
+                      ${isFullyConnected ? 'bg-green-500' : 'bg-red-500'}
                     `} />
                   </motion.button>
                 </Link>
@@ -416,7 +417,7 @@ const Navbar: React.FC = () => {
                   whileTap={{ scale: 0.9 }}
                   className={`
                     relative p-2.5 rounded-xl transition-all duration-200
-                    ${isConnected 
+                    ${isFullyConnected 
                       ? 'text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50' 
                       : 'text-gray-400 dark:text-gray-500'
                     }
@@ -435,7 +436,7 @@ const Navbar: React.FC = () => {
                   {/* WebSocket连接状态指示器 */}
                   <div className={`
                     absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full
-                    ${isConnected ? 'bg-green-500' : 'bg-red-500'}
+                    ${isFullyConnected ? 'bg-green-500' : 'bg-red-500'}
                   `} />
                 </motion.button>
               </Link>
