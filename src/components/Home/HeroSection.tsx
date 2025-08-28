@@ -104,7 +104,7 @@ const HeroSection: React.FC = () => {
             </h2>
 
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-              gsu! 是一个全新的<span className="font-bold text-pink-600 dark:text-pink-400">支持 lazer 客户端</span>的 osu! 第三方服务器。提供了 standard / taiko / catch / mania 四大模式支持，支持 RX/AP pp计算与无限制改名，让你的节奏旅程更自由。
+              g0v0! 是一个全新的<span className="font-bold text-pink-600 dark:text-pink-400">支持 lazer 客户端</span>的 osu! 第三方服务器。提供了 standard / taiko / catch / mania 四大模式支持，支持 RX/AP pp计算与无限制改名，让你的节奏旅程更自由。
             </p>
 
             {/* Server Status */}
