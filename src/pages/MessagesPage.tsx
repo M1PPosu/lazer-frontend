@@ -1958,7 +1958,7 @@ const MessagesPage: React.FC = () => {
         {selectedChannel ? (
           <>
             {/* 聊天头部 */}
-            <div className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 flex-shrink-0">
+            <div className="mt-[2px] h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 flex-shrink-0">
               <div className="flex items-center space-x-3">
                 {isMobile && (
                   <button
