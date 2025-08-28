@@ -1,29 +1,74 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, useScroll } from 'motion/react';
+import { useSpring, animated } from '@react-spring/web';
 import { useAuth } from '../../hooks/useAuth';
 import InfoCard from '../InfoCard';
 import { features } from '../../data/features';
 import { 
-  MonitorCheck, 
-  Rocket, 
-  MessageSquareHeart, 
-  Settings, 
-  Bug, 
-  GitFork, 
-  Send, 
-  ChartColumnBig 
-} from 'lucide-react';
-import { FaQq, FaDiscord, FaGithub, FaHandPeace } from 'react-icons/fa';
+  FaDesktop,
+  FaRocket, 
+  FaHeart, 
+  FaCog, 
+  FaBug, 
+  FaCodeBranch, 
+  FaPaperPlane, 
+  FaChartBar,
+  FaQq, 
+  FaDiscord, 
+  FaGithub
+} from 'react-icons/fa';
 
 const HeroSection: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(1);
+  
+  // 监听页面滚动
+  const { scrollY } = useScroll();
   
   const cardWidth = 320;
   const gap = 24;
   const totalWidth = cardWidth + gap;
   const scrollDistance = totalWidth * features.length;
+
+  // 使用 react-spring 创建滚动动画
+  const [springProps, api] = useSpring(() => ({
+    from: { x: 0 },
+    to: { x: -scrollDistance },
+    config: { 
+      duration: (features.length * 8000) / scrollSpeed
+    },
+    loop: true,
+    pause: isHovered
+  }));
+
+  // 监听滚动变化并调整速度
+  useEffect(() => {
+    const unsubscribe = scrollY.on('change', (latest) => {
+      // 根据滚动位置计算速度倍数 (1-2倍速)
+      const speedMultiplier = Math.min(1 + (latest / 2000), 2);
+      const roundedSpeed = Math.round(speedMultiplier * 10) / 10;
+      
+      if (Math.abs(roundedSpeed - scrollSpeed) > 0.1) {
+        setScrollSpeed(roundedSpeed);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [scrollY, scrollSpeed]);
+
+  // 更新动画配置当速度改变时
+  useEffect(() => {
+    api.start({
+      to: { x: -scrollDistance },
+      config: { 
+        duration: (features.length * 8000) / scrollSpeed
+      },
+      loop: true,
+      pause: isHovered
+    });
+  }, [scrollSpeed, isHovered, api, scrollDistance]);
 
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
@@ -167,31 +212,6 @@ const HeroSection: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mt-16 relative"
           >
-            {/* 添加CSS动画样式 */}
-            <style>
-              {`
-                @keyframes scroll-cards {
-                  from {
-                    transform: translateX(0);
-                  }
-                  to {
-                    transform: translateX(-${scrollDistance}px);
-                  }
-                }
-                
-                .animate-scroll {
-                  animation: scroll-cards linear infinite;
-                  animation-play-state: running;
-                }
-                
-                .animate-paused {
-                  animation: scroll-cards linear infinite;
-                  animation-play-state: paused;
-                }
-              `}
-            </style>
-            
-            
             <div 
               className="overflow-hidden cursor-pointer"
               onMouseEnter={handleMouseEnter}
@@ -201,24 +221,24 @@ const HeroSection: React.FC = () => {
                 WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)'
               }}
             >
-              <div
-                className={`flex gap-6 ${isHovered ? 'animate-paused' : 'animate-scroll'}`}
+              <animated.div
+                className="flex gap-6"
                 style={{
-                  width: `${scrollDistance * 2}px`,
-                  animationDuration: `${features.length * 8}s`
+                  ...springProps,
+                  width: `${scrollDistance * 2}px`
                 }}
               >
               {/* First set of cards */}
               {features.map((feature, index) => {
                 const icons = [
-                  <MonitorCheck key="monitor" className="h-6 w-6" />,
-                  <Rocket key="rocket" className="h-6 w-6" />,
-                  <MessageSquareHeart key="message" className="h-6 w-6" />,
-                  <Settings key="settings" className="h-6 w-6" />,
-                  <Bug key="bug" className="h-6 w-6" />,
-                  <GitFork key="git" className="h-6 w-6" />,
-                  <Send key="send" className="h-6 w-6" />,
-                  <ChartColumnBig key="chart" className="h-6 w-6" />
+                  <FaDesktop key="desktop" className="h-6 w-6" />,
+                  <FaRocket key="rocket" className="h-6 w-6" />,
+                  <FaHeart key="heart" className="h-6 w-6" />,
+                  <FaCog key="cog" className="h-6 w-6" />,
+                  <FaBug key="bug" className="h-6 w-6" />,
+                  <FaCodeBranch key="code" className="h-6 w-6" />,
+                  <FaPaperPlane key="plane" className="h-6 w-6" />,
+                  <FaChartBar key="chart" className="h-6 w-6" />
                 ];
                 
                 return (
@@ -243,14 +263,14 @@ const HeroSection: React.FC = () => {
               {/* Second set of cards for seamless loop */}
               {features.map((feature, index) => {
                 const icons = [
-                  <MonitorCheck key="monitor" className="h-6 w-6" />,
-                  <Rocket key="rocket" className="h-6 w-6" />,
-                  <MessageSquareHeart key="message" className="h-6 w-6" />,
-                  <Settings key="settings" className="h-6 w-6" />,
-                  <Bug key="bug" className="h-6 w-6" />,
-                  <GitFork key="git" className="h-6 w-6" />,
-                  <Send key="send" className="h-6 w-6" />,
-                  <ChartColumnBig key="chart" className="h-6 w-6" />
+                  <FaDesktop key="desktop" className="h-6 w-6" />,
+                  <FaRocket key="rocket" className="h-6 w-6" />,
+                  <FaHeart key="heart" className="h-6 w-6" />,
+                  <FaCog key="cog" className="h-6 w-6" />,
+                  <FaBug key="bug" className="h-6 w-6" />,
+                  <FaCodeBranch key="code" className="h-6 w-6" />,
+                  <FaPaperPlane key="plane" className="h-6 w-6" />,
+                  <FaChartBar key="chart" className="h-6 w-6" />
                 ];
                 
                 return (
@@ -268,7 +288,7 @@ const HeroSection: React.FC = () => {
                   </motion.div>
                 );
               })}
-            </div>
+            </animated.div>
             </div>
           </motion.div>
 
@@ -280,7 +300,6 @@ const HeroSection: React.FC = () => {
               className="p-6 bg-white/70 dark:bg-gray-800/70 border border-pink-200/50 dark:border-pink-700/50 rounded-2xl inline-block backdrop-blur-sm shadow-lg"
             >
               <p className="text-lg text-gray-700 dark:text-gray-300 flex items-center justify-center">
-                <FaHandPeace className="mr-2 text-pink-600 dark:text-pink-400" />
                 欢迎回来，<span className="font-semibold text-pink-600 dark:text-pink-400 ml-1">{user.username}</span>！
               </p>
             </motion.div>
