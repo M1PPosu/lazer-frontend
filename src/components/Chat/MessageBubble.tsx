@@ -31,7 +31,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         <div className="flex-shrink-0">
           <Avatar
             userId={message.sender_id}
-            username={message.sender?.username}
+            username={message.sender?.username || '未知用户'}
             avatarUrl={message.sender?.avatar_url}
             size="sm"
           />
