@@ -11,7 +11,8 @@ import {
   FiRefreshCw
 } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
-import { useNotifications } from '../hooks/useNotifications';
+// 使用全局通知上下文，避免与 Navbar 各自实例不同步
+import { useNotificationContext } from '../contexts/NotificationContext';
 import { useWebSocketNotifications } from '../hooks/useWebSocketNotifications';
 import { chatAPI, teamsAPI, userAPI } from '../utils/api';
 
@@ -78,14 +79,14 @@ const MessagesPage: React.FC = () => {
   }, []);
 
   // 使用通知系统
-  const { 
-    notifications, 
-    unreadCount, 
+  const {
+    notifications,
+    unreadCount,
     isConnected: notificationConnected,
     markAsRead,
     refresh,
-    removeNotificationByObject
-  } = useNotifications(isAuthenticated, user);
+    removeNotificationByObject,
+  } = useNotificationContext();
 
         // 使用WebSocket处理实时消息
       const { isConnected: chatConnected } = useWebSocketNotifications({
@@ -703,8 +704,14 @@ const MessagesPage: React.FC = () => {
     }
 
     if (!userScrolledUpRef.current || nearBottom || isOwnMessage) {
-      // 执行平滑滚动到末尾
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      // 立即跳到底部（去除平滑动画）
+      const containerEl = scrollContainerRef.current || document.querySelector('#chat-message-scroll-container');
+      if (containerEl) {
+        (containerEl as HTMLElement).scrollTop = (containerEl as HTMLElement).scrollHeight;
+      } else {
+        // 备用：直接使用默认行为的 scrollIntoView（无 smooth）
+        messagesEndRef.current?.scrollIntoView();
+      }
     }
 
     // 标记已读逻辑（与之前一致）
@@ -1015,8 +1022,8 @@ const MessagesPage: React.FC = () => {
           });
         });
         
-        console.log('私聊频道已添加到列表');
-        toast.success(`发现新的私聊: ${userName}`);
+        //console.log('私聊频道已添加到列表');
+        //toast.success(`发现新的私聊: ${userName}`);
         
       } catch (error) {
         console.error('处理私聊通知失败:', error);
@@ -1080,11 +1087,11 @@ const MessagesPage: React.FC = () => {
           const similarity = calculateTextSimilarity(normalizedContent, seenContent);
           if (similarity > 0.9) { // 90%以上相似度认为是重复
             isDuplicate = true;
-            console.log('发现重复消息:', {
-              messageId: message.message_id,
-              content: message.content.substring(0, 30),
-              similarity: similarity.toFixed(2)
-            });
+            //console.log('发现重复消息:', {
+            // messageId: message.message_id,
+             // content: message.content.substring(0, 30),
+             // similarity: similarity.toFixed(2)
+            //});
             break;
           }
         }
