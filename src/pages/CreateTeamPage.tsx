@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FiArrowLeft, FiSave, FiImage, FiFlag } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiImage, FiFlag, FiUsers, FiLoader } from 'react-icons/fi';
 import { teamsAPI, handleApiError } from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 import ImageUploadWithCrop from '../components/UI/ImageUploadWithCrop';
 import toast from 'react-hot-toast';
+import type { User, TeamDetailResponse } from '../types';
 
 const CreateTeamPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,12 +16,45 @@ const CreateTeamPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     short_name: '',
+    leader_id: null as number | null,
   });
   const [flagFile, setFlagFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [flagPreview, setFlagPreview] = useState<string>('');
   const [coverPreview, setCoverPreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [teamDetail, setTeamDetail] = useState<TeamDetailResponse | null>(null);
+  const [members, setMembers] = useState<User[]>([]);
+
+  // 加载团队数据（编辑模式）
+  useEffect(() => {
+    if (!isEditing || !teamId) return;
+
+    const loadTeamData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await teamsAPI.getTeam(parseInt(teamId));
+        const { team, members: teamMembers } = response;
+        setTeamDetail(response);
+        setMembers(teamMembers);
+        setFormData({
+          name: team.name,
+          short_name: team.short_name,
+          leader_id: team.leader_id,
+        });
+        setFlagPreview(team.flag_url);
+        setCoverPreview(team.cover_url);
+      } catch (error) {
+        handleApiError(error);
+        navigate('/teams');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTeamData();
+  }, [isEditing, teamId, navigate]);
 
 
 
@@ -28,6 +62,12 @@ const CreateTeamPage: React.FC = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // 处理队长选择
+  const handleLeaderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const leaderId = e.target.value ? parseInt(e.target.value) : null;
+    setFormData(prev => ({ ...prev, leader_id: leaderId }));
   };
 
   // 处理旗帜文件选择
@@ -72,6 +112,11 @@ const CreateTeamPage: React.FC = () => {
       data.append('name', formData.name.trim());
       data.append('short_name', formData.short_name.trim());
       
+      // 只有在编辑模式下且选择了新队长时才添加leader_id
+      if (isEditing && formData.leader_id !== null && formData.leader_id !== teamDetail?.team.leader_id) {
+        data.append('leader_id', formData.leader_id.toString());
+      }
+      
       if (flagFile) {
         data.append('flag', flagFile);
       }
@@ -109,6 +154,17 @@ const CreateTeamPage: React.FC = () => {
           <p className="text-gray-500 dark:text-gray-400">
             您需要登录后才能创建或编辑战队
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isEditing && isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <FiLoader className="animate-spin h-12 w-12 text-blue-500 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 font-medium">加载战队信息中...</p>
         </div>
       </div>
     );
@@ -226,6 +282,93 @@ const CreateTeamPage: React.FC = () => {
                 uploadingText="创建战队中..."
               />
             </div>
+
+            {/* 队员管理 - 仅在编辑模式下显示 */}
+            {isEditing && members.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                  <FiUsers className="mr-3" />
+                  队员管理
+                </h2>
+                
+                {/* 队长转让选择 */}
+                <div className="mb-6">
+                  <label htmlFor="leader_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    队长转让 (可选)
+                  </label>
+                  <select
+                    id="leader_id"
+                    value={formData.leader_id || ''}
+                    onChange={handleLeaderChange}
+                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg
+                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                             focus:ring-2 focus:ring-osu-pink focus:border-transparent"
+                  >
+                    <option value="">保持当前队长</option>
+                    {members
+                      .filter(member => member.id !== teamDetail?.team.leader_id)
+                      .map(member => (
+                        <option key={member.id} value={member.id}>
+                          {member.username}
+                        </option>
+                      ))}
+                  </select>
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    选择一个新的队长，如果不选择则保持当前队长不变。转让队长权限后，您将失去管理权限。
+                  </p>
+                </div>
+
+                {/* 队员列表 */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    当前队员 ({members.length} 人)
+                  </h3>
+                  <div className="space-y-3">
+                    {members.map(member => (
+                      <div
+                        key={member.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={member.avatar_url}
+                            alt={member.username}
+                            className="w-8 h-8 rounded-full"
+                          />
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {member.username}
+                            </p>
+                            {member.id === teamDetail?.team.leader_id && (
+                              <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                                当前队长
+                              </p>
+                            )}
+                            {member.id === formData.leader_id && formData.leader_id !== teamDetail?.team.leader_id && (
+                              <p className="text-xs text-green-600 dark:text-green-400">
+                                将成为新队长
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                            {member.country?.name || '未知'}
+                          </span>
+                          {member.country?.code && (
+                            <img
+                              src={`/public/image/flag/${member.country.code.toLowerCase()}.svg`}
+                              alt={member.country.name}
+                              className="w-5 h-3"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 提交按钮 */}
             <div className="flex justify-end gap-4">
