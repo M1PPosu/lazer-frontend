@@ -67,11 +67,16 @@ const FriendActions: React.FC<FriendActionsProps> = ({
 }) => {
   const { isFriend, isBlocked, isMutual, followsMe, loading } = status;
   const [isOpen, setIsOpen] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Floating UI 配置
   const { refs, floatingStyles, context } = useFloating({
-    open: isOpen,
-    onOpenChange: setIsOpen,
+    open: isOpen && !isActionLoading, // 在执行操作时不打开菜单
+    onOpenChange: (open) => {
+      if (!isActionLoading) { // 只有在没有操作进行时才允许状态改变
+        setIsOpen(open);
+      }
+    },
     placement: "bottom-start", // 恢复 bottom-start
     strategy: "absolute", // 改回 absolute 定位策略
     //transform: false, // 禁用 transform，使用原生定位
@@ -291,7 +296,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
   };
 
   // 是否显示下拉箭头
-  const showDropdownArrow = !isSelf && !loading && menuItems.length > 0;
+  const showDropdownArrow = !isSelf && !loading && !isActionLoading && menuItems.length > 0;
 
   // 如果是自己或没有菜单项，只显示按钮
   if (isSelf || loading || menuItems.length === 0) {
@@ -299,10 +304,10 @@ const FriendActions: React.FC<FriendActionsProps> = ({
       <div className={`relative inline-flex ${className}`}>
         <motion.button
           type="button"
-          disabled={loading || isSelf}
+          disabled={loading || isSelf || isActionLoading}
           aria-label={getButtonStatusText()}
-          whileHover={{ scale: !isSelf && !loading ? 1.02 : 1 }}
-          whileTap={{ scale: !isSelf && !loading ? 0.98 : 1 }}
+          whileHover={{ scale: !isSelf && !loading && !isActionLoading ? 1.02 : 1 }}
+          whileTap={{ scale: !isSelf && !loading && !isActionLoading ? 0.98 : 1 }}
           className={`
             bg-gray-100 dark:bg-gray-800 
             px-3 py-2 rounded-full flex items-center gap-2 text-sm
@@ -313,7 +318,11 @@ const FriendActions: React.FC<FriendActionsProps> = ({
           `}
         >
           <div className="flex items-center gap-2">
-            {getMainIcon()}
+            {(loading || isActionLoading) ? (
+              <FiLoader className="w-4 h-4 animate-spin text-blue-500" />
+            ) : (
+              getMainIcon()
+            )}
             <span>{followerCount}</span>
           </div>
         </motion.button>
@@ -326,9 +335,10 @@ const FriendActions: React.FC<FriendActionsProps> = ({
       <motion.button
         ref={refs.setReference}
         type="button"
+        disabled={isActionLoading}
         aria-label={getButtonStatusText()}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: !isActionLoading ? 1.02 : 1 }}
+        whileTap={{ scale: !isActionLoading ? 0.98 : 1 }}
         {...getReferenceProps()}
         className={`
           bg-gray-100 dark:bg-gray-800 
@@ -337,13 +347,18 @@ const FriendActions: React.FC<FriendActionsProps> = ({
           text-gray-700 dark:text-gray-300
           transition-all duration-200
           focus:outline-none focus:ring-2 focus:ring-blue-500/20
+          disabled:opacity-50 disabled:cursor-not-allowed
           ${isOpen ? 'ring-2 ring-blue-500/20' : ''}
           ${showDropdownArrow ? 'pr-4' : ''}
         `}
       >
         {/* 图标和数字 */}
         <div className="flex items-center gap-2">
-          {getMainIcon()}
+          {(loading || isActionLoading) ? (
+            <FiLoader className="w-4 h-4 animate-spin text-blue-500" />
+          ) : (
+            getMainIcon()
+          )}
           <span>{followerCount}</span>
         </div>
 
@@ -372,7 +387,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
       </motion.button>
 
       {/* 弹出菜单 */}
-      {isOpen && (
+      {isOpen && !isActionLoading && (
         <FloatingFocusManager context={context} modal={false}>
           <motion.div
             ref={refs.setFloating}
@@ -391,21 +406,33 @@ const FriendActions: React.FC<FriendActionsProps> = ({
               <button
                 key={item.key}
                 onClick={async () => {
+                  // 防止重复点击
+                  if (isActionLoading) return;
+                  
                   try {
+                    setIsActionLoading(true);
+                    setIsOpen(false); // 立即关闭菜单
                     await item.action();
-                    setIsOpen(false); // 关闭菜单
                   } catch (error) {
                     console.error("Action failed:", error);
+                  } finally {
+                    setIsActionLoading(false);
                   }
                 }}
+                disabled={isActionLoading}
                 className={`
                   w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium
                   transition-all duration-200
                   hover:bg-gray-100 dark:hover:bg-gray-800
+                  disabled:opacity-50 disabled:cursor-not-allowed
                   ${item.className || 'text-gray-700 dark:text-gray-300'}
                 `}
               >
-                {item.icon}
+                {isActionLoading ? (
+                  <FiLoader className="w-4 h-4 animate-spin" />
+                ) : (
+                  item.icon
+                )}
                 <span>{item.label}</span>
               </button>
             ))}
