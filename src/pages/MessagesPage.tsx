@@ -1482,12 +1482,12 @@ const MessagesPage: React.FC = () => {
   };
 
   // 获取通知标题
-  const getNotificationTitle = useCallback(async (notification: APINotification): Promise<string> => {
-    // 获取用户信息
+  const getNotificationTitle = useCallback((notification: APINotification): string => {
+    // 获取用户信息（从缓存中）
     let userName = '未知用户';
-    if (notification.source_user_id) {
-      const userInfo = await apiCache.getUser(notification.source_user_id);
-      userName = userInfo?.username || '未知用户';
+    if (notification.source_user_id && userInfoCache.has(notification.source_user_id)) {
+      const cachedUser = userInfoCache.get(notification.source_user_id);
+      userName = cachedUser?.data?.username || '未知用户';
     }
 
     switch (notification.name) {
@@ -1526,15 +1526,15 @@ const MessagesPage: React.FC = () => {
       default:
         return notification.name;
     }
-  }, []);
+  }, [userInfoCache]);
 
   // 获取通知内容
-  const getNotificationContent = useCallback(async (notification: APINotification): Promise<string> => {
-    // 获取用户信息
+  const getNotificationContent = useCallback((notification: APINotification): string => {
+    // 获取用户信息（从缓存中）
     let userName = '未知用户';
-    if (notification.source_user_id) {
-      const userInfo = await apiCache.getUser(notification.source_user_id);
-      userName = userInfo?.username || '未知用户';
+    if (notification.source_user_id && userInfoCache.has(notification.source_user_id)) {
+      const cachedUser = userInfoCache.get(notification.source_user_id);
+      userName = cachedUser?.data?.username || '未知用户';
     }
 
     switch (notification.name) {
@@ -1592,7 +1592,7 @@ const MessagesPage: React.FC = () => {
       default:
         return JSON.stringify(notification.details);
     }
-  }, []);
+  }, [userInfoCache]);
 
   // 处理团队请求
   const handleTeamRequest = async (notification: APINotification, action: 'accept' | 'reject') => {
@@ -1661,7 +1661,6 @@ const MessagesPage: React.FC = () => {
                   </h1>
                   {/* WebSocket连接状态 */}
                   <div className="flex items-center space-x-1">
-                    {/* <div className={`w-2 h-2 rounded-full ${notificationConnected ? 'bg-green-500' : 'bg-red-500'}`} /> */}
                     <div className={`w-2 h-2 rounded-full ${chatConnected ? 'bg-green-500' : 'bg-red-500'}`} />
                   </div>
                 </div>
@@ -1921,11 +1920,10 @@ const MessagesPage: React.FC = () => {
                                   <div className="flex items-center space-x-2 mt-2">
                                     <span className="text-xs text-gray-500 dark:text-gray-400">来自:</span>
                                     <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
-                                      {/* 先尝试从缓存获取，如果没有则显示默认值 */}
                                       {(() => {
-                                        // 这里我们需要一个同步的方式获取用户名
-                                        // 由于已经预先批量获取了用户信息，这里应该有缓存
-                                        return '未知用户';
+                                        // 从缓存获取用户名
+                                        const cachedUser = userInfoCache.get(notification.source_user_id!);
+                                        return cachedUser?.data?.username || '未知用户';
                                       })()}
                                     </span>
                                   </div>
