@@ -28,7 +28,8 @@
     "react-native-web": "^0.21.1",
     "react-router-dom": "^6.25.0",
     "react-tooltip": "^5.29.1",
-    "recharts": "^3.1.2"
+    "recharts": "^3.1.2",
+    "swiper": "^11.2.10"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

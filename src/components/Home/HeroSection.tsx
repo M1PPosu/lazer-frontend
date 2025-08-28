@@ -1,8 +1,13 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll } from 'motion/react';
-import { useSpring, animated } from '@react-spring/web';
+import { motion } from 'motion/react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import type { Swiper as SwiperType } from 'swiper';
+import { Autoplay } from 'swiper/modules';
 import { useAuth } from '../../hooks/useAuth';
+
+// Import Swiper styles
+import 'swiper/swiper-bundle.css';
 import InfoCard from '../InfoCard';
 import { features } from '../../data/features';
 import { 
@@ -21,88 +26,29 @@ import {
 
 const HeroSection: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const [isHovered, setIsHovered] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(1);
-  
-  // 监听页面滚动
-  const { scrollY } = useScroll();
-  
-  // 响应式卡片尺寸
-  const [cardWidth, setCardWidth] = useState(320);
-  const [gap, setGap] = useState(24);
-  
-  // 响应式尺寸计算
-  useEffect(() => {
-    const updateSizes = () => {
-      const width = window.innerWidth;
-      if (width < 480) { // 超小屏幕
-        setCardWidth(240);
-        setGap(12);
-      } else if (width < 640) { // 小屏幕
-        setCardWidth(260);
-        setGap(16);
-      } else if (width < 768) { // 中等屏幕
-        setCardWidth(288);
-        setGap(20);
-      } else {
-        setCardWidth(320);
-        setGap(24);
-      }
-    };
-
-    updateSizes();
-    window.addEventListener('resize', updateSizes);
-    return () => window.removeEventListener('resize', updateSizes);
-  }, []);
-
-  const totalWidth = cardWidth + gap;
-  const scrollDistance = totalWidth * features.length;
-
-  // 使用 react-spring 创建滚动动画
-  const [springProps, api] = useSpring(() => ({
-    from: { x: 0 },
-    to: { x: -scrollDistance },
-    config: { 
-      duration: (features.length * 8000) / scrollSpeed
-    },
-    loop: true,
-    pause: isHovered
-  }));
-
-  // 监听滚动变化并调整速度
-  useEffect(() => {
-    const unsubscribe = scrollY.on('change', (latest) => {
-      // 根据滚动位置计算速度倍数 (1-2倍速)
-      const speedMultiplier = Math.min(1 + (latest / 2000), 2);
-      const roundedSpeed = Math.round(speedMultiplier * 10) / 10;
-      
-      if (Math.abs(roundedSpeed - scrollSpeed) > 0.1) {
-        setScrollSpeed(roundedSpeed);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [scrollY, scrollSpeed]);
-
-  // 更新动画配置当速度改变时
-  useEffect(() => {
-    api.start({
-      to: { x: -scrollDistance },
-      config: { 
-        duration: (features.length * 8000) / scrollSpeed
-      },
-      loop: true,
-      pause: isHovered
-    });
-  }, [scrollSpeed, isHovered, api, scrollDistance]);
+  const [swiper, setSwiper] = useState<SwiperType | null>(null);
 
   const handleMouseEnter = useCallback(() => {
-    setIsHovered(true);
-  }, []);
+    if (swiper && swiper.autoplay) {
+      swiper.autoplay.stop();
+    }
+  }, [swiper]);
 
   const handleMouseLeave = useCallback(() => {
-    setIsHovered(false);
-  }, []);
+    if (swiper && swiper.autoplay) {
+      swiper.autoplay.start();
+    }
+  }, [swiper]);
+
+  // 处理触摸/拖动结束后恢复自动播放
+  const handleTouchEnd = useCallback(() => {
+    if (swiper && swiper.autoplay) {
+      // 延迟一点时间再恢复自动播放，确保用户操作完成
+      setTimeout(() => {
+        swiper.autoplay.start();
+      }, 1000);
+    }
+  }, [swiper]);
 
   return (
     <section className="relative overflow-hidden min-h-screen flex items-center py-12 sm:py-20 lg:py-32">
@@ -122,7 +68,7 @@ const HeroSection: React.FC = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Content */}
-        <div className="text-center space-y-8 sm:space-y-12">
+        <div className="w-[90vw] md:w-full text-center space-y-8 sm:space-y-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="px-4">
             {/* Logo and brand */}
             <div className="flex items-center justify-center mb-6 sm:mb-8">
@@ -247,17 +193,31 @@ const HeroSection: React.FC = () => {
                 WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)'
               }}
             >
-              <animated.div
-                className="flex"
-                style={{
-                  ...springProps,
-                  width: `${scrollDistance * 2}px`,
-                  gap: `${gap}px`,
-                  paddingLeft: '16px',
-                  paddingRight: '16px'
+              <Swiper
+                onSwiper={setSwiper}
+                modules={[Autoplay]}
+                slidesPerView="auto"
+                spaceBetween={24}
+                loop={true}
+                autoplay={{
+                  delay: 0,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: false,
+                  reverseDirection: false
                 }}
+                speed={3000}
+                allowTouchMove={true}
+                resistanceRatio={0.85}
+                longSwipesRatio={0.25}
+                onTouchEnd={handleTouchEnd}
+                onSliderMove={() => {
+                  // 拖动时暂停自动播放
+                  if (swiper && swiper.autoplay) {
+                    swiper.autoplay.stop();
+                  }
+                }}
+                className="!px-4"
               >
-                {/* First set of cards */}
                 {features.map((feature, index) => {
                   const icons = [
                     <FaDesktop key="desktop" className="h-6 w-6" />,
@@ -271,55 +231,24 @@ const HeroSection: React.FC = () => {
                   ];
                   
                   return (
-                    <motion.div
-                      key={`first-${feature.id}`}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
-                      className="flex-shrink-0"
-                      style={{ width: `${cardWidth}px` }}
-                    >
-                      <InfoCard
-                        image={feature.image}
-                        imageAlt={feature.imageAlt}
-                        title={feature.title}
-                        content={feature.content}
-                        icon={icons[index]}
-                      />
-                    </motion.div>
+                    <SwiperSlide key={feature.id} className="!w-80">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
+                      >
+                        <InfoCard
+                          image={feature.image}
+                          imageAlt={feature.imageAlt}
+                          title={feature.title}
+                          content={feature.content}
+                          icon={icons[index]}
+                        />
+                      </motion.div>
+                    </SwiperSlide>
                   );
                 })}
-                
-                {/* Second set of cards for seamless loop */}
-                {features.map((feature, index) => {
-                  const icons = [
-                    <FaDesktop key="desktop" className="h-6 w-6" />,
-                    <FaRocket key="rocket" className="h-6 w-6" />,
-                    <FaHeart key="heart" className="h-6 w-6" />,
-                    <FaCog key="cog" className="h-6 w-6" />,
-                    <FaBug key="bug" className="h-6 w-6" />,
-                    <FaCodeBranch key="code" className="h-6 w-6" />,
-                    <FaPaperPlane key="plane" className="h-6 w-6" />,
-                    <FaChartBar key="chart" className="h-6 w-6" />
-                  ];
-                  
-                  return (
-                    <motion.div
-                      key={`second-${feature.id}`}
-                      className="flex-shrink-0"
-                      style={{ width: `${cardWidth}px` }}
-                    >
-                      <InfoCard
-                        image={feature.image}
-                        imageAlt={feature.imageAlt}
-                        title={feature.title}
-                        content={feature.content}
-                        icon={icons[index]}
-                      />
-                    </motion.div>
-                  );
-                })}
-              </animated.div>
+              </Swiper>
             </div>
           </motion.div>
 
