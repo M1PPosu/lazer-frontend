@@ -272,11 +272,13 @@ export const useNotifications = (isAuthenticated: boolean, currentUser?: User | 
         return;
       }
       
-      // 调用API批量标记为已读
-      await notificationsAPI.markMultipleAsRead([{
-        object_id: parseInt(objectId),
-        object_type: parseInt(objectType)
-      }]);
+      // 调用API批量标记为已读 (object_type 后端是字符串)
+      await notificationsAPI.markMultipleAsRead([
+        {
+          object_id: parseInt(objectId),
+          object_type: objectType,
+        }
+      ]);
       
       // 更新本地状态
       setNotifications(prev => {

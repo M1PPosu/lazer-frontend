@@ -2,15 +2,20 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import { Toaster } from 'react-hot-toast';
+import { useAuth } from '../../hooks/useAuth';
+import { NotificationProvider } from '../../contexts/NotificationContext';
 
 const Layout: React.FC = () => {
+  const { isAuthenticated, user } = useAuth();
+
   return (
-    <div className="min-h-screen bg-bg-primary">
-      <Navbar />
-      <main className="pt-16 pb-16 md:pb-0">
-        <Outlet />
-      </main>
-      <Toaster
+    <NotificationProvider isAuthenticated={isAuthenticated} user={user}>
+      <div className="min-h-screen bg-bg-primary">
+        <Navbar />
+        <main className="pt-16 pb-16 md:pb-0">
+          <Outlet />
+        </main>
+        <Toaster
         position="top-right"
         containerStyle={{
           top: '80px', // 在顶栏下面显示，顶栏高度约为64px，留一些间距
@@ -39,7 +44,8 @@ const Layout: React.FC = () => {
           },
         }}
       />
-    </div>
+      </div>
+    </NotificationProvider>
   );
 };
 

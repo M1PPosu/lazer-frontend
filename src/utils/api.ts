@@ -629,31 +629,25 @@ export const notificationsAPI = {
     return response.data;
   },
 
-  // 标记通知为已读
+  // 标记单条通知为已读 (后端需要 {identities:[...]} 结构, 204 无内容)
   markAsRead: async (notificationId: number) => {
-    const response = await api.post('/api/v2/notifications/mark-read', [{
-      id: notificationId
-    }], {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    await api.post('/api/v2/notifications/mark-read', {
+      identities: [{ id: notificationId }],
+      notifications: [],
+    }, {
+      headers: { 'Content-Type': 'application/json' },
     });
-    return response.data;
   },
 
-  // 批量标记通知为已读
-  markMultipleAsRead: async (identities: Array<{
-    id?: number;
-    object_id?: number; 
-    object_type?: number;
-    category?: string;
-  }>) => {
-    const response = await api.post('/api/v2/notifications/mark-read', identities, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  // 批量标记通知为已读（支持 id / object_id+object_type / category）
+  markMultipleAsRead: async (identities: Array<{ id?: number; object_id?: number; object_type?: string; category?: string }>) => {
+    if (!identities || identities.length === 0) return;
+    await api.post('/api/v2/notifications/mark-read', {
+      identities,
+      notifications: [],
+    }, {
+      headers: { 'Content-Type': 'application/json' },
     });
-    return response.data;
   },
 
   // 获取未读通知数量

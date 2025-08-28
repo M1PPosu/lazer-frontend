@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers, FiMessageCircle } from 'react-icons/fi';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
-import { useNotifications } from '../../hooks/useNotifications';
+import { useNotificationContext } from '../../contexts/NotificationContext';
 import UserDropdown from '../UI/UserDropdown';
 import Avatar from '../UI/Avatar';
 import type { NavItem } from '../../types';
@@ -212,7 +212,16 @@ MobileNavItem.displayName = 'MobileNavItem';
 const Navbar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
-  const { unreadCount, isConnected } = useNotifications(isAuthenticated, user);
+  // 通过全局通知上下文获取统一的 unreadCount
+  let unreadCount = { total: 0, team_requests: 0, private_messages: 0, friend_requests: 0 } as any;
+  let isConnected = false;
+  try {
+    const ctx = useNotificationContext();
+    unreadCount = ctx.unreadCount;
+    isConnected = ctx.isConnected;
+  } catch (e) {
+    // 如果 Provider 尚未包裹，不影响其它功能
+  }
   //const location = useLocation();
 
   const navItems: NavItem[] = React.useMemo(() => [
