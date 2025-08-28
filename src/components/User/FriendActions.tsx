@@ -351,7 +351,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
         {showDropdownArrow && (
           <motion.div
             className="ml-1"
-            animate={{ rotate: isOpen ? 180 : 0 }}
+            animate={{ rotate: isOpen ? 0 : -180 }}
             transition={{ duration: 0.2 }}
           >
             <svg
