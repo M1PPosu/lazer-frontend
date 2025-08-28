@@ -1676,9 +1676,9 @@ const MessagesPage: React.FC = () => {
                     消息中心
                   </h1>
                   {/* WebSocket连接状态 */}
-                  <div className="flex items-center space-x-1">
+                  {/* <div className="flex items-center space-x-1">
                     <div className={`w-2 h-2 rounded-full ${chatConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                  </div>
+                  </div> */}
                 </div>
                 {isMobile && (
                   <button

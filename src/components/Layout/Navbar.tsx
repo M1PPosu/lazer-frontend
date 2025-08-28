@@ -155,10 +155,11 @@ const MobileNavItem = memo<{ item: NavItem }>(({ item }) => {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       transition={{ duration: 0.2 }}
+      className="flex-1 max-w-20" // 限制最大宽度，避免单个元素过宽
     >
       <Link
         to={item.path}
-        className={`relative flex flex-col items-center py-3 px-3 rounded-2xl transition-all duration-200 ${
+        className={`relative flex flex-col items-center py-3 px-2 rounded-2xl transition-all duration-200 w-full ${
           isActive 
             ? 'text-white' 
             : 'text-gray-600 dark:text-gray-400 hover:text-osu-pink'
@@ -174,18 +175,9 @@ const MobileNavItem = memo<{ item: NavItem }>(({ item }) => {
         
         <div className="relative z-10 flex flex-col items-center">
           {IconComponent && (
-            <motion.div
-              animate={{ 
-                rotateY: isActive ? 360 : 0 
-              }}
-              transition={{ 
-                duration: 0.6,
-                ease: "easeOut" 
-              }}
-              className="mb-1"
-            >
+            <div className="mb-1">
               <IconComponent size={20} />
-            </motion.div>
+            </div>
           )}
           <span className="text-xs font-medium">{item.title}</span>
         </div>
@@ -308,7 +300,7 @@ const Navbar: React.FC = () => {
                         : 'text-gray-400 dark:text-gray-500'
                       }
                     `}
-                    title={isFullyConnected ? '实时通知已连接' : '实时通知未连接'}
+                    /* title={isFullyConnected ? '实时通知已连接' : '实时通知未连接'} */
                   >
                     <FiBell size={18} />
                     {unreadCount.total > 0 && (
@@ -321,10 +313,10 @@ const Navbar: React.FC = () => {
                       </motion.div>
                     )}
                     {/* WebSocket连接状态指示器 */}
-                    <div className={`
+                    {/* <div className={`
                       absolute bottom-0 right-0 w-2 h-2 rounded-full
                       ${isFullyConnected ? 'bg-green-500' : 'bg-red-500'}
-                    `} />
+                    `} /> */}
                   </motion.button>
                 </Link>
               )}
@@ -511,7 +503,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Navigation - Bottom (页面导航) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 shadow-lg safe-area-inset-bottom">
-        <div className="flex items-center justify-around py-2 px-2">
+        <div className="flex items-center justify-center py-2 px-2">
           {filteredNavItems.map((item) => (
             <MobileNavItem key={item.path} item={item} />
           ))}

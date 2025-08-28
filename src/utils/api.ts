@@ -2,7 +2,7 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
 
 // API base URL - adjust this to match your osu! API server
-const API_BASE_URL = 'https://lazer.gu-osu.gmoe.cc';
+const API_BASE_URL = 'https://lazer-api.g0v0.top';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
