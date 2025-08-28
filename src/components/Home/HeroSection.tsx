@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '../../hooks/useAuth';
@@ -18,6 +18,20 @@ import { FaQq, FaDiscord, FaGithub, FaHandPeace } from 'react-icons/fa';
 
 const HeroSection: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const cardWidth = 320;
+  const gap = 24;
+  const totalWidth = cardWidth + gap;
+  const scrollDistance = totalWidth * features.length;
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+  }, []);
 
   return (
     <section className="relative overflow-hidden min-h-screen flex items-center py-20 lg:py-32">
@@ -146,42 +160,116 @@ const HeroSection: React.FC = () => {
           </motion.div>
 
 
-          {/* Feature Cards Grid */}
+          {/* Feature Cards Scrolling Container */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16 auto-rows-fr"
+            className="mt-16 relative"
           >
-            {features.map((feature, index) => {
-              const icons = [
-                <MonitorCheck key="monitor" className="h-6 w-6" />,
-                <Rocket key="rocket" className="h-6 w-6" />,
-                <MessageSquareHeart key="message" className="h-6 w-6" />,
-                <Settings key="settings" className="h-6 w-6" />,
-                <Bug key="bug" className="h-6 w-6" />,
-                <GitFork key="git" className="h-6 w-6" />,
-                <Send key="send" className="h-6 w-6" />,
-                <ChartColumnBig key="chart" className="h-6 w-6" />
-              ];
+            {/* 添加CSS动画样式 */}
+            <style>
+              {`
+                @keyframes scroll-cards {
+                  from {
+                    transform: translateX(0);
+                  }
+                  to {
+                    transform: translateX(-${scrollDistance}px);
+                  }
+                }
+                
+                .animate-scroll {
+                  animation: scroll-cards linear infinite;
+                  animation-play-state: running;
+                }
+                
+                .animate-paused {
+                  animation: scroll-cards linear infinite;
+                  animation-play-state: paused;
+                }
+              `}
+            </style>
+            
+            
+            <div 
+              className="overflow-hidden cursor-pointer"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              style={{
+                maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)'
+              }}
+            >
+              <div
+                className={`flex gap-6 ${isHovered ? 'animate-paused' : 'animate-scroll'}`}
+                style={{
+                  width: `${scrollDistance * 2}px`,
+                  animationDuration: `${features.length * 8}s`
+                }}
+              >
+              {/* First set of cards */}
+              {features.map((feature, index) => {
+                const icons = [
+                  <MonitorCheck key="monitor" className="h-6 w-6" />,
+                  <Rocket key="rocket" className="h-6 w-6" />,
+                  <MessageSquareHeart key="message" className="h-6 w-6" />,
+                  <Settings key="settings" className="h-6 w-6" />,
+                  <Bug key="bug" className="h-6 w-6" />,
+                  <GitFork key="git" className="h-6 w-6" />,
+                  <Send key="send" className="h-6 w-6" />,
+                  <ChartColumnBig key="chart" className="h-6 w-6" />
+                ];
+                
+                return (
+                  <motion.div
+                    key={`first-${feature.id}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
+                    className="flex-shrink-0 w-80 sm:w-72 md:w-80"
+                  >
+                    <InfoCard
+                      image={feature.image}
+                      imageAlt={feature.imageAlt}
+                      title={feature.title}
+                      content={feature.content}
+                      icon={icons[index]}
+                    />
+                  </motion.div>
+                );
+              })}
               
-              return (
-                <motion.div
-                  key={feature.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
-                >
-                  <InfoCard
-                    image={feature.image}
-                    imageAlt={feature.imageAlt}
-                    title={feature.title}
-                    content={feature.content}
-                    icon={icons[index]}
-                  />
-                </motion.div>
-              );
-            })}
+              {/* Second set of cards for seamless loop */}
+              {features.map((feature, index) => {
+                const icons = [
+                  <MonitorCheck key="monitor" className="h-6 w-6" />,
+                  <Rocket key="rocket" className="h-6 w-6" />,
+                  <MessageSquareHeart key="message" className="h-6 w-6" />,
+                  <Settings key="settings" className="h-6 w-6" />,
+                  <Bug key="bug" className="h-6 w-6" />,
+                  <GitFork key="git" className="h-6 w-6" />,
+                  <Send key="send" className="h-6 w-6" />,
+                  <ChartColumnBig key="chart" className="h-6 w-6" />
+                ];
+                
+                return (
+                  <motion.div
+                    key={`second-${feature.id}`}
+                    className="flex-shrink-0 w-80 sm:w-72 md:w-80"
+                  >
+                    <InfoCard
+                      image={feature.image}
+                      imageAlt={feature.imageAlt}
+                      title={feature.title}
+                      content={feature.content}
+                      icon={icons[index]}
+                    />
+                  </motion.div>
+                );
+              })}
+            </div>
+            </div>
           </motion.div>
 
           {isAuthenticated && user && (
