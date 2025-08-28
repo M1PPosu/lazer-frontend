@@ -23,6 +23,33 @@ interface UseWebSocketNotificationsProps {
   onNewNotification?: (notification: APINotification) => void;
 }
 
+// ---------------- 全局单例状态，防止重复建立多个 WebSocket 连接 ----------------
+let globalWsRef: WebSocket | null = null; // 共享连接
+let globalConnecting = false; // 连接中标记
+const globalMessageListeners = new Set<(m: ChatMessage) => void>();
+const globalNotificationListeners = new Set<(n: APINotification) => void>();
+let globalEndpointCache: string | null = null; // 端点缓存
+
+// 分发函数
+const dispatchChatMessage = (msg: ChatMessage) => {
+  if (globalMessageListeners.size === 0) {
+    messageBuffer.push(msg);
+    return;
+  }
+  globalMessageListeners.forEach(fn => { try { fn(msg); } catch (e) { console.error('分发聊天消息给监听器失败', e); } });
+};
+const dispatchNotification = (n: APINotification) => {
+  if (globalNotificationListeners.size === 0) {
+    notificationBuffer.push(n);
+    return;
+  }
+  globalNotificationListeners.forEach(fn => { try { fn(n); } catch (e) { console.error('分发通知给监听器失败', e); } });
+};
+
+// 缓冲队列（在监听器尚未挂载时暂存）
+const messageBuffer: ChatMessage[] = [];
+const notificationBuffer: APINotification[] = [];
+
 export const useWebSocketNotifications = ({
   isAuthenticated,
   currentUser,
@@ -44,17 +71,16 @@ export const useWebSocketNotifications = ({
   const getWebSocketEndpoint = useCallback(async (): Promise<string | null> => {
     if (!isAuthenticated) {
       endpointCacheRef.current = null;
+      globalEndpointCache = null;
       return null;
     }
-
-    // 如果有缓存且用户仍认证，直接返回
-    if (endpointCacheRef.current) {
-      return endpointCacheRef.current;
-    }
-
+    // 先用全局缓存
+    if (globalEndpointCache) return globalEndpointCache;
+    if (endpointCacheRef.current) return endpointCacheRef.current;
     try {
       const response = await notificationsAPI.getNotifications();
       endpointCacheRef.current = response.notification_endpoint;
+      globalEndpointCache = endpointCacheRef.current;
       return endpointCacheRef.current;
     } catch (error) {
       console.error('Failed to get notification endpoint:', error);
@@ -75,7 +101,7 @@ export const useWebSocketNotifications = ({
       const message: SocketMessage = JSON.parse(event.data);
       console.log('WebSocket收到原始消息:', message);
       
-      // 处理各种聊天消息事件
+  // 处理各种聊天消息事件
       if (message.event === 'chat.message.new' || 
           message.event === 'new_message' || 
           message.event === 'message') {
@@ -91,7 +117,7 @@ export const useWebSocketNotifications = ({
               return;
             }
             console.log('发送他人消息到回调:', msg);
-            onNewMessage?.(msg);
+            dispatchChatMessage(msg);
           });
         } else if ((chatEvent.data as any)?.message) {
           // 可能是单个消息而不是数组
@@ -102,7 +128,7 @@ export const useWebSocketNotifications = ({
             return;
           }
           console.log('处理他人单个消息:', msg);
-          onNewMessage?.(msg);
+          dispatchChatMessage(msg);
         } else if (chatEvent.data && typeof chatEvent.data === 'object') {
           // 可能消息数据直接在data中
           const msg = chatEvent.data as ChatMessage;
@@ -112,7 +138,7 @@ export const useWebSocketNotifications = ({
             return;
           }
           console.log('处理他人直接消息数据:', msg);
-          onNewMessage?.(msg);
+          dispatchChatMessage(msg);
         }
       }
       // 处理直接的消息格式（服务器直接发送ChatMessage格式的数据）
@@ -142,7 +168,7 @@ export const useWebSocketNotifications = ({
           return;
         }
         
-        onNewMessage?.(chatMessage);
+  dispatchChatMessage(chatMessage);
       }
       // 如果消息本身就是ChatMessage格式（没有嵌套在data中）
       else if ('message_id' in message && 
@@ -169,7 +195,7 @@ export const useWebSocketNotifications = ({
           return;
         }
         
-        onNewMessage?.(chatMessage);
+  dispatchChatMessage(chatMessage);
       }
       
       // 处理新通知
@@ -193,7 +219,7 @@ export const useWebSocketNotifications = ({
             details: notificationEvent.data.details
           };
           
-          onNewNotification?.(notification);
+          dispatchNotification(notification);
           
           // 显示自定义通知提示
           const notificationTitle = getNotificationTitle(notification);
@@ -295,7 +321,7 @@ export const useWebSocketNotifications = ({
             }
             
             console.log(`✓ 准备发送他人的消息通知: ${notification.id}`);
-            onNewNotification?.(notification);
+            dispatchNotification(notification);
             
             // 显示自定义通知提示
             const notificationTitle = getNotificationTitle(notification);
@@ -365,7 +391,7 @@ export const useWebSocketNotifications = ({
               return;
             }
             
-            onNewNotification?.(notification);
+            dispatchNotification(notification);
             
             // 显示自定义通用通知提示
             const notificationTitle = getNotificationTitle(notification);
@@ -391,6 +417,40 @@ export const useWebSocketNotifications = ({
       console.error('Failed to parse WebSocket message:', error);
     }
   }, [onNewMessage, onNewNotification, currentUser]);
+
+  // 重新绑定处理函数（单例复用）
+  useEffect(() => {
+    if (globalWsRef) {
+      console.log('[WebSocket] 重新绑定 onmessage 处理函数 (依赖更新, 单例)');
+      globalWsRef.onmessage = handleMessage;
+      wsRef.current = globalWsRef;
+    }
+  }, [handleMessage]);
+
+  // 注册监听器（组件层）
+  useEffect(() => {
+    if (onNewMessage) {
+      globalMessageListeners.add(onNewMessage);
+    }
+    if (onNewNotification) {
+      globalNotificationListeners.add(onNewNotification);
+    }
+    // 回放缓冲（只在新增监听器时执行一次）
+    if (onNewMessage && messageBuffer.length) {
+      console.log(`[WebSocket] 回放缓冲消息 ${messageBuffer.length} 条`);
+      messageBuffer.splice(0).forEach(m => { try { onNewMessage(m); } catch {} });
+    }
+    if (onNewNotification && notificationBuffer.length) {
+      console.log(`[WebSocket] 回放缓冲通知 ${notificationBuffer.length} 条`);
+      notificationBuffer.splice(0).forEach(n => { try { onNewNotification(n); } catch {} });
+    }
+    return () => {
+      if (onNewMessage) globalMessageListeners.delete(onNewMessage);
+      if (onNewNotification) globalNotificationListeners.delete(onNewNotification);
+      // 不再在每次监听器清理时立即关闭连接，避免由于组件重渲染导致的闪断。
+      // 连接关闭交由 disconnect()（认证失效或真正卸载）管理。
+    };
+  }, [onNewMessage, onNewNotification]);
 
   // 获取通知标题
   const getNotificationTitle = (notification: APINotification): string => {
@@ -438,20 +498,28 @@ export const useWebSocketNotifications = ({
 
   // WebSocket连接
   const connect = useCallback(async () => {
-    if (!isAuthenticated) return;
+  if (!isAuthenticated) return;
 
     // 节流机制：避免频繁连接
     const now = Date.now();
-    if (now - lastConnectAttemptRef.current < connectionThrottleMs) {
+  if (now - lastConnectAttemptRef.current < connectionThrottleMs) {
       console.log('连接请求过于频繁，已跳过');
       return;
     }
     lastConnectAttemptRef.current = now;
 
-    // 如果已经连接，跳过
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    // 若全局连接已存在并且未关闭，复用
+    if (globalWsRef && (globalWsRef.readyState === WebSocket.OPEN || globalWsRef.readyState === WebSocket.CONNECTING)) {
+      console.log('[WebSocket] 复用已有全局连接');
+      wsRef.current = globalWsRef;
+      if (globalWsRef.readyState === WebSocket.OPEN) setIsConnected(true);
       return;
     }
+    if (globalConnecting) {
+      console.log('[WebSocket] 已在建立连接中，跳过新建');
+      return;
+    }
+    globalConnecting = true;
 
     const endpoint = await getWebSocketEndpoint();
     if (!endpoint) {
@@ -479,13 +547,15 @@ export const useWebSocketNotifications = ({
         const host = window.location.host;
         wsUrl = `${baseUrl}${host}${endpoint}?access_token=${encodeURIComponent(token)}`;
       }
-      const ws = new WebSocket(wsUrl);
+  const ws = new WebSocket(wsUrl);
+  globalWsRef = ws;
       
       ws.onopen = () => {
-        console.log('WebSocket connected');
+  console.log('WebSocket connected (单例)');
         setIsConnected(true);
         setConnectionError(null);
-        reconnectAttemptsRef.current = 0;
+  reconnectAttemptsRef.current = 0;
+  globalConnecting = false;
         
         // 发送启动消息
         ws.send(JSON.stringify({
@@ -493,15 +563,17 @@ export const useWebSocketNotifications = ({
         }));
       };
 
-      ws.onmessage = handleMessage;
+  ws.onmessage = handleMessage;
 
       ws.onclose = (event) => {
-        console.log('WebSocket disconnected:', event.code, event.reason);
+        console.log('WebSocket disconnected (单例):', event.code, event.reason);
         setIsConnected(false);
-        wsRef.current = null;
+        if (wsRef.current === ws) wsRef.current = null;
+        if (globalWsRef === ws) globalWsRef = null;
+        globalConnecting = false;
         
         // 自动重连
-        if (isAuthenticated && reconnectAttemptsRef.current < maxReconnectAttempts) {
+        if (isAuthenticated && (globalMessageListeners.size > 0 || globalNotificationListeners.size > 0) && reconnectAttemptsRef.current < maxReconnectAttempts) {
           const delay = reconnectDelayBase * Math.pow(2, reconnectAttemptsRef.current);
           reconnectAttemptsRef.current++;
           
@@ -516,7 +588,7 @@ export const useWebSocketNotifications = ({
       };
 
       ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error('WebSocket error (单例):', error);
         console.log('WebSocket URL:', wsUrl);
         console.log('Endpoint:', endpoint);
         setConnectionError(`WebSocket connection error: ${endpoint}`);
@@ -527,6 +599,7 @@ export const useWebSocketNotifications = ({
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error);
       setConnectionError('Failed to create WebSocket connection');
+      globalConnecting = false;
     }
   }, [isAuthenticated, getWebSocketEndpoint, handleMessage]);
 
@@ -536,26 +609,32 @@ export const useWebSocketNotifications = ({
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
-    
-    if (wsRef.current) {
-      // 发送结束消息
-      if (wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
-          event: 'chat.end'
-        }));
-      }
-      
-      wsRef.current.close();
+    // 只有当没有剩余监听器时才真正关闭全局连接
+    const shouldClose = globalMessageListeners.size === 0 && globalNotificationListeners.size === 0;
+    if (shouldClose && globalWsRef) {
+      try {
+        if (globalWsRef.readyState === WebSocket.OPEN) {
+          globalWsRef.send(JSON.stringify({ event: 'chat.end' }));
+        }
+        globalWsRef.close();
+      } catch { /* ignore */ }
+      globalWsRef = null;
+    }
+    if (wsRef.current && wsRef.current !== globalWsRef) {
+      try { wsRef.current.close(); } catch { /* ignore */ }
       wsRef.current = null;
     }
-    
+    globalConnecting = false;
     setIsConnected(false);
     setConnectionError(null);
     reconnectAttemptsRef.current = 0;
     
     // 清理缓存
-    endpointCacheRef.current = null;
-    lastConnectAttemptRef.current = 0;
+    if (shouldClose) {
+      endpointCacheRef.current = null;
+      globalEndpointCache = null;
+      lastConnectAttemptRef.current = 0;
+    }
   }, []);
 
   // 管理连接状态
@@ -565,11 +644,10 @@ export const useWebSocketNotifications = ({
     } else {
       disconnect();
     }
-    
     return () => {
       disconnect();
     };
-  }, [isAuthenticated]); // 移除connect和disconnect依赖，避免循环重连
+  }, [isAuthenticated]);
 
   // 页面可见性变化时重连
   useEffect(() => {

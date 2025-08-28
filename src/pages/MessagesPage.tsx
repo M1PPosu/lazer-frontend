@@ -47,6 +47,8 @@ const MessagesPage: React.FC = () => {
   const [channels, _setChannels] = useState<ChatChannel[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<ChatChannel | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // 保存最新消息数组避免 WebSocket 回调闭包使用过期的 messages
+  const messagesRef = useRef<ChatMessage[]>([]);
   const [channelFilter, setChannelFilter] = useState<ChannelFilter>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -135,7 +137,7 @@ const MessagesPage: React.FC = () => {
       const shouldAddToCurrentChannel = currentSelectedChannel && message.channel_id === currentSelectedChannel.channel_id;
       
       if (shouldAddToCurrentChannel) {
-        console.log('添加消息到当前频道，当前列表长度:', messages.length);
+        console.log('添加消息到当前频道，当前列表长度:', messagesRef.current.length);
         addMessageToList(message, 'websocket');
       } else if (currentSelectedChannel) {
         console.log('消息不属于当前频道，当前频道:', currentSelectedChannel.channel_id, '消息频道:', message.channel_id);
@@ -306,6 +308,11 @@ const MessagesPage: React.FC = () => {
     selectedChannelRef.current = selectedChannel;
     console.log('同步选中频道到ref:', selectedChannel?.name || 'null');
   }, [selectedChannel]);
+
+  // 同步 messages 到 ref
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // 监听通知变化，处理私聊通知
   useEffect(() => {
@@ -671,6 +678,7 @@ const MessagesPage: React.FC = () => {
       const newMessages = [...prev, messageWithLocalTime];
       newMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       
+  messagesRef.current = newMessages;
       return newMessages;
     });
 
