@@ -44,7 +44,7 @@ type ChannelFilter = 'all' | 'private' | 'team' | 'public';
 const MessagesPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('channels');
-  const [channels, setChannels] = useState<ChatChannel[]>([]);
+  const [channels, _setChannels] = useState<ChatChannel[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<ChatChannel | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [channelFilter, setChannelFilter] = useState<ChannelFilter>('all');
@@ -58,9 +58,19 @@ const MessagesPage: React.FC = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedChannelRef = useRef<ChatChannel | null>(null);
+  const channelsRef = useRef<ChatChannel[]>([]);
   const initialLoadRef = useRef<boolean>(true); // 首次加载标记
   const userScrolledUpRef = useRef<boolean>(false); // 用户是否向上滚动离开底部
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // 同时更新状态和 ref 的 setChannels 函数
+  const setChannels = useCallback((value: ChatChannel[] | ((prev: ChatChannel[]) => ChatChannel[])) => {
+    _setChannels(prev => {
+      const newChannels = typeof value === 'function' ? value(prev) : value;
+      channelsRef.current = newChannels;
+      return newChannels;
+    });
+  }, []);
 
   // 更新频道已读状态
   const updateChannelReadStatus = useCallback((channelId: number, messageId: number) => {
@@ -93,13 +103,23 @@ const MessagesPage: React.FC = () => {
         isAuthenticated,
         currentUser: user,
         onNewMessage: (message) => {
+          console.log('WebSocket收到消息（处理前）:', {
+            messageId: message.message_id,
+            channelId: message.channel_id,
+            senderId: message.sender_id,
+            userId: user?.id,
+            content: message.content.substring(0, 50),
+            selectedChannelId: selectedChannelRef.current?.channel_id,
+            selectedChannelName: selectedChannelRef.current?.name
+          });
+          
           // 过滤自己的消息，不显示推送
           if (message.sender_id === user?.id) {
-            console.log('收到自己的消息，跳过处理:', message.message_id);
+            console.log('收到自己的消息，跳过处理:', message.message_id, 'sender_id:', message.sender_id, 'user.id:', user?.id);
             return;
           }
           
-          console.log('WebSocket收到消息:', {
+          console.log('WebSocket收到消息（处理后）:', {
             messageId: message.message_id,
             channelId: message.channel_id,
             senderId: message.sender_id,
@@ -121,12 +141,12 @@ const MessagesPage: React.FC = () => {
         console.log('消息不属于当前频道，当前频道:', currentSelectedChannel.channel_id, '消息频道:', message.channel_id);
       } else {
         console.log('没有选中的频道，尝试找到对应频道并自动选择');
-        console.log('当前频道列表长度:', channels.length);
+        console.log('当前频道列表长度:', channelsRef.current.length);
         console.log('目标频道ID:', message.channel_id);
-        console.log('频道列表:', channels.map(ch => ({id: ch.channel_id, name: ch.name})));
+        console.log('频道列表:', channelsRef.current.map(ch => ({id: ch.channel_id, name: ch.name})));
         
         // 如果没有选中频道，尝试找到对应的频道并自动选择
-        const targetChannel = channels.find(ch => ch.channel_id === message.channel_id);
+        const targetChannel = channelsRef.current.find(ch => ch.channel_id === message.channel_id);
         if (targetChannel) {
           console.log('找到对应频道，自动选择:', targetChannel.name);
           
@@ -137,7 +157,7 @@ const MessagesPage: React.FC = () => {
           console.log('未找到对应频道，频道ID:', message.channel_id);
           
           // 如果没找到频道，可能是频道列表还没加载完，尝试重新加载频道列表
-          if (channels.length === 0) {
+          if (channelsRef.current.length === 0) {
             console.log('频道列表为空，尝试重新加载频道');
             chatAPI.getChannels().then(channelsData => {
               console.log('重新加载频道完成，频道数量:', channelsData?.length || 0);
@@ -346,9 +366,13 @@ const MessagesPage: React.FC = () => {
   // 选择频道，加载消息，并添加新消息
   const selectChannelAndAddMessage = async (channel: ChatChannel, newMessage: ChatMessage) => {
     console.log('选择频道并添加消息:', channel.name, '频道ID:', channel.channel_id);
+  // 重置首次加载标记，用于滚动判断
+  initialLoadRef.current = true;
     setSelectedChannel(channel);
     selectedChannelRef.current = channel;
-    setMessages([]);
+  // 记录本次请求，用于竞态检测
+  const requestToken = Symbol('channel-load');
+  (selectChannelAndAddMessage as any).currentToken = requestToken;
     
     if (isMobile) {
       setShowSidebar(false);
@@ -360,6 +384,11 @@ const MessagesPage: React.FC = () => {
       console.log('频道历史消息加载完成:', channelMessages?.length || 0, '条');
       
       if (channelMessages && channelMessages.length > 0) {
+        // 如果在请求完成前频道被再次切换，放弃本次结果
+        if ((selectChannelAndAddMessage as any).currentToken !== requestToken) {
+          console.log('放弃过期的频道历史消息结果 (addMessage path)');
+          return;
+        }
         // 转换所有历史消息的时间戳
         const messagesWithLocalTime = channelMessages.map((msg: ChatMessage) => ({
           ...msg,
@@ -369,19 +398,25 @@ const MessagesPage: React.FC = () => {
         // 检查新消息是否已经在历史消息中
         const messageExists = messagesWithLocalTime.find((m: ChatMessage) => m.message_id === newMessage.message_id);
         
-        // 设置消息列表（包含新消息）
-        if (messageExists) {
-          console.log('新消息已在历史消息中，只设置历史消息');
-          setMessages(messagesWithLocalTime);
-        } else {
-          console.log('添加新消息到历史消息列表');
-          setMessages([...messagesWithLocalTime, {
-            ...newMessage,
-            timestamp: convertUTCToLocal(newMessage.timestamp)
-          }]);
-        }
+        // 使用函数式更新，避免覆盖在加载过程中到达的消息
+        setMessages(prev => {
+          console.log('合并历史消息与 in-flight 消息(仅当前频道)');
+          // 只保留当前频道在加载期间通过 WS 到达的消息
+          const inflight = prev.filter(m => m.channel_id === channel.channel_id);
+          const mergedMap = new Map<number, ChatMessage>();
+          [...messagesWithLocalTime, ...inflight].forEach(m => mergedMap.set(m.message_id, m));
+          if (!messageExists) {
+            mergedMap.set(newMessage.message_id, {
+              ...newMessage,
+              timestamp: convertUTCToLocal(newMessage.timestamp)
+            });
+          }
+          const all = Array.from(mergedMap.values()).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          console.log('最终消息列表数量:', all.length);
+          return all;
+        });
         
-                // 标记最后一条消息为已读
+        // 标记最后一条消息为已读
         const lastMessage = channelMessages[channelMessages.length - 1];
         console.log('标记最后一条消息为已读:', lastMessage.message_id);
         throttledMarkAsRead(channel.channel_id, lastMessage.message_id);
@@ -401,10 +436,15 @@ const MessagesPage: React.FC = () => {
         }
       } else {
         console.log('频道没有历史消息，只显示新消息');
-        setMessages([{
-          ...newMessage,
-          timestamp: convertUTCToLocal(newMessage.timestamp)
-        }]);
+        setMessages(prev => {
+          const inflight = prev.filter(m => m.channel_id === channel.channel_id);
+          const exists = inflight.some(m => m.message_id === newMessage.message_id);
+            return exists ? inflight : [...inflight, {
+              ...newMessage,
+              timestamp: convertUTCToLocal(newMessage.timestamp)
+            }];
+        });
+        
         // 无历史消息也要处理通知
         if (channel.type === 'PM') {
           try {
@@ -417,15 +457,31 @@ const MessagesPage: React.FC = () => {
             console.error('标记私聊通知已读失败(空历史 addMessage):', e);
           }
         }
-        }
+      }
     } catch (error) {
       console.error('加载频道消息失败:', error);
       toast.error('加载消息失败');
       // 即使加载失败，也要显示新消息
-      setMessages([{
-        ...newMessage,
-        timestamp: convertUTCToLocal(newMessage.timestamp)
-      }]);
+      setMessages(prev => {
+        let allMessages = [...prev];
+        
+        const newMessageWithLocalTime = {
+          ...newMessage,
+          timestamp: convertUTCToLocal(newMessage.timestamp)
+        };
+        
+        // 检查新消息是否已存在
+        const messageExists = allMessages.find(msg => msg.message_id === newMessage.message_id);
+        if (!messageExists) {
+          allMessages.push(newMessageWithLocalTime);
+        }
+        
+        // 按时间戳排序
+        allMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        
+        return allMessages;
+      });
+      
       if (channel.type === 'PM') {
         try {
           const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
@@ -443,9 +499,13 @@ const MessagesPage: React.FC = () => {
   // 选择频道并加载消息
   const selectChannel = async (channel: ChatChannel) => {
     console.log('选择频道:', channel.name, '类型:', channel.type, '频道ID:', channel.channel_id);
+  // 重置首次加载标记
+  initialLoadRef.current = true;
     setSelectedChannel(channel);
     selectedChannelRef.current = channel;
-    setMessages([]);
+  // 记录请求 token 用于竞态
+  const requestToken = Symbol('channel-load');
+  (selectChannel as any).currentToken = requestToken;
     
     if (isMobile) {
       setShowSidebar(false);
@@ -497,6 +557,10 @@ const MessagesPage: React.FC = () => {
       console.log('频道消息加载完成:', channelMessages?.length || 0, '条');
       
       if (channelMessages && channelMessages.length > 0) {
+        if ((selectChannel as any).currentToken !== requestToken) {
+          console.log('放弃过期的频道消息结果');
+          return;
+        }
         // 转换所有历史消息的时间戳
         const messagesWithLocalTime = channelMessages.map((msg: ChatMessage) => ({
           ...msg,
@@ -504,7 +568,17 @@ const MessagesPage: React.FC = () => {
         }));
         
         console.log('设置消息列表，消息数量:', messagesWithLocalTime.length);
-        setMessages(messagesWithLocalTime);
+        
+        // 使用函数式更新，保留可能在加载过程中到达的新消息
+        setMessages(prev => {
+          console.log('合并历史消息与 in-flight 消息(仅当前频道)');
+          const inflight = prev.filter(m => m.channel_id === channel.channel_id);
+          const mergedMap = new Map<number, ChatMessage>();
+          [...messagesWithLocalTime, ...inflight].forEach(m => mergedMap.set(m.message_id, m));
+          const all = Array.from(mergedMap.values()).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          console.log('最终消息列表数量:', all.length);
+          return all;
+        });
         
         // 标记最后一条消息为已读
         const lastMessage = channelMessages[channelMessages.length - 1];
@@ -523,9 +597,14 @@ const MessagesPage: React.FC = () => {
             console.error('标记私聊通知已读失败(selectChannel):', e);
           }
         }
-      } else {
+    } else {
         console.log('频道没有历史消息');
-        setMessages([]);
+        // 即使没有历史消息，也要保留可能在加载过程中到达的消息
+        setMessages(prev => {
+      const inflight = prev.filter(m => m.channel_id === channel.channel_id);
+      return inflight.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        });
+        
         if (channel.type === 'PM') {
           try {
             const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
@@ -541,7 +620,13 @@ const MessagesPage: React.FC = () => {
     } catch (error) {
       console.error('加载频道消息失败:', error);
       toast.error('加载消息失败');
-      setMessages([]);
+      
+      // 即使加载失败，也要保留可能已经到达的消息
+      setMessages(prev => {
+        console.log('频道加载失败，保留现有消息数量:', prev.length);
+        return prev;
+      });
+      
       if (channel.type === 'PM') {
         try {
           const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
@@ -560,6 +645,13 @@ const MessagesPage: React.FC = () => {
   const addMessageToList = useCallback((message: ChatMessage, source: 'api' | 'websocket') => {
     console.log(`添加消息(${source}): ID=${message.message_id}, 频道ID=${message.channel_id}, 发送者=${message.sender_id}, 内容="${message.content.substring(0, 30)}"`);
     
+    // 检查消息是否属于当前选中的频道
+    const currentChannel = selectedChannelRef.current;
+    if (!currentChannel || message.channel_id !== currentChannel.channel_id) {
+      console.log(`消息不属于当前频道，跳过添加。当前频道: ${currentChannel?.channel_id || 'null'}, 消息频道: ${message.channel_id}`);
+      return;
+    }
+    
     const messageWithLocalTime = {
       ...message,
       timestamp: convertUTCToLocal(message.timestamp)
@@ -573,18 +665,21 @@ const MessagesPage: React.FC = () => {
         return prev;
       }
       
-      console.log(`成功添加消息: ${message.message_id}, 当前消息列表长度: ${prev.length + 1}`);
-      return [...prev, messageWithLocalTime];
+      console.log(`成功添加消息: ${message.message_id}, 当前消息列表长度: ${prev.length} -> ${prev.length + 1}`);
+      
+      // 确保消息按时间戳排序插入
+      const newMessages = [...prev, messageWithLocalTime];
+      newMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      
+      return newMessages;
     });
 
     // 如果是当前频道的新消息，使用防抖函数标记为已读
-    const currentChannel = selectedChannelRef.current;
-    if (currentChannel && message.channel_id === currentChannel.channel_id) {
-      console.log(`准备标记消息为已读: ${message.message_id}, 频道: ${currentChannel.name}`);
+    console.log(`准备标记消息为已读: ${message.message_id}, 频道: ${currentChannel.name}`);
+    // 使用 setTimeout 来避免循环依赖
+    setTimeout(() => {
       throttledMarkAsRead(message.channel_id, message.message_id);
-    } else {
-      console.log(`消息不属于当前频道或没有选中频道，当前频道: ${currentChannel?.name || 'null'}, 消息频道: ${message.channel_id}`);
-    }
+    }, 0);
   }, []);
 
   // 发送消息
@@ -1024,6 +1119,34 @@ const MessagesPage: React.FC = () => {
         
         //console.log('私聊频道已添加到列表');
         //toast.success(`发现新的私聊: ${userName}`);
+        
+        // 从通知中提取消息内容并创建聊天消息对象
+        const messageContent = notification.details?.title as string;
+        if (messageContent) {
+          console.log('从通知中提取消息内容，准备添加到聊天列表:', messageContent);
+          
+          // 创建一个临时的消息对象（基于通知信息）
+          const chatMessage: ChatMessage = {
+            message_id: Date.now() + Math.random(), // 生成临时的唯一消息ID
+            channel_id: parseInt(notification.object_id.toString()),
+            content: messageContent,
+            timestamp: notification.created_at,
+            sender_id: sourceUserId,
+            is_action: false,
+            // sender 是可选的，暂不提供完整的 User 对象
+          };
+          
+          console.log('创建的临时聊天消息对象:', chatMessage);
+          
+          // 如果当前没有选中频道，或者选中的频道就是这个私聊频道，则添加消息
+          const currentChannel = selectedChannelRef.current;
+          if (!currentChannel || currentChannel.channel_id === newPrivateChannel.channel_id) {
+            console.log('将从通知提取的消息添加到当前聊天列表');
+            addMessageToList(chatMessage, 'websocket');
+          } else {
+            console.log('当前选中的不是对应私聊频道，消息暂不显示');
+          }
+        }
         
       } catch (error) {
         console.error('处理私聊通知失败:', error);
