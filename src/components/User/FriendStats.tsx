@@ -48,7 +48,7 @@ export default function FriendStats({ user, selfId }: { user: User; selfId?: num
   });
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 relative">
       <FriendActions
         status={status}
         onAdd={add}

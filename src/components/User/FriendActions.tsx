@@ -22,7 +22,6 @@ import {
   useDismiss,
   useRole,
   useInteractions,
-  FloatingPortal,
   FloatingFocusManager,
 } from "@floating-ui/react";
 
@@ -73,10 +72,14 @@ const FriendActions: React.FC<FriendActionsProps> = ({
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
     onOpenChange: setIsOpen,
+    placement: "bottom-start", // 恢复 bottom-start
+    strategy: "absolute", // 改回 absolute 定位策略
+    //transform: false, // 禁用 transform，使用原生定位
     middleware: [
-      offset(8),
+      offset({ mainAxis: 12, crossAxis: 0 }), // 增加主轴偏移确保在下方
       flip({
         fallbackAxisSideDirection: "start",
+        padding: 5,
       }),
       shift({
         padding: 8,
@@ -368,41 +371,46 @@ const FriendActions: React.FC<FriendActionsProps> = ({
         )}
       </motion.button>
 
-      {/* 使用 FloatingPortal 渲染菜单到 body */}
+      {/* 弹出菜单 */}
       {isOpen && (
-        <FloatingPortal>
-          <FloatingFocusManager context={context} modal={false}>
-            <div
-              ref={refs.setFloating}
-              style={floatingStyles}
-              {...getFloatingProps()}
-              className="w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 overflow-hidden focus:outline-none z-[9999]"
-            >
-              {menuItems.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={async () => {
-                    try {
-                      await item.action();
-                      setIsOpen(false); // 关闭菜单
-                    } catch (error) {
-                      console.error("Action failed:", error);
-                    }
-                  }}
-                  className={`
-                    w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium
-                    transition-all duration-200
-                    hover:bg-gray-100 dark:hover:bg-gray-800
-                    ${item.className || 'text-gray-700 dark:text-gray-300'}
-                  `}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </FloatingFocusManager>
-        </FloatingPortal>
+        <FloatingFocusManager context={context} modal={false}>
+          <motion.div
+            ref={refs.setFloating}
+            style={{
+              ...floatingStyles,
+              transform: `${floatingStyles.transform || ''} translateY(8px)`, // 强制向下偏移
+            }}
+            {...getFloatingProps()}
+            initial={{ opacity: 0, scale: 0.95, y: -5 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -5 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="mt-10 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 overflow-hidden focus:outline-none z-[9999]"
+          >
+            {menuItems.map((item) => (
+              <button
+                key={item.key}
+                onClick={async () => {
+                  try {
+                    await item.action();
+                    setIsOpen(false); // 关闭菜单
+                  } catch (error) {
+                    console.error("Action failed:", error);
+                  }
+                }}
+                className={`
+                  w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-medium
+                  transition-all duration-200
+                  hover:bg-gray-100 dark:hover:bg-gray-800
+                  ${item.className || 'text-gray-700 dark:text-gray-300'}
+                `}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </motion.div>
+        </FloatingFocusManager>
       )}
     </div>
   );
