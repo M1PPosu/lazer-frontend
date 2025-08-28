@@ -57,6 +57,9 @@ const MessagesPage: React.FC = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedChannelRef = useRef<ChatChannel | null>(null);
+  const initialLoadRef = useRef<boolean>(true); // 首次加载标记
+  const userScrolledUpRef = useRef<boolean>(false); // 用户是否向上滚动离开底部
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   // 更新频道已读状态
   const updateChannelReadStatus = useCallback((channelId: number, messageId: number) => {
@@ -168,32 +171,7 @@ const MessagesPage: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 自动滚动到最新消息
-  useEffect(() => {
-    console.log('消息列表更新，当前消息数量:', messages.length);
-    messages.forEach((msg, index) => {
-      console.log(`消息${index + 1}:`, msg.message_id, msg.content.substring(0, 20));
-    });
-    
-    // 延迟滚动，确保DOM更新完成
-    const timer = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      
-      // 滚动完成后，标记所有可见消息为已读
-      if (messages.length > 0 && selectedChannelRef.current) {
-        const lastMessage = messages[messages.length - 1];
-        const currentChannel = selectedChannelRef.current;
-        
-        // 只有当最后一条消息的ID大于当前已读ID时才更新
-        if (lastMessage.message_id > (currentChannel.last_read_id || 0)) {
-          console.log(`滚动完成后标记已读: ${lastMessage.message_id}`);
-          throttledMarkAsRead(currentChannel.channel_id, lastMessage.message_id);
-        }
-      }
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, [messages, updateChannelReadStatus]);
+  // （滚动相关 useEffect 已移动到 throttledMarkAsRead 定义之后，避免提前引用）
 
   // 加载频道数据
   useEffect(() => {
@@ -407,12 +385,37 @@ const MessagesPage: React.FC = () => {
         console.log('标记最后一条消息为已读:', lastMessage.message_id);
         throttledMarkAsRead(channel.channel_id, lastMessage.message_id);
         console.log('消息已读标记完成');
+
+        // 私聊频道：打开后立即标记相关通知为已读（即使 last_read 已是最新也要确保通知消失）
+        if (channel.type === 'PM') {
+          try {
+            const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
+            if (relatedPmNotifications.some(n => !n.is_read)) {
+              console.log('私聊频道打开，自动标记通知为已读 (addMessage path):', relatedPmNotifications.map(n => n.id));
+              await removeNotificationByObject(channel.channel_id.toString(), 'channel');
+            }
+          } catch (e) {
+            console.error('标记私聊通知已读失败(selectChannelAndAddMessage):', e);
+          }
+        }
       } else {
         console.log('频道没有历史消息，只显示新消息');
         setMessages([{
           ...newMessage,
           timestamp: convertUTCToLocal(newMessage.timestamp)
         }]);
+        // 无历史消息也要处理通知
+        if (channel.type === 'PM') {
+          try {
+            const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
+            if (relatedPmNotifications.some(n => !n.is_read)) {
+              console.log('私聊频道(空历史)打开，自动标记通知为已读 (addMessage path)');
+              await removeNotificationByObject(channel.channel_id.toString(), 'channel');
+            }
+          } catch (e) {
+            console.error('标记私聊通知已读失败(空历史 addMessage):', e);
+          }
+        }
         }
     } catch (error) {
       console.error('加载频道消息失败:', error);
@@ -422,6 +425,17 @@ const MessagesPage: React.FC = () => {
         ...newMessage,
         timestamp: convertUTCToLocal(newMessage.timestamp)
       }]);
+      if (channel.type === 'PM') {
+        try {
+          const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
+          if (relatedPmNotifications.some(n => !n.is_read)) {
+            console.log('私聊频道(加载失败)打开，自动标记通知为已读');
+            await removeNotificationByObject(channel.channel_id.toString(), 'channel');
+          }
+        } catch (e) {
+          console.error('标记私聊通知已读失败(加载失败 addMessage):', e);
+        }
+      }
     }
   };
 
@@ -496,14 +510,48 @@ const MessagesPage: React.FC = () => {
         console.log('标记最后一条消息为已读:', lastMessage.message_id);
         throttledMarkAsRead(channel.channel_id, lastMessage.message_id);
         console.log('消息已读标记完成');
+
+        if (channel.type === 'PM') {
+          try {
+            const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
+            if (relatedPmNotifications.some(n => !n.is_read)) {
+              console.log('私聊频道打开，自动标记通知为已读 (selectChannel path):', relatedPmNotifications.map(n => n.id));
+              await removeNotificationByObject(channel.channel_id.toString(), 'channel');
+            }
+          } catch (e) {
+            console.error('标记私聊通知已读失败(selectChannel):', e);
+          }
+        }
       } else {
         console.log('频道没有历史消息');
         setMessages([]);
+        if (channel.type === 'PM') {
+          try {
+            const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
+            if (relatedPmNotifications.some(n => !n.is_read)) {
+              console.log('空私聊频道打开，自动标记通知为已读 (selectChannel path)');
+              await removeNotificationByObject(channel.channel_id.toString(), 'channel');
+            }
+          } catch (e) {
+            console.error('标记私聊通知已读失败(空频道 selectChannel):', e);
+          }
+        }
       }
     } catch (error) {
       console.error('加载频道消息失败:', error);
       toast.error('加载消息失败');
       setMessages([]);
+      if (channel.type === 'PM') {
+        try {
+          const relatedPmNotifications = notifications.filter(n => n.name === 'channel_message' && n.object_id === channel.channel_id.toString());
+          if (relatedPmNotifications.some(n => !n.is_read)) {
+            console.log('私聊频道(加载失败)打开，自动标记通知为已读 (selectChannel)');
+            await removeNotificationByObject(channel.channel_id.toString(), 'channel');
+          }
+        } catch (e) {
+          console.error('标记私聊通知已读失败(加载失败 selectChannel):', e);
+        }
+      }
     }
   };
 
@@ -616,6 +664,54 @@ const MessagesPage: React.FC = () => {
     })(),
     [notifications, removeNotificationByObject]
   );
+
+  // 监听滚动，判断用户是否离开底部（移动到 throttledMarkAsRead 之后）
+  useEffect(() => {
+    const container = scrollContainerRef.current || document.querySelector('#chat-message-scroll-container');
+    if (!container) return;
+    const el = container as HTMLElement;
+    const onScroll = () => {
+      const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      userScrolledUpRef.current = distanceToBottom > 120; // 超过120px认为离开底部
+    };
+    el.addEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // 条件自动滚动：仅当 (非首次加载 && 用户仍在底部附近) 或 (新消息来自自己) 才滚动
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const lastMessage = messages[messages.length - 1];
+    const currentChannel = selectedChannelRef.current;
+    if (!currentChannel) return;
+
+    const container = scrollContainerRef.current || document.querySelector('#chat-message-scroll-container');
+    let nearBottom = true;
+    if (container) {
+      const el = container as HTMLElement;
+      const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      nearBottom = distanceToBottom < 150; // 150px 以内视为接近底部
+    }
+
+    const isOwnMessage = lastMessage.sender_id === user?.id;
+    const isInitial = initialLoadRef.current;
+
+    // 首次加载：不自动滚动，之后重置标记
+    if (isInitial) {
+      initialLoadRef.current = false;
+      return; // 不滚动
+    }
+
+    if (!userScrolledUpRef.current || nearBottom || isOwnMessage) {
+      // 执行平滑滚动到末尾
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 标记已读逻辑（与之前一致）
+    if (lastMessage.message_id > (currentChannel.last_read_id || 0)) {
+      throttledMarkAsRead(currentChannel.channel_id, lastMessage.message_id);
+    }
+  }, [messages, throttledMarkAsRead, user?.id]);
 
   // 消息可见性检测 - 当用户真正"看到"消息时自动标记已读
   useEffect(() => {

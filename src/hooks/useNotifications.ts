@@ -273,10 +273,10 @@ export const useNotifications = (isAuthenticated: boolean, currentUser?: User | 
       }
       
       // 调用API批量标记为已读 (object_type 后端是字符串)
+      // 仅按 object_id 标记已读，避免传递 object_type (后端期望 int 会解析失败)
       await notificationsAPI.markMultipleAsRead([
         {
           object_id: parseInt(objectId),
-          object_type: objectType,
         }
       ]);
       

@@ -639,11 +639,17 @@ export const notificationsAPI = {
     });
   },
 
-  // 批量标记通知为已读（支持 id / object_id+object_type / category）
-  markMultipleAsRead: async (identities: Array<{ id?: number; object_id?: number; object_type?: string; category?: string }>) => {
+  // 批量标记通知为已读（后端 _IdentityReq 仅支持 id/object_id/category，object_type 被定义为 int 会与字符串冲突，故不发送）
+  markMultipleAsRead: async (identities: Array<{ id?: number; object_id?: number; category?: string; object_type?: string }>) => {
     if (!identities || identities.length === 0) return;
+    // 过滤/转换字段，去掉 object_type，object_id 确保为 number
+    const safeIdentities = identities.map(i => ({
+      ...(i.id !== undefined ? { id: i.id } : {}),
+      ...(i.object_id !== undefined ? { object_id: Number(i.object_id) } : {}),
+      ...(i.category ? { category: i.category } : {}),
+    }));
     await api.post('/api/v2/notifications/mark-read', {
-      identities,
+      identities: safeIdentities,
       notifications: [],
     }, {
       headers: { 'Content-Type': 'application/json' },
