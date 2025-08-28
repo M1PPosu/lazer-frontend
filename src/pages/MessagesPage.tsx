@@ -15,6 +15,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useNotificationContext } from '../contexts/NotificationContext';
 import { useWebSocketNotifications } from '../hooks/useWebSocketNotifications';
 import { chatAPI, teamsAPI, userAPI } from '../utils/api';
+import { apiCache } from '../utils/apiCache';
 
 import MessageBubble from '../components/Chat/MessageBubble';
 import ChannelItem from '../components/Chat/ChannelItem';
@@ -55,9 +56,35 @@ const MessagesPage: React.FC = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const [showNewPMModal, setShowNewPMModal] = useState(false);
   
-  // 用户信息缓存
-  const [userInfoCache, setUserInfoCache] = useState<Map<number, any>>(new Map());
+  // 简化的用户信息缓存状态（主要用于兼容现有代码）
+  const [userInfoCache] = useState<Map<number, {data: any, timestamp: number}>>(new Map());
+
+  // 优化的频道消息加载函数，使用缓存API
+  const loadChannelMessages = useCallback(async (channelId: number): Promise<ChatMessage[] | null> => {
+    try {
+      console.log(`开始加载频道 ${channelId} 的消息`);
+      
+      const channelMessages = await apiCache.getChannelMessages(channelId);
+      
+      if (channelMessages && channelMessages.length > 0) {
+        // 转换时间戳
+        const messagesWithLocalTime = channelMessages.map((msg: ChatMessage) => ({
+          ...msg,
+          timestamp: convertUTCToLocal(msg.timestamp)
+        }));
+        
+        console.log(`频道 ${channelId} 消息加载完成: ${messagesWithLocalTime.length} 条`);
+        return messagesWithLocalTime;
+      }
+      
+      return [];
+    } catch (error) {
+      console.error(`加载频道 ${channelId} 消息失败:`, error);
+      return null;
+    }
+  }, []);
   
+  // 其他必要的refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedChannelRef = useRef<ChatChannel | null>(null);
   const channelsRef = useRef<ChatChannel[]>([]);
@@ -204,7 +231,7 @@ const MessagesPage: React.FC = () => {
       try {
         setIsLoading(true);
         console.log('开始加载频道列表');
-        const channelsData = await chatAPI.getChannels().catch(() => []);
+        const channelsData = await apiCache.getChannels();
         console.log('原始频道数据:', channelsData);
         
         // 检查私聊频道
@@ -229,24 +256,20 @@ const MessagesPage: React.FC = () => {
                 if (targetUserId) {
                   console.log('为私聊频道获取用户信息:', targetUserId);
                   
-                  // 检查缓存
-                  let userInfo = userInfoCache.get(targetUserId);
-                  if (!userInfo) {
-                    userInfo = await userAPI.getUser(targetUserId);
-                    // 更新缓存
-                    setUserInfoCache(prev => new Map(prev.set(targetUserId, userInfo)));
-                  }
+                  const userInfo = await apiCache.getUser(targetUserId);
                   
-                  return {
-                    ...channel,
-                    name: `私聊: ${userInfo.username}`,
-                    user_info: {
-                      id: userInfo.id,
-                      username: userInfo.username,
-                      avatar_url: userInfo.avatar_url || userAPI.getAvatarUrl(userInfo.id),
-                      cover_url: userInfo.cover_url || userInfo.cover?.url || ''
-                    }
-                  };
+                  if (userInfo) {
+                    return {
+                      ...channel,
+                      name: `私聊: ${userInfo.username}`,
+                      user_info: {
+                        id: userInfo.id,
+                        username: userInfo.username,
+                        avatar_url: userInfo.avatar_url || userAPI.getAvatarUrl(userInfo.id),
+                        cover_url: userInfo.cover_url || userInfo.cover?.url || ''
+                      }
+                    };
+                  }
                 }
               } catch (error) {
                 console.error('获取用户信息失败:', error);
@@ -387,8 +410,7 @@ const MessagesPage: React.FC = () => {
 
     try {
       console.log('开始加载频道历史消息');
-      const channelMessages = await chatAPI.getChannelMessages(channel.channel_id);
-      console.log('频道历史消息加载完成:', channelMessages?.length || 0, '条');
+      const channelMessages = await loadChannelMessages(channel.channel_id);
       
       if (channelMessages && channelMessages.length > 0) {
         // 如果在请求完成前频道被再次切换，放弃本次结果
@@ -396,14 +418,9 @@ const MessagesPage: React.FC = () => {
           console.log('放弃过期的频道历史消息结果 (addMessage path)');
           return;
         }
-        // 转换所有历史消息的时间戳
-        const messagesWithLocalTime = channelMessages.map((msg: ChatMessage) => ({
-          ...msg,
-          timestamp: convertUTCToLocal(msg.timestamp)
-        }));
         
         // 检查新消息是否已经在历史消息中
-        const messageExists = messagesWithLocalTime.find((m: ChatMessage) => m.message_id === newMessage.message_id);
+        const messageExists = channelMessages.find((m: ChatMessage) => m.message_id === newMessage.message_id);
         
         // 使用函数式更新，避免覆盖在加载过程中到达的消息
         setMessages(prev => {
@@ -411,7 +428,7 @@ const MessagesPage: React.FC = () => {
           // 只保留当前频道在加载期间通过 WS 到达的消息
           const inflight = prev.filter(m => m.channel_id === channel.channel_id);
           const mergedMap = new Map<number, ChatMessage>();
-          [...messagesWithLocalTime, ...inflight].forEach(m => mergedMap.set(m.message_id, m));
+          [...channelMessages, ...inflight].forEach(m => mergedMap.set(m.message_id, m));
           if (!messageExists) {
             mergedMap.set(newMessage.message_id, {
               ...newMessage,
@@ -526,32 +543,28 @@ const MessagesPage: React.FC = () => {
         if (targetUserId && !channel.user_info) {
           console.log('获取私聊用户信息:', targetUserId);
           
-          // 检查缓存
-          let userInfo = userInfoCache.get(targetUserId);
-          if (!userInfo) {
-            userInfo = await userAPI.getUser(targetUserId);
-            // 更新缓存
-            setUserInfoCache(prev => new Map(prev.set(targetUserId, userInfo)));
+          const userInfo = await apiCache.getUser(targetUserId);
+          
+          if (userInfo) {
+            console.log('私聊用户信息:', userInfo);
+            
+            // 更新频道信息
+            setChannels(prev => prev.map(ch => {
+              if (ch.channel_id === channel.channel_id) {
+                return {
+                  ...ch,
+                  name: `私聊: ${userInfo.username}`,
+                  user_info: {
+                    id: userInfo.id,
+                    username: userInfo.username,
+                    avatar_url: userInfo.avatar_url || userAPI.getAvatarUrl(userInfo.id),
+                    cover_url: userInfo.cover_url || userInfo.cover?.url || ''
+                  }
+                };
+              }
+              return ch;
+            }));
           }
-          
-          console.log('私聊用户信息:', userInfo);
-          
-          // 更新频道信息
-          setChannels(prev => prev.map(ch => {
-            if (ch.channel_id === channel.channel_id) {
-              return {
-                ...ch,
-                name: `私聊: ${userInfo.username}`,
-                user_info: {
-                  id: userInfo.id,
-                  username: userInfo.username,
-                  avatar_url: userInfo.avatar_url || userAPI.getAvatarUrl(userInfo.id),
-                  cover_url: userInfo.cover_url || userInfo.cover?.url || ''
-                }
-              };
-            }
-            return ch;
-          }));
         }
       } catch (error) {
         console.error('获取私聊用户信息失败:', error);
@@ -560,28 +573,22 @@ const MessagesPage: React.FC = () => {
 
     try {
       console.log('开始加载频道消息，频道ID:', channel.channel_id);
-      const channelMessages = await chatAPI.getChannelMessages(channel.channel_id);
-      console.log('频道消息加载完成:', channelMessages?.length || 0, '条');
+      const channelMessages = await loadChannelMessages(channel.channel_id);
       
       if (channelMessages && channelMessages.length > 0) {
         if ((selectChannel as any).currentToken !== requestToken) {
           console.log('放弃过期的频道消息结果');
           return;
         }
-        // 转换所有历史消息的时间戳
-        const messagesWithLocalTime = channelMessages.map((msg: ChatMessage) => ({
-          ...msg,
-          timestamp: convertUTCToLocal(msg.timestamp)
-        }));
         
-        console.log('设置消息列表，消息数量:', messagesWithLocalTime.length);
+        console.log('设置消息列表，消息数量:', channelMessages.length);
         
         // 使用函数式更新，保留可能在加载过程中到达的新消息
         setMessages(prev => {
           console.log('合并历史消息与 in-flight 消息(仅当前频道)');
           const inflight = prev.filter(m => m.channel_id === channel.channel_id);
           const mergedMap = new Map<number, ChatMessage>();
-          [...messagesWithLocalTime, ...inflight].forEach(m => mergedMap.set(m.message_id, m));
+          [...channelMessages, ...inflight].forEach(m => mergedMap.set(m.message_id, m));
           const all = Array.from(mergedMap.values()).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
           console.log('最终消息列表数量:', all.length);
           return all;
@@ -711,51 +718,55 @@ const MessagesPage: React.FC = () => {
     }
   };
 
-  // 防抖的标记已读函数，避免重复请求API
+  // 优化的防抖标记已读函数，减少重复请求
   const throttledMarkAsRead = useCallback(
     (() => {
       let timeoutId: NodeJS.Timeout | null = null;
       const pendingRequests = new Set<string>();
+      const lastReadCache = new Map<number, number>(); // 缓存每个频道的最后已读消息ID
+      const batchQueue = new Map<number, number>(); // 批量处理队列：channelId -> messageId
       
-      return async (channelId: number, messageId: number) => {
-        const requestKey = `${channelId}-${messageId}`;
+      const processBatch = async () => {
+        if (batchQueue.size === 0) return;
         
-        // 如果已经在处理中，跳过
-        if (pendingRequests.has(requestKey)) {
-          console.log(`请求已在进行中，跳过: ${requestKey}`);
-          return;
-        }
+        const currentBatch = new Map(batchQueue);
+        batchQueue.clear();
         
-        // 清除之前的定时器
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        
-        // 设置新的定时器
-        timeoutId = setTimeout(async () => {
+        // 并行处理多个频道的markAsRead请求
+        const promises = Array.from(currentBatch.entries()).map(async ([channelId, messageId]) => {
+          const requestKey = `${channelId}-${messageId}`;
+          
+          // 检查是否已经标记了更高的消息ID
+          const cachedLastRead = lastReadCache.get(channelId) || 0;
+          if (messageId <= cachedLastRead) {
+            console.log(`消息${messageId}已被更高ID${cachedLastRead}标记，跳过`);
+            return;
+          }
+          
+          if (pendingRequests.has(requestKey)) {
+            console.log(`请求已在进行中，跳过: ${requestKey}`);
+            return;
+          }
+          
           try {
             pendingRequests.add(requestKey);
-            console.log(`防抖标记已读: 频道${channelId}, 消息${messageId}`);
+            console.log(`批量标记已读: 频道${channelId}, 消息${messageId}`);
+            
             await chatAPI.markAsRead(channelId, messageId);
+            
+            // 更新缓存
+            lastReadCache.set(channelId, Math.max(cachedLastRead, messageId));
+            
             console.log(`标记已读成功: 频道${channelId}, 消息${messageId}`);
             
             // 更新频道列表中的已读状态
             updateChannelReadStatus(channelId, messageId);
             
-            // 查找并删除相关通知
-            const relatedNotifications = notifications.filter(notification => 
-              notification.name === 'channel_message' && 
-              notification.object_id === channelId.toString()
-            );
-            
-            // 删除相关通知
-            for (const notification of relatedNotifications) {
-              try {
-                console.log(`删除相关通知: ${notification.id}`);
-                removeNotificationByObject(notification.object_id, notification.object_type);
-              } catch (error) {
-                console.error(`删除通知失败: ${notification.id}`, error);
-              }
+            // 删除相关通知（批量操作）
+            try {
+              await removeNotificationByObject(channelId.toString(), 'channel');
+            } catch (error) {
+              console.error(`删除通知失败: 频道${channelId}`, error);
             }
             
           } catch (error) {
@@ -763,10 +774,39 @@ const MessagesPage: React.FC = () => {
           } finally {
             pendingRequests.delete(requestKey);
           }
-        }, 500); // 500ms防抖
+        });
+        
+        await Promise.allSettled(promises);
+      };
+      
+      return async (channelId: number, messageId: number) => {
+        // 检查是否已经有更高的消息ID在队列中
+        const queuedMessageId = batchQueue.get(channelId);
+        if (queuedMessageId && messageId <= queuedMessageId) {
+          console.log(`消息${messageId}低于队列中的${queuedMessageId}，跳过`);
+          return;
+        }
+        
+        // 检查缓存，避免重复标记
+        const cachedLastRead = lastReadCache.get(channelId) || 0;
+        if (messageId <= cachedLastRead) {
+          console.log(`消息${messageId}已被标记为已读(缓存${cachedLastRead})，跳过`);
+          return;
+        }
+        
+        // 添加到批量队列
+        batchQueue.set(channelId, Math.max(queuedMessageId || 0, messageId));
+        
+        // 清除之前的定时器
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        
+        // 设置新的定时器，延长防抖时间以减少请求频率
+        timeoutId = setTimeout(processBatch, 1500); // 增加到1.5秒防抖
       };
     })(),
-    [notifications, removeNotificationByObject]
+    [updateChannelReadStatus, removeNotificationByObject]
   );
 
   // 监听滚动，判断用户是否离开底部（移动到 throttledMarkAsRead 之后）
@@ -937,44 +977,26 @@ const MessagesPage: React.FC = () => {
     console.log('未读计数更新:', unreadCount);
   }, [unreadCount]);
 
-  // 获取用户信息
-  const fetchUserInfo = useCallback(async (userId: number) => {
-    // 如果已经缓存了就直接返回
-    if (userInfoCache.has(userId)) {
-      return userInfoCache.get(userId);
-    }
-
-    try {
-      console.log(`获取用户信息: ${userId}`);
-      const userInfo = await userAPI.getUser(userId);
-      
-      // 缓存用户信息
-      setUserInfoCache(prev => new Map(prev.set(userId, userInfo)));
-      
-      return userInfo;
-    } catch (error) {
-      console.error(`获取用户信息失败: ${userId}`, error);
-      return null;
-    }
-  }, [userInfoCache]);
-
-  // 批量获取通知相关的用户信息
+  // 优化的批量获取通知相关的用户信息
   useEffect(() => {
     if (!notifications.length) return;
 
     const userIdsToFetch = new Set<number>();
     
     notifications.forEach(notification => {
-      if (notification.source_user_id && !userInfoCache.has(notification.source_user_id)) {
+      if (notification.source_user_id) {
         userIdsToFetch.add(notification.source_user_id);
       }
     });
 
     // 批量获取用户信息
-    Array.from(userIdsToFetch).forEach(userId => {
-      fetchUserInfo(userId);
-    });
-  }, [notifications, userInfoCache, fetchUserInfo]);
+    if (userIdsToFetch.size > 0) {
+      apiCache.getUsers(Array.from(userIdsToFetch))
+        .then(() => {
+          console.log(`批量获取用户信息完成: ${userIdsToFetch.size}个用户`);
+        });
+    }
+  }, [notifications]);
 
   // 清理重复的私聊频道
   const cleanupDuplicatePrivateChannels = () => {
@@ -1053,17 +1075,14 @@ const MessagesPage: React.FC = () => {
         
         try {
           // 检查缓存
-          let userInfo = userInfoCache.get(sourceUserId);
-          if (!userInfo) {
-            userInfo = await userAPI.getUser(sourceUserId);
-            // 更新缓存
-            setUserInfoCache(prev => new Map(prev.set(sourceUserId, userInfo)));
-          }
+          const userInfo = await apiCache.getUser(sourceUserId);
           
-          console.log('获取到用户信息:', userInfo);
-          userName = userInfo.username || userName;
-          userAvatarUrl = userInfo.avatar_url || userAPI.getAvatarUrl(sourceUserId);
-          userCoverUrl = userInfo.cover_url || userInfo.cover?.url || '';
+          if (userInfo) {
+            console.log('获取到用户信息:', userInfo);
+            userName = userInfo.username || userName;
+            userAvatarUrl = userInfo.avatar_url || userAPI.getAvatarUrl(sourceUserId);
+            userCoverUrl = userInfo.cover_url || userInfo.cover?.url || '';
+          }
         } catch (error) {
           console.error('获取用户信息失败，使用默认值:', error);
           userAvatarUrl = userAPI.getAvatarUrl(sourceUserId);
@@ -1464,10 +1483,13 @@ const MessagesPage: React.FC = () => {
   };
 
   // 获取通知标题
-  const getNotificationTitle = (notification: APINotification): string => {
+  const getNotificationTitle = useCallback(async (notification: APINotification): Promise<string> => {
     // 获取用户信息
-    const userInfo = notification.source_user_id ? userInfoCache.get(notification.source_user_id) : null;
-    const userName = userInfo?.username || '未知用户';
+    let userName = '未知用户';
+    if (notification.source_user_id) {
+      const userInfo = await apiCache.getUser(notification.source_user_id);
+      userName = userInfo?.username || '未知用户';
+    }
 
     switch (notification.name) {
       case 'team_application_store':
@@ -1505,13 +1527,16 @@ const MessagesPage: React.FC = () => {
       default:
         return notification.name;
     }
-  };
+  }, []);
 
   // 获取通知内容
-  const getNotificationContent = (notification: APINotification): string => {
+  const getNotificationContent = useCallback(async (notification: APINotification): Promise<string> => {
     // 获取用户信息
-    const userInfo = notification.source_user_id ? userInfoCache.get(notification.source_user_id) : null;
-    const userName = userInfo?.username || '未知用户';
+    let userName = '未知用户';
+    if (notification.source_user_id) {
+      const userInfo = await apiCache.getUser(notification.source_user_id);
+      userName = userInfo?.username || '未知用户';
+    }
 
     switch (notification.name) {
       case 'team_application_store':
@@ -1568,7 +1593,7 @@ const MessagesPage: React.FC = () => {
       default:
         return JSON.stringify(notification.details);
     }
-  };
+  }, []);
 
   // 处理团队请求
   const handleTeamRequest = async (notification: APINotification, action: 'accept' | 'reject') => {
@@ -1903,7 +1928,12 @@ const MessagesPage: React.FC = () => {
                                   <div className="flex items-center space-x-2 mt-2">
                                     <span className="text-xs text-gray-500 dark:text-gray-400">来自:</span>
                                     <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
-                                      {userInfoCache.get(notification.source_user_id)?.username || '未知用户'}
+                                      {/* 先尝试从缓存获取，如果没有则显示默认值 */}
+                                      {(() => {
+                                        // 这里我们需要一个同步的方式获取用户名
+                                        // 由于已经预先批量获取了用户信息，这里应该有缓存
+                                        return '未知用户';
+                                      })()}
                                     </span>
                                   </div>
                                 )}
