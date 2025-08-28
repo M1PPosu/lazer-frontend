@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { notificationsAPI } from '../utils/api';
+import { apiCache } from '../utils/apiCache';
 import { useWebSocketNotifications } from './useWebSocketNotifications';
 import type { UnreadCount, APINotification, User } from '../types';
 
@@ -29,6 +30,14 @@ export const useNotifications = (isAuthenticated: boolean, currentUser?: User | 
     }
 
     console.log('✓ 处理他人的消息通知:', notification.id);
+
+    // 预获取用户信息以便在UI中显示正确的用户名
+    if (notification.source_user_id && !apiCache.hasCachedUser(notification.source_user_id)) {
+      console.log('预获取通知相关用户信息:', notification.source_user_id);
+      apiCache.getUser(notification.source_user_id).catch(error => {
+        console.error('预获取用户信息失败:', error);
+      });
+    }
 
     setNotifications(prev => {
       // 改进的去重逻辑：基于 object_id, object_type 和 source_user_id 进行去重
@@ -111,6 +120,21 @@ export const useNotifications = (isAuthenticated: boolean, currentUser?: User | 
       const response = await notificationsAPI.getGroupedNotifications();
       
       setNotifications(response.notifications || []);
+      
+      // 预获取所有通知相关的用户信息
+      const userIdsToFetch = new Set<number>();
+      (response.notifications || []).forEach((notification: APINotification) => {
+        if (notification.source_user_id && !apiCache.hasCachedUser(notification.source_user_id)) {
+          userIdsToFetch.add(notification.source_user_id);
+        }
+      });
+      
+      if (userIdsToFetch.size > 0) {
+        console.log(`预获取通知相关用户信息: ${userIdsToFetch.size}个用户`);
+        apiCache.getUsers(Array.from(userIdsToFetch)).catch(error => {
+          console.error('批量获取通知用户信息失败:', error);
+        });
+      }
       
       // 计算未读数量
       const teamRequestCount = response.notifications.filter((n: APINotification) => 

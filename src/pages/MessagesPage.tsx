@@ -56,9 +56,6 @@ const MessagesPage: React.FC = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const [showNewPMModal, setShowNewPMModal] = useState(false);
   
-  // 简化的用户信息缓存状态（主要用于兼容现有代码）
-  const [userInfoCache] = useState<Map<number, {data: any, timestamp: number}>>(new Map());
-
   // 优化的频道消息加载函数，使用缓存API
   const loadChannelMessages = useCallback(async (channelId: number): Promise<ChatMessage[] | null> => {
     try {
@@ -993,6 +990,11 @@ const MessagesPage: React.FC = () => {
       apiCache.getUsers(Array.from(userIdsToFetch))
         .then(() => {
           console.log(`批量获取用户信息完成: ${userIdsToFetch.size}个用户`);
+          // 强制重新渲染以显示正确的用户名
+          setActiveTab(prev => prev); // 触发重新渲染
+        })
+        .catch(error => {
+          console.error('批量获取用户信息失败:', error);
         });
     }
   }, [notifications]);
@@ -1483,11 +1485,13 @@ const MessagesPage: React.FC = () => {
 
   // 获取通知标题
   const getNotificationTitle = useCallback((notification: APINotification): string => {
-    // 获取用户信息（从缓存中）
+    // 获取用户信息（从apiCache中）
     let userName = '未知用户';
-    if (notification.source_user_id && userInfoCache.has(notification.source_user_id)) {
-      const cachedUser = userInfoCache.get(notification.source_user_id);
-      userName = cachedUser?.data?.username || '未知用户';
+    if (notification.source_user_id) {
+      const cachedUser = apiCache.getCachedUser(notification.source_user_id);
+      if (cachedUser) {
+        userName = cachedUser.username || '未知用户';
+      }
     }
 
     switch (notification.name) {
@@ -1526,15 +1530,17 @@ const MessagesPage: React.FC = () => {
       default:
         return notification.name;
     }
-  }, [userInfoCache]);
+  }, []);
 
   // 获取通知内容
   const getNotificationContent = useCallback((notification: APINotification): string => {
-    // 获取用户信息（从缓存中）
+    // 获取用户信息（从apiCache中）
     let userName = '未知用户';
-    if (notification.source_user_id && userInfoCache.has(notification.source_user_id)) {
-      const cachedUser = userInfoCache.get(notification.source_user_id);
-      userName = cachedUser?.data?.username || '未知用户';
+    if (notification.source_user_id) {
+      const cachedUser = apiCache.getCachedUser(notification.source_user_id);
+      if (cachedUser) {
+        userName = cachedUser.username || '未知用户';
+      }
     }
 
     switch (notification.name) {
@@ -1592,7 +1598,17 @@ const MessagesPage: React.FC = () => {
       default:
         return JSON.stringify(notification.details);
     }
-  }, [userInfoCache]);
+  }, []);
+
+  // 辅助函数：检查用户信息是否在apiCache中
+  const hasUserInfoInCache = useCallback((userId: number): boolean => {
+    return apiCache.hasCachedUser(userId);
+  }, []);
+
+  // 辅助函数：从apiCache获取用户信息
+  const getUserInfoFromCache = useCallback((userId: number): { username: string } | null => {
+    return apiCache.getCachedUser(userId);
+  }, []);
 
   // 处理团队请求
   const handleTeamRequest = async (notification: APINotification, action: 'accept' | 'reject') => {
@@ -1872,7 +1888,7 @@ const MessagesPage: React.FC = () => {
                             <div className="flex items-start space-x-3">
                               <div className="flex-shrink-0">
                                 {/* 显示用户头像或默认图标 */}
-                                {notification.source_user_id && userInfoCache.has(notification.source_user_id) ? (
+                                {notification.source_user_id && hasUserInfoInCache(notification.source_user_id) ? (
                                   <img
                                     src={userAPI.getAvatarUrl(notification.source_user_id)}
                                     alt="用户头像"
@@ -1887,7 +1903,7 @@ const MessagesPage: React.FC = () => {
                                 
                                 {/* 默认图标 - 在没有用户信息或头像加载失败时显示 */}
                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                                  notification.source_user_id && userInfoCache.has(notification.source_user_id) ? 'hidden' : ''
+                                  notification.source_user_id && hasUserInfoInCache(notification.source_user_id) ? 'hidden' : ''
                                 } ${
                                   notification.name.includes('team_application') 
                                     ? 'bg-orange-500/20' 
@@ -1916,14 +1932,14 @@ const MessagesPage: React.FC = () => {
                                 </p>
                                 
                                 {/* 显示发送者信息 */}
-                                {notification.source_user_id && userInfoCache.has(notification.source_user_id) && (
+                                {notification.source_user_id && hasUserInfoInCache(notification.source_user_id) && (
                                   <div className="flex items-center space-x-2 mt-2">
                                     <span className="text-xs text-gray-500 dark:text-gray-400">来自:</span>
                                     <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
                                       {(() => {
                                         // 从缓存获取用户名
-                                        const cachedUser = userInfoCache.get(notification.source_user_id!);
-                                        return cachedUser?.data?.username || '未知用户';
+                                        const cachedUser = getUserInfoFromCache(notification.source_user_id!);
+                                        return cachedUser?.username || '未知用户';
                                       })()}
                                     </span>
                                   </div>

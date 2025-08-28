@@ -190,6 +190,21 @@ class APICache {
       timestamp: Date.now()
     });
   }
+
+  // 获取缓存的用户信息（同步方法）
+  getCachedUser(userId: number): User | null {
+    const cached = this.userCache.get(userId);
+    if (cached && Date.now() - cached.timestamp < this.USER_CACHE_DURATION) {
+      return cached.data;
+    }
+    return null;
+  }
+
+  // 检查用户是否在缓存中
+  hasCachedUser(userId: number): boolean {
+    const cached = this.userCache.get(userId);
+    return !!cached && Date.now() - cached.timestamp < this.USER_CACHE_DURATION;
+  }
 }
 
 // 导出单例实例

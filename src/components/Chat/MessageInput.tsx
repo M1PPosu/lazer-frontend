@@ -66,8 +66,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <div className="px-3 pt-3 pb-2 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-      <div className="flex items-end space-x-3">
+    <div className=" px-3 pt-3 pb-2 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div className="mb-3 flex items-end space-x-3">
         {/* 消息输入区域 */}
         <div className="flex-1 relative">
           <textarea
@@ -115,7 +115,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           whileTap={{ scale: disabled ? 1 : 0.95 }}
           onClick={handleSend}
           disabled={!message.trim() || disabled}
-          className={`
+          className={`mb-[5px]
             w-12 h-12 rounded-lg transition-all duration-200 flex items-center justify-center flex-shrink-0
             ${!message.trim() || disabled
               ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
