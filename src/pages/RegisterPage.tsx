@@ -98,26 +98,26 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-6">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex justify-center px-4 sm:px-6 lg:px-8 overflow-auto pt-8 sm:pt-12 lg:pt-0 lg:items-center">
+      <div className="max-w-md w-full space-y-3 pb-4 lg:pb-0">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-r from-pink-400 to-teal-400 rounded-full flex items-center justify-center mb-4">
+          <div className="w-12 h-12 mx-auto flex items-center justify-center mb-2">
             <img 
               src="/image/logo.svg" 
               alt="Logo" 
-              className="w-10 h-10 object-contain"
+              className="w-12 h-12 object-contain"
             />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             注册
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             创建你的 咕哦！ 账户
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 py-8 px-6 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="sm:bg-white sm:dark:bg-gray-800 sm:py-4 sm:px-6 sm:shadow-sm sm:rounded-lg sm:border sm:border-gray-200 sm:dark:border-gray-700 py-2">
+          <form className="space-y-3" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 用户名
@@ -131,7 +131,7 @@ const RegisterPage: React.FC = () => {
                   name="username"
                   type="text"
                   required
-                  className={`w-full px-3 py-2 pl-10 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                  className={`w-full px-3 py-2 pl-10 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-osu-pink focus:border-transparent ${
                     errors.username ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   placeholder="输入用户名"
@@ -158,7 +158,7 @@ const RegisterPage: React.FC = () => {
                   name="email"
                   type="email"
                   required
-                  className={`w-full px-3 py-2 pl-10 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                  className={`w-full px-3 py-2 pl-10 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-osu-pink focus:border-transparent ${
                     errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   placeholder="输入邮箱地址"
@@ -185,7 +185,7 @@ const RegisterPage: React.FC = () => {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className={`w-full px-3 py-2 pl-10 pr-10 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                  className={`w-full px-3 py-2 pl-10 pr-10 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-osu-pink focus:border-transparent ${
                     errors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   placeholder="输入密码"
@@ -223,7 +223,7 @@ const RegisterPage: React.FC = () => {
                   name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   required
-                  className={`w-full px-3 py-2 pl-10 pr-10 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent ${
+                  className={`w-full px-3 py-2 pl-10 pr-10 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-osu-pink focus:border-transparent ${
                     errors.confirmPassword ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   placeholder="确认密码"
@@ -252,7 +252,7 @@ const RegisterPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-pink-400 to-teal-400 hover:from-pink-500 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-osu-pink hover:bg-osu-pink/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-osu-pink disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 {isLoading ? (
                   <LoadingSpinner size="sm" />
@@ -267,7 +267,7 @@ const RegisterPage: React.FC = () => {
                 已有账户？{' '}
                 <Link
                   to="/login"
-                  className="font-medium text-pink-600 hover:text-pink-500 dark:text-pink-400 dark:hover:text-pink-300"
+                  className="font-medium text-osu-pink hover:text-osu-pink/80 dark:text-osu-pink dark:hover:text-osu-pink/80"
                 >
                   立即登录
                 </Link>

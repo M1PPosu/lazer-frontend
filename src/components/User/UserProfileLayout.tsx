@@ -8,7 +8,9 @@ import LevelProgress from '../UI/LevelProgress';
 import { type User, type GameMode } from '../../types';
 import FriendStats from './FriendStats';
 import { BiSolidPencil } from 'react-icons/bi';
-import { FaTools } from "react-icons/fa"
+import { FaTools } from "react-icons/fa";
+import { Tooltip } from 'react-tooltip';
+import { useAuth } from '../../hooks/useAuth';
 
 interface UserProfileLayoutProps {
   user: User;
@@ -83,6 +85,7 @@ const CoverImage: React.FC<{ src?: string; alt?: string }> = ({ src, alt = 'cove
 };
 
 const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMode, onModeChange }) => {
+  const { refreshUser } = useAuth();
   const stats = user.statistics;
   const gradeCounts = stats?.grade_counts ?? { ssh: 0, ss: 0, sh: 0, s: 0, a: 0 };
   const levelProgress = stats?.level?.progress ?? 0;
@@ -104,6 +107,16 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
       ? "/image/bgcover.jpg"
       : coverUrlRaw;
   const [isUpdatingMode] = useState(false);
+
+  // 处理头像更新
+  const handleAvatarUpdate = async (newAvatarUrl: string) => {
+    console.log('头像更新成功，延迟刷新用户信息:', newAvatarUrl);
+    // 延迟刷新用户信息，确保服务器端已经处理完成
+    setTimeout(async () => {
+      console.log('执行延迟刷新用户信息');
+      await refreshUser();
+    }, 3000); // 延迟3秒，给服务器更多时间处理
+  };
 
   return (
     <main className="max-w-6xl mx-auto px-0 md:px-4 lg:px-8 py-4 md:py-6">
@@ -144,6 +157,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               size="xl"
               shape="rounded"
               className="mt-[10px]  md:mt-[1px] md:!w-32 md:!h-32 md:!min-w-32 md:!min-h-32"
+              onAvatarUpdate={handleAvatarUpdate}
             />
           </div>
           {/* 用户名 + 国家 + 团队旗帜 */}
@@ -158,12 +172,14 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
                   <img
                     src={`/image/flag/${user.country.code.toLowerCase()}.svg`}
                     alt={user.country.name}
-                    className="h-[20px] md:h-[25px] w-auto rounded-sm object-contain"
+                    className="h-[20px] md:h-[25px] w-auto rounded-sm object-contain cursor-help"
                     loading="lazy"
                     decoding="async"
+                    data-tooltip-id="country-tooltip"
+                    data-tooltip-content={user.country?.name || '国家'}
                   />
                   <span className="text-gray-600 dark:text-gray-300 text-sm md:text-base">
-                    {user.country?.name || '国家'}
+                    {user.country?.code || '国家'}
                   </span>
                 </div>
               )}
@@ -174,18 +190,24 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
                   <img
                     src={user.team.flag_url}
                     alt="团队旗帜"
-                    className="h-[20px] md:h-[25px] w-auto rounded-sm object-contain"
+                    className="h-[20px] md:h-[25px] w-auto rounded-sm object-contain cursor-help"
                     loading="lazy"
                     decoding="async"
+                    data-tooltip-id="team-tooltip"
+                    data-tooltip-content={user.team.name}
                   />
                   <span className="text-gray-600 dark:text-gray-300 text-sm md:text-base">
-                    {user.team.name}
+                    {user.team.short_name || user.team.name}
                   </span>
                 </div>
               )}
             </div>
           </div>
           </div>
+
+        {/* Tooltips */}
+        <Tooltip id="country-tooltip" />
+        <Tooltip id="team-tooltip" />
 
 
 

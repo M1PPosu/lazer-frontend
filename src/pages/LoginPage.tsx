@@ -15,7 +15,7 @@ const LoginPage: React.FC = () => {
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex justify-center px-4 sm:px-6 lg:px-8 overflow-hidden pt-16 sm:pt-20 lg:pt-0 lg:items-center">
       <LoginForm />
     </div>
   );

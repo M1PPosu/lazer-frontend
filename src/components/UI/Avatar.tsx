@@ -80,6 +80,7 @@ const Avatar: React.FC<AvatarProps> = ({
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const { user: currentUser } = useAuth()
 
   const isSelf = currentUser && userId && currentUser.id === userId;
@@ -103,7 +104,8 @@ const Avatar: React.FC<AvatarProps> = ({
   } as const;
 
   const radius = shape === 'circle' ? 'rounded-full' : 'rounded-2xl';
-  const shouldShowUpload = Boolean(editable || isSelf);
+  // 只有在明确设置 editable=true 或者未设置 editable 且是当前用户时才显示上传功能
+  const shouldShowUpload = editable === true || (editable !== false && isSelf);
 
   useEffect(() => {
     debugLog('Avatar组件状态:', {
@@ -125,6 +127,7 @@ const Avatar: React.FC<AvatarProps> = ({
     };
     setImageError(false);
     setIsLoading(true);
+    setRetryCount(0); // 重置重试计数
     setCurrentImageUrl(getImageUrl());
   }, [userId, username, avatarUrl]);
 
@@ -138,24 +141,56 @@ const Avatar: React.FC<AvatarProps> = ({
 
   const handleImageError = () => {
     debugLog('图片加载失败:', currentImageUrl);
+    
+    // 如果是API生成的头像URL且重试次数少于3次，则重试
+    if (userId && currentImageUrl.includes(`/users/${userId}/avatar`) && retryCount < 3) {
+      debugLog(`头像加载失败，${1000 * (retryCount + 1)}ms后重试第${retryCount + 1}次`);
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        const retryUrl = userAPI.getAvatarUrl(userId, true); // 破坏缓存重试
+        setCurrentImageUrl(retryUrl);
+        setIsLoading(true);
+      }, 1000 * (retryCount + 1)); // 递增延迟：1s, 2s, 3s
+      return;
+    }
+    
+    // 如果不是API头像URL或已达到重试上限，尝试加载默认图片
     if (currentImageUrl !== '/default.jpg') {
       debugLog('尝试加载默认图片');
       setCurrentImageUrl('/default.jpg');
       setImageError(false);
       setIsLoading(true);
+      setRetryCount(0); // 重置重试计数
     } else {
       debugLog('默认图片也加载失败，显示字母');
       setImageError(true);
       setIsLoading(false);
+      setRetryCount(0); // 重置重试计数
     }
   };
 
   const handleUploadSuccess = (newAvatarUrl: string) => {
     debugLog('Avatar upload success:', newAvatarUrl);
-    setCurrentImageUrl(newAvatarUrl);
+    
+    // 重置重试计数和错误状态
+    setRetryCount(0);
     setImageError(false);
     setIsLoading(false);
-    onAvatarUpdate?.(newAvatarUrl);
+    
+    // 立即更新本地显示的头像URL（带时间戳破坏缓存）
+    const urlWithTimestamp = `${newAvatarUrl}${newAvatarUrl.includes('?') ? '&' : '?'}t=${Date.now()}`;
+    setCurrentImageUrl(urlWithTimestamp);
+    
+    // 延迟执行用户信息刷新，给服务器一些时间处理头像
+    setTimeout(() => {
+      debugLog('延迟刷新用户信息和头像缓存');
+      // 如果有userId，使用API重新获取头像URL（破坏缓存）
+      if (userId) {
+        const refreshedUrl = userAPI.getAvatarUrl(userId, true); // 破坏缓存
+        setCurrentImageUrl(refreshedUrl);
+      }
+      onAvatarUpdate?.(newAvatarUrl);
+    }, 2000); // 延迟2秒
   };
 
   const handleAvatarClick = (e: React.MouseEvent) => {

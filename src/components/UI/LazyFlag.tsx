@@ -5,13 +5,15 @@ interface LazyFlagProps {
   alt: string;
   className?: string;
   title?: string;
+  [key: string]: any; // 允许传递额外的属性
 }
 
 const LazyFlag: React.FC<LazyFlagProps> = ({
   src,
   alt,
   className = '',
-  title
+  title,
+  ...restProps
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
@@ -65,6 +67,7 @@ const LazyFlag: React.FC<LazyFlagProps> = ({
     <div 
       ref={containerRef}
       className={`relative overflow-hidden ${className}`}
+      {...restProps}
     >
       {/* 占位符背景 - 只在未加载且没有错误时显示 */}
       {!isLoaded && !hasError && (

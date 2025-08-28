@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FiLoader, FiPlus } from 'react-icons/fi';
+import { FiLoader, FiPlus, FiEdit, FiEye } from 'react-icons/fi';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { useAuth } from '../hooks/useAuth';
 import { rankingsAPI, handleApiError } from '../utils/api';
@@ -20,7 +20,7 @@ import type {
 } from '../types';
 
 const TeamsPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [selectedMode, setSelectedMode] = useState<GameMode>('osu');
   const [selectedMainMode, setSelectedMainMode] = useState<MainGameMode>('osu');
   const [showSubModes, setShowSubModes] = useState<MainGameMode | null>(null);
@@ -117,13 +117,34 @@ const TeamsPage: React.FC = () => {
             </div>
             
             {isAuthenticated && (
-              <Link
-                to="/teams/create"
-                className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 transition-colors self-start sm:self-auto"
-              >
-                <FiPlus className="mr-2" />
-                创建战队
-              </Link>
+              user?.team ? (
+                // 检查用户是否是队长
+                user.id === user.team.leader_id ? (
+                  <Link
+                    to={`/teams/${user.team.id}/edit`}
+                    className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 transition-colors self-start sm:self-auto"
+                  >
+                    <FiEdit className="mr-2" />
+                    编辑战队
+                  </Link>
+                ) : (
+                  <Link
+                    to={`/teams/${user.team.id}`}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors self-start sm:self-auto"
+                  >
+                    <FiEye className="mr-2" />
+                    查看战队
+                  </Link>
+                )
+              ) : (
+                <Link
+                  to="/teams/create"
+                  className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 transition-colors self-start sm:self-auto"
+                >
+                  <FiPlus className="mr-2" />
+                  创建战队
+                </Link>
+              )
             )}
           </div>
         </div>

@@ -109,12 +109,24 @@ const CreateTeamPage: React.FC = () => {
 
     try {
       const data = new FormData();
-      data.append('name', formData.name.trim());
-      data.append('short_name', formData.short_name.trim());
       
-      // 只有在编辑模式下且选择了新队长时才添加leader_id
-      if (isEditing && formData.leader_id !== null && formData.leader_id !== teamDetail?.team.leader_id) {
-        data.append('leader_id', formData.leader_id.toString());
+      if (isEditing) {
+        // 编辑模式：只有当名称或简称发生变化时才添加到FormData
+        if (formData.name.trim() !== teamDetail?.team.name) {
+          data.append('name', formData.name.trim());
+        }
+        if (formData.short_name.trim() !== teamDetail?.team.short_name) {
+          data.append('short_name', formData.short_name.trim());
+        }
+        
+        // 只有在选择了新队长时才添加leader_id
+        if (formData.leader_id !== null && formData.leader_id !== teamDetail?.team.leader_id) {
+          data.append('leader_id', formData.leader_id.toString());
+        }
+      } else {
+        // 创建模式：始终添加名称和简称
+        data.append('name', formData.name.trim());
+        data.append('short_name', formData.short_name.trim());
       }
       
       if (flagFile) {

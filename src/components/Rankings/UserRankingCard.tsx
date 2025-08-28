@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Tooltip } from 'react-tooltip';
 import RankBadge from '../UI/RankBadge';
 import LazyBackgroundImage from '../UI/LazyBackgroundImage';
 import LazyAvatar from '../UI/LazyAvatar';
@@ -62,17 +63,42 @@ const UserRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode, ranking
               {ranking.user.username}
             </Link>
             <div className="flex items-center gap-1 mt-0.5">
-                          {ranking.user.country_code && (
-              <LazyFlag
-                src={`/image/flag/${ranking.user.country_code.toLowerCase()}.svg`}
-                alt={ranking.user.country_code}
-                className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0"
-                title={ranking.user.country?.name || ranking.user.country_code}
-              />
-            )}
-              <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {ranking.user.country?.name || ranking.user.country_code}
-              </span>
+              {ranking.user.country_code && (
+                <>
+                  <LazyFlag
+                    src={`/image/flag/${ranking.user.country_code.toLowerCase()}.svg`}
+                    alt={ranking.user.country_code}
+                    className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0"
+                    //title={ranking.user.country?.name || ranking.user.country_code}
+                    data-tooltip-id={`country-tooltip-${ranking.user.id}`}
+                    data-tooltip-content={ranking.user.country?.name || ranking.user.country_code}
+                  />
+                  <Tooltip 
+                    id={`country-tooltip-${ranking.user.id}`} 
+                    place="bottom" 
+                    float={true}
+                    style={{ zIndex: 9999 }}
+                  />
+                </>
+              )}
+              {ranking.user.team && (
+                <>
+                  <LazyFlag
+                    src={ranking.user.team.flag_url}
+                    alt={ranking.user.team.short_name}
+                    className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0 ml-1"
+                    //title={ranking.user.team.short_name}
+                    data-tooltip-id={`team-tooltip-${ranking.user.id}`}
+                    data-tooltip-content={ranking.user.team.short_name}
+                  />
+                  <Tooltip 
+                    id={`team-tooltip-${ranking.user.id}`} 
+                    place="bottom" 
+                    float={true}
+                    style={{ zIndex: 9999 }}
+                  />
+                </>
+              )}
             </div>
           </div>
 
@@ -129,16 +155,41 @@ const UserRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode, ranking
           </Link>
           <div className="flex items-center gap-1 mt-0.5">
             {ranking.user.country_code && (
-              <LazyFlag
-                src={`/image/flag/${ranking.user.country_code.toLowerCase()}.svg`}
-                alt={ranking.user.country_code}
-                className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0"
-                title={ranking.user.country?.name || ranking.user.country_code}
-              />
+              <>
+                <LazyFlag
+                  src={`/image/flag/${ranking.user.country_code.toLowerCase()}.svg`}
+                  alt={ranking.user.country_code}
+                  className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0"
+                  //title={ranking.user.country?.name || ranking.user.country_code}
+                  data-tooltip-id={`country-tooltip-bg-${ranking.user.id}`}
+                  data-tooltip-content={ranking.user.country?.name || ranking.user.country_code}
+                />
+                <Tooltip 
+                  id={`country-tooltip-bg-${ranking.user.id}`} 
+                  place="bottom" 
+                  float={true}
+                  style={{ zIndex: 9999 }}
+                />
+              </>
             )}
-            <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {ranking.user.country?.name || ranking.user.country_code}
-            </span>
+            {ranking.user.team && (
+              <>
+                <LazyFlag
+                  src={ranking.user.team.flag_url}
+                  alt={ranking.user.team.short_name}
+                  className="w-3 h-2 sm:w-4 sm:h-3 rounded-sm flex-shrink-0 ml-1"
+                  //title={ranking.user.team.short_name}
+                  data-tooltip-id={`team-tooltip-bg-${ranking.user.id}`}
+                  data-tooltip-content={ranking.user.team.short_name}
+                />
+                <Tooltip 
+                  id={`team-tooltip-bg-${ranking.user.id}`} 
+                  place="bottom" 
+                  float={true}
+                  style={{ zIndex: 9999 }}
+                />
+              </>
+            )}
           </div>
         </div>
 

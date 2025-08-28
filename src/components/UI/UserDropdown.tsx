@@ -76,6 +76,7 @@ const UserDropdown: React.FC<UserDropdownProps> = memo(({ user, onLogout }) => {
           username={user.username}
           avatarUrl={user.avatar_url}
           size="sm"
+          editable={false}
         />
         
         {/* Username */}

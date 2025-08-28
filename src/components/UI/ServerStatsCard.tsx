@@ -280,11 +280,13 @@ const ServerStatsCard: React.FC = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700"
+      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 dark:border-gray-700/50"
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-          <FiBarChart className="w-5 h-5" />
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-3">
+          <div className="w-8 h-8 bg-pink-100 dark:bg-pink-900/30 rounded-xl flex items-center justify-center">
+            <FiBarChart className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+          </div>
           服务器统计
         </h3>
         {stats && (
@@ -293,7 +295,7 @@ const ServerStatsCard: React.FC = () => {
             <button
               onClick={fetchStats}
               disabled={loading}
-              className="text-blue-500 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-pink-500 hover:text-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title="手动刷新"
             >
               <FiRefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
@@ -303,29 +305,29 @@ const ServerStatsCard: React.FC = () => {
       </div>
 
       {stats && (
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-500 flex items-center justify-center gap-2">
-              <FiUsers className="w-5 h-5" />
+        <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl">
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 flex items-center justify-center gap-2 mb-2">
+              <FiUsers className="w-6 h-6" />
               {stats.registered_users.toLocaleString()}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">注册用户</div>
+            <div className="text-sm text-blue-600/70 dark:text-blue-400/70 font-medium">注册用户</div>
           </div>
           
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-500 flex items-center justify-center gap-2">
-              <FiActivity className="w-5 h-5" />
+          <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl">
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400 flex items-center justify-center gap-2 mb-2">
+              <FiActivity className="w-6 h-6" />
               {stats.online_users.toLocaleString()}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">在线用户</div>
+            <div className="text-sm text-green-600/70 dark:text-green-400/70 font-medium">在线用户</div>
           </div>
           
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-500 flex items-center justify-center gap-2">
-              <FiPlay className="w-5 h-5" />
+          <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl">
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 flex items-center justify-center gap-2 mb-2">
+              <FiPlay className="w-6 h-6" />
               {stats.playing_users.toLocaleString()}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">正在游玩</div>
+            <div className="text-sm text-purple-600/70 dark:text-purple-400/70 font-medium">正在游玩</div>
           </div>
         </div>
       )}
