@@ -87,7 +87,7 @@ const HeroSection: React.FC = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Content */}
-        <div className="w-[94vw] md:w-full text-center space-y-8 sm:space-y-12">
+        <div className="w-[94vw] ml-[-15px] md:w-full text-center space-y-8 sm:space-y-12 mt-[-150px]">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="px-4">
             {/* Logo and brand */}
             <div className="flex items-center justify-center mb-6 sm:mb-8">
@@ -108,100 +108,124 @@ const HeroSection: React.FC = () => {
             </p>
 
             {/* Server Status */}
-            <div className="flex flex-col items-center space-y-3 sm:space-y-2 mt-6 sm:mt-8">
-              <div className="text-pink-700 dark:text-pink-300 text-xs sm:text-sm md:text-base font-bold text-center">
-                <div className="inline-flex items-center gap-2 mb-2 sm:mb-1">
-                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse"></span>
-                  服务正常运行中
-                </div>
-                <div className="text-xs sm:text-sm">
-                  加入 QQ / Discord 社区获取支持与更新
+            <div className="mt-4 sm:mt-8">
+              <div className="text-pink-700 dark:text-pink-300 text-xs sm:text-sm md:text-base font-bold">
+                <div className="mb-4 flex items-center justify-center gap-3 sm:gap-4">
+                  <span className="inline-flex items-center gap-2 whitespace-nowrap">
+                    <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
+                    服务正常运行中
+                  </span>
+
+                  {/* 可选分隔线：不要就删掉这一行 */}
+                  <span className="hidden sm:block h-3 sm:h-4 w-px bg-pink-300/60 dark:bg-pink-200/40" />
+
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    加入 QQ / Discord 社区获取支持与更新
+                  </span>
                 </div>
               </div>
+
+
               
-              {/* Community Badges */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center w-full max-w-sm sm:max-w-2xl">
-                <a 
-                  href="https://qm.qq.com/q/Uw8tOkgJSS" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="group flex items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg mx-auto sm:mx-0"
-                >
-                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center">
-                    <FaQq className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="font-medium">QQ群</span>
-                  </div>
-                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-sky-600 group-hover:bg-sky-500 dark:bg-sky-700 dark:group-hover:bg-sky-600 text-white rounded-r-lg transition-colors duration-200">
-                    <span className="font-semibold text-xs sm:text-sm">1059561526</span>
-                  </div>
-                </a>
-                
-                <a 
-                  href="https://discord.gg/rt94zPuE" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="group flex items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg mx-auto sm:mx-0"
-                >
-                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center">
-                    <FaDiscord className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="font-medium">Discord</span>
-                  </div>
-                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-indigo-600 group-hover:bg-indigo-500 dark:bg-indigo-700 dark:group-hover:bg-indigo-600 text-white rounded-r-lg transition-colors duration-200">
-                    <span className="font-semibold text-xs sm:text-sm">rt94zPuE</span>
-                  </div>
-                </a>
-                
-                <a 
-                  href="https://github.com/GooGuTeam" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="group flex items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg mx-auto sm:mx-0"
-                >
-                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center">
-                    <FaGithub className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="font-medium">GitHub</span>
-                  </div>
-                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 group-hover:bg-gray-700 dark:bg-gray-600 dark:group-hover:bg-gray-500 text-white rounded-r-lg transition-colors duration-200">
-                    <span className="font-semibold text-xs sm:text-sm">GooGuTeam</span>
-                  </div>
-                </a>
+             {/* Community Badges */}
+              <div className="w-full">
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 w-full max-w-2xl mx-auto">
+                  <a
+                    href="https://qm.qq.com/q/Uw8tOkgJSS"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group w-full flex flex-nowrap items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                  >
+                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center whitespace-nowrap">
+                      <FaQq className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="font-medium">QQ群</span>
+                    </div>
+                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-sky-600 group-hover:bg-sky-500 dark:bg-sky-700 dark:group-hover:bg-sky-600 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
+                      <span className="font-semibold text-xs sm:text-sm">1059561526</span>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://discord.gg/AhzJXXWYfF"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group w-full flex flex-nowrap items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                  >
+                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center whitespace-nowrap">
+                      <FaDiscord className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="font-medium">Discord</span>
+                    </div>
+                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-indigo-600 group-hover:bg-indigo-500 dark:bg-indigo-700 dark:group-hover:bg-indigo-600 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
+                      <span className="font-semibold text-xs sm:text-sm">咕哦!</span>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://github.com/GooGuTeam"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group w-full flex flex-nowrap items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                  >
+                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center whitespace-nowrap">
+                      <FaGithub className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="font-medium">GitHub</span>
+                    </div>
+                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 group-hover:bg-gray-700 dark:bg-gray-600 dark:group-hover:bg-gray-500 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
+                      <span className="font-semibold text-xs sm:text-sm">GooGuTeam</span>
+                    </div>
+                  </a>
+                </div>
               </div>
-            </div>
+              </div>
+
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4 max-w-lg sm:max-w-2xl mx-auto"
+            className="grid grid-cols-2 gap-3 sm:gap-4 px-4 max-w-lg sm:max-w-2xl mx-auto"
           >
             {isAuthenticated ? (
               <>
-                <Link to="/profile" className="btn-primary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px] rounded-xl shadow-lg">
+                <Link
+                  to="/profile"
+                  className="btn-primary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full rounded-xl shadow-lg text-center"
+                >
                   查看资料
                 </Link>
-                <Link to="/rankings" className="btn-secondary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px] rounded-xl">
+                <Link
+                  to="/rankings"
+                  className="btn-secondary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full rounded-xl text-center"
+                >
                   查看排行榜
                 </Link>
               </>
             ) : (
               <>
-                <Link to="/register" className="btn-primary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px] rounded-xl shadow-lg">
+                <Link
+                  to="/register"
+                  className="btn-primary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full rounded-xl shadow-lg text-center"
+                >
                   注册
                 </Link>
-                <Link to="/login" className="btn-secondary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full sm:w-auto sm:min-w-[180px] lg:min-w-[200px] rounded-xl">
+                <Link
+                  to="/login"
+                  className="btn-secondary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full rounded-xl text-center"
+                >
                   登录
                 </Link>
               </>
             )}
           </motion.div>
 
+
           {/* Feature Cards Scrolling Container */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-12 sm:mt-16 relative w-full"
+            className="ml-[8px] mt-12 sm:mt-16 relative w-full"
           >
             <div className="flex justify-center w-full">
               <div 
@@ -243,7 +267,7 @@ const HeroSection: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transform: 'translateX(2px)'
+                  
                 }}
               >
                 {features.map((feature, index) => {
@@ -284,7 +308,7 @@ const HeroSection: React.FC = () => {
             </div>
           </motion.div>
 
-          {isAuthenticated && user && (
+          {/* {isAuthenticated && user && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -297,7 +321,7 @@ const HeroSection: React.FC = () => {
                 </p>
               </div>
             </motion.div>
-          )}
+          )} */}
         </div>
       </div>
     </section>
