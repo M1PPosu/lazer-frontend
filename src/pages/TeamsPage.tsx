@@ -129,9 +129,9 @@ const TeamsPage: React.FC = () => {
                   </Link>
                 ) : (
                   <Link
-                    to={`/teams/${user.team.id}`}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors self-start sm:self-auto"
-                  >
+                      to={`/teams/${user.team.id}`}
+                      className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/80 transition-colors self-start sm:self-auto"
+                    >
                     <FiEye className="mr-2" />
                     查看战队
                   </Link>
