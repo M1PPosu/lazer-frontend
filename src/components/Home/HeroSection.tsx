@@ -6,7 +6,6 @@ import type { Swiper as SwiperType } from 'swiper';
 import { Autoplay } from 'swiper/modules';
 import { useAuth } from '../../hooks/useAuth';
 
-// Import Swiper styles
 import 'swiper/swiper-bundle.css';
 import InfoCard from '../InfoCard';
 import { features } from '../../data/features';
@@ -27,26 +26,46 @@ import {
 const HeroSection: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
 
   const handleMouseEnter = useCallback(() => {
     if (swiper && swiper.autoplay) {
-      swiper.autoplay.stop();
+      swiper.autoplay.pause();
     }
   }, [swiper]);
 
   const handleMouseLeave = useCallback(() => {
+    if (swiper && swiper.autoplay && !isUserInteracting) {
+      swiper.autoplay.resume();
+    }
+  }, [swiper, isUserInteracting]);
+
+  // 处理触摸/拖动开始
+  const handleTouchStart = useCallback(() => {
+    setIsUserInteracting(true);
     if (swiper && swiper.autoplay) {
-      swiper.autoplay.start();
+      swiper.autoplay.pause();
     }
   }, [swiper]);
 
   // 处理触摸/拖动结束后恢复自动播放
   const handleTouchEnd = useCallback(() => {
+    setIsUserInteracting(false);
     if (swiper && swiper.autoplay) {
       // 延迟一点时间再恢复自动播放，确保用户操作完成
       setTimeout(() => {
-        swiper.autoplay.start();
-      }, 1000);
+        if (swiper && swiper.autoplay) {
+          swiper.autoplay.resume();
+        }
+      }, 800);
+    }
+  }, [swiper]);
+
+  // 处理拖动过程中的状态
+  const handleSliderMove = useCallback(() => {
+    // 在拖动过程中确保自动播放暂停
+    if (swiper && swiper.autoplay && !swiper.autoplay.paused) {
+      swiper.autoplay.pause();
     }
   }, [swiper]);
 
@@ -68,7 +87,7 @@ const HeroSection: React.FC = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Content */}
-        <div className="w-[90vw] md:w-full text-center space-y-8 sm:space-y-12">
+        <div className="w-[94vw] md:w-full text-center space-y-8 sm:space-y-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="px-4">
             {/* Logo and brand */}
             <div className="flex items-center justify-center mb-6 sm:mb-8">
@@ -184,39 +203,48 @@ const HeroSection: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mt-12 sm:mt-16 relative w-full"
           >
-            <div 
-              className="overflow-hidden cursor-pointer w-full"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              style={{
-                maskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)'
-              }}
-            >
+            <div className="flex justify-center w-full">
+              <div 
+                className="overflow-hidden cursor-pointer w-full max-w-6xl lg:max-w-7xl"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                style={{
+                  maskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)'
+                }}
+              >
               <Swiper
                 onSwiper={setSwiper}
                 modules={[Autoplay]}
                 slidesPerView="auto"
                 spaceBetween={24}
                 loop={true}
+                centeredSlides={true}
+                initialSlide={0}
                 autoplay={{
-                  delay: 0,
+                  delay: 3000,
                   disableOnInteraction: false,
                   pauseOnMouseEnter: false,
-                  reverseDirection: false
+                  reverseDirection: false,
+                  waitForTransition: true,
+                  stopOnLastSlide: false
                 }}
-                speed={3000}
+                speed={1500}
                 allowTouchMove={true}
                 resistanceRatio={0.85}
                 longSwipesRatio={0.25}
+                loopAdditionalSlides={2}
+                watchSlidesProgress={true}
+                onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                onSliderMove={() => {
-                  // 拖动时暂停自动播放
-                  if (swiper && swiper.autoplay) {
-                    swiper.autoplay.stop();
-                  }
-                }}
+                onSliderMove={handleSliderMove}
                 className="!px-4"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: 'translateX(2px)'
+                }}
               >
                 {features.map((feature, index) => {
                   const icons = [
@@ -232,23 +260,27 @@ const HeroSection: React.FC = () => {
                   
                   return (
                     <SwiperSlide key={feature.id} className="!w-80">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
-                      >
-                        <InfoCard
-                          image={feature.image}
-                          imageAlt={feature.imageAlt}
-                          title={feature.title}
-                          content={feature.content}
-                          icon={icons[index]}
-                        />
-                      </motion.div>
+                      <div className="flex justify-center items-center w-full">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.5 }}
+                          className="w-full max-w-sm"
+                        >
+                          <InfoCard
+                            image={feature.image}
+                            imageAlt={feature.imageAlt}
+                            title={feature.title}
+                            content={feature.content}
+                            icon={icons[index]}
+                          />
+                        </motion.div>
+                      </div>
                     </SwiperSlide>
                   );
                 })}
               </Swiper>
+              </div>
             </div>
           </motion.div>
 
