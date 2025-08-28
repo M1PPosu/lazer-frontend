@@ -24,7 +24,7 @@ import {
 } from 'react-icons/fa';
 
 const HeroSection: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
 
