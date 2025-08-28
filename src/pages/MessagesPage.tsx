@@ -124,7 +124,8 @@ const MessagesPage: React.FC = () => {
   } = useNotificationContext();
 
   // 使用WebSocket处理实时消息
-  const { isConnected: chatConnected } = useWebSocketNotifications({
+  // chatConnected 当前未在 UI 中使用，改名为 _chatConnected 以消除未使用警告
+  const { isConnected: _chatConnected } = useWebSocketNotifications({
     isAuthenticated,
     currentUser: user,
     onNewMessage: (message) => {

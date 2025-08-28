@@ -92,16 +92,7 @@ const CoverUpload: React.FC<CoverUploadProps> = ({
     setOriginalFileName('');
   };
 
-  // 重置上传
-  const resetUpload = () => {
-    setStep('select');
-    setImgSrc('');
-    setOriginalFileName('');
-    setIsUploading(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  // （保留占位：可能未来需要添加“重新开始”按钮，此处移除未使用的 resetUpload 函数以消除 TS 警告）
 
   return createPortal(
     <div

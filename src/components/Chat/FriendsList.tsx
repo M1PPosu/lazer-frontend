@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiUser, FiUserPlus, FiMessageCircle, FiMoreHorizontal, FiX } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+import { FiUser, FiMessageCircle, FiX } from 'react-icons/fi';
 import Avatar from '../UI/Avatar';
 import { friendsAPI } from '../../utils/api';
 import type { FriendRelation, User } from '../../types';
 import toast from 'react-hot-toast';
 
 interface FriendsListProps {
-  currentUser?: User;
+  currentUser?: User; // 预留参数（当前未使用）
   onStartPrivateChat: (user: User) => void;
   onClose: () => void;
 }
 
-const FriendsList: React.FC<FriendsListProps> = ({ currentUser, onStartPrivateChat, onClose }) => {
+const FriendsList: React.FC<FriendsListProps> = ({ currentUser: _currentUser, onStartPrivateChat, onClose }) => {
   const [friends, setFriends] = useState<FriendRelation[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -50,22 +50,6 @@ const FriendsList: React.FC<FriendsListProps> = ({ currentUser, onStartPrivateCh
       toast.error('加载好友列表失败');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // 添加好友（通过用户名）
-  const addFriendByUsername = async (username: string) => {
-    if (!username.trim()) {
-      toast.error('请输入用户名');
-      return;
-    }
-
-    try {
-      // 由于没有搜索接口，这里只能提示用户
-      toast.error('暂不支持通过用户名添加好友，请使用其他方式');
-    } catch (error) {
-      console.error('添加好友失败:', error);
-      toast.error('添加好友失败');
     }
   };
 

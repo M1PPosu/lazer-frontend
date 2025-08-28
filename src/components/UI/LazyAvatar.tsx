@@ -17,7 +17,7 @@ const LazyAvatar: React.FC<LazyAvatarProps> = ({
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  // hasError 状态未被使用，移除以消除 TS 警告
   const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -59,11 +59,9 @@ const LazyAvatar: React.FC<LazyAvatarProps> = ({
         img.onload = () => {
           setImageSrc(src);
           setIsLoaded(true);
-          setHasError(false);
         };
         img.onerror = () => {
           setImageSrc(fallback);
-          setHasError(true);
           setIsLoaded(true);
         };
         img.src = src;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiSend, FiSearch } from 'react-icons/fi';
-import { chatAPI, friendsAPI } from '../../utils/api';
+import { chatAPI } from '../../utils/api';
 import Avatar from '../UI/Avatar';
 import type { User, ChatChannel } from '../../types';
 import toast from 'react-hot-toast';
@@ -17,7 +17,7 @@ const PrivateMessageModal: React.FC<PrivateMessageModalProps> = ({
   isOpen,
   onClose,
   onMessageSent,
-  currentUser,
+  currentUser: _currentUser, // 目前未使用，但保留以便后续扩展
 }) => {
   const [targetUserId, setTargetUserId] = useState<number | null>(null);
   const [targetUsername, setTargetUsername] = useState('');

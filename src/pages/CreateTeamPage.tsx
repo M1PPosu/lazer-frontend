@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FiArrowLeft, FiUpload, FiSave, FiImage, FiFlag } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiImage, FiFlag } from 'react-icons/fi';
 import { teamsAPI, handleApiError } from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 import ImageUploadWithCrop from '../components/UI/ImageUploadWithCrop';

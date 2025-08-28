@@ -222,7 +222,7 @@ const TeamDetailPage: React.FC = () => {
             </div>
 
             <div className="-mx-4 sm:-mx-6 sm:divide-y divide-gray-200 dark:divide-gray-700 sm:border sm:border-gray-200 sm:dark:border-gray-700 overflow-hidden">
-              {nonLeaderMembers.map((member: User, index: number) => (
+              {nonLeaderMembers.map((member: User) => (
                 <div key={member.id} className="relative">
                   <TeamDetailUserCard
                     ranking={{
