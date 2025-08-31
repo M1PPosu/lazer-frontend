@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiUser, FiCheck, FiX, FiImage } from 'react-icons/fi';
+import { FiUser, FiCheck, FiX, FiImage, FiCamera } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { userAPI } from '../utils/api';
 import EditableCover from '../components/UI/EditableCover';
+import Avatar from '../components/UI/Avatar';
+import AvatarUpload from '../components/UI/AvatarUpload';
 
 const SettingsPage: React.FC = () => {
   const { user, isAuthenticated, isLoading, refreshUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAvatarUpload, setShowAvatarUpload] = useState(false);
 
   if (isLoading) {
     return (
@@ -85,6 +88,17 @@ const SettingsPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAvatarUpdate = async (newAvatarUrl: string) => {
+    console.log('头像更新成功:', newAvatarUrl);
+    toast.success('头像修改成功！');
+    setShowAvatarUpload(false);
+    
+    // 延迟刷新用户信息
+    setTimeout(async () => {
+      await refreshUser();
+    }, 2000);
   };
 
   return (
@@ -174,11 +188,57 @@ const SettingsPage: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* 头图设置 */}
+      {/* 头像设置 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <FiCamera className="w-6 h-6 text-osu-pink" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            头像设置
+          </h2>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              当前头像
+            </label>
+            <div className="flex items-center gap-4">
+              <Avatar
+                userId={user.id}
+                username={user.username}
+                avatarUrl={user.avatar_url}
+                size="lg"
+                shape="rounded"
+                editable={false}
+                className="!w-16 !h-16"
+              />
+              <div className="flex-1">
+                <button
+                  onClick={() => setShowAvatarUpload(true)}
+                  className="btn-primary !px-4 !py-2 text-sm flex items-center gap-2"
+                >
+                  <FiCamera className="w-4 h-4" />
+                  修改头像
+                </button>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  支持 PNG、JPEG、GIF 格式，建议尺寸 256x256 像素，最大 5MB
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* 头图设置 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
       >
         <div className="flex items-center gap-3 mb-6">
@@ -217,7 +277,7 @@ const SettingsPage: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.25 }}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
       >
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
@@ -291,6 +351,16 @@ const SettingsPage: React.FC = () => {
           )}
         </div>
       </motion.div>
+
+      {/* 头像上传模态框 */}
+      {showAvatarUpload && (
+        <AvatarUpload
+          userId={user.id}
+          currentAvatarUrl={user.avatar_url}
+          onUploadSuccess={handleAvatarUpdate}
+          onClose={() => setShowAvatarUpload(false)}
+        />
+      )}
     </div>
   );
 };

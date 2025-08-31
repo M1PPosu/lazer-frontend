@@ -24,7 +24,7 @@ import {
 } from 'react-icons/fa';
 
 const HeroSection: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [isUserInteracting, setIsUserInteracting] = useState(false);
 
@@ -70,7 +70,7 @@ const HeroSection: React.FC = () => {
   }, [swiper]);
 
   return (
-    <section className="relative overflow-hidden min-h-screen flex items-center py-12 sm:py-20 lg:py-32">
+    <section className="relative overflow-hidden min-h-[calc(100vh-128px)] md:min-h-screen flex items-center py-8 sm:py-12 md:py-20 lg:py-32">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-3"></div>
       
@@ -87,19 +87,19 @@ const HeroSection: React.FC = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Content */}
-        <div className="w-[94vw] ml-[-15px] md:w-full text-center space-y-8 sm:space-y-12 mt-[-150px]">
+        <div className="w-[94vw] ml-[-15px] md:w-full text-center space-y-6 sm:space-y-8 md:space-y-12 mt-4 sm:mt-8 md:mt-[-150px]">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="px-4">
             {/* Logo and brand */}
-            <div className="flex items-center justify-center mb-6 sm:mb-8">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center mr-2 sm:mr-3 md:mr-5 p-1 sm:p-2">
+            <div className="flex items-center justify-center mb-4 sm:mb-6 md:mb-8">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center mr-2 sm:mr-3 md:mr-5 p-1 sm:p-2">
                 <img src="/image/logo.svg" alt="咕哦！Logo" className="w-full h-full object-contain drop-shadow-lg" />
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold tracking-tight">
                 <span className="gradient-text">咕哦！</span>
               </h1>
             </div>
 
-            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-gray-700 dark:text-gray-200 mb-4 sm:mb-6 leading-tight max-w-4xl mx-auto">
+            <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-gray-700 dark:text-gray-200 mb-3 sm:mb-4 md:mb-6 leading-tight max-w-4xl mx-auto">
               可能是最好的 osu! 私服
             </h2>
 
@@ -108,9 +108,9 @@ const HeroSection: React.FC = () => {
             </p>
 
             {/* Server Status */}
-            <div className="mt-4 sm:mt-8">
+            <div className="mt-3 sm:mt-4 md:mt-8">
               <div className="text-pink-700 dark:text-pink-300 text-xs sm:text-sm md:text-base font-bold">
-                <div className="mb-4 flex items-center justify-center gap-3 sm:gap-4">
+                <div className="mb-3 sm:mb-4 flex items-center justify-center gap-2 sm:gap-3 md:gap-4">
                   <span className="inline-flex items-center gap-2 whitespace-nowrap">
                     <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
                     服务正常运行中
@@ -129,7 +129,7 @@ const HeroSection: React.FC = () => {
               
              {/* Community Badges */}
               <div className="w-full">
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-3 w-full max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2 md:gap-3 w-full max-w-xs sm:max-w-2xl mx-auto">
                   <a
                     href="https://qm.qq.com/q/Uw8tOkgJSS"
                     target="_blank"
@@ -184,19 +184,19 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="grid grid-cols-2 gap-3 sm:gap-4 px-4 max-w-lg sm:max-w-2xl mx-auto"
+            className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 px-4 max-w-sm sm:max-w-lg md:max-w-2xl mx-auto"
           >
             {isAuthenticated ? (
               <>
                 <Link
                   to="/profile"
-                  className="btn-primary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full rounded-xl shadow-lg text-center"
+                  className="btn-primary text-xs sm:text-sm md:text-base lg:text-lg px-3 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 w-full rounded-lg sm:rounded-xl shadow-lg text-center"
                 >
                   查看资料
                 </Link>
                 <Link
                   to="/rankings"
-                  className="btn-secondary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full rounded-xl text-center"
+                  className="btn-secondary text-xs sm:text-sm md:text-base lg:text-lg px-3 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 w-full rounded-lg sm:rounded-xl text-center"
                 >
                   查看排行榜
                 </Link>
@@ -205,13 +205,13 @@ const HeroSection: React.FC = () => {
               <>
                 <Link
                   to="/register"
-                  className="btn-primary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full rounded-xl shadow-lg text-center"
+                  className="btn-primary text-xs sm:text-sm md:text-base lg:text-lg px-3 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 w-full rounded-lg sm:rounded-xl shadow-lg text-center"
                 >
                   注册
                 </Link>
                 <Link
                   to="/login"
-                  className="btn-secondary text-sm sm:text-base lg:text-lg px-6 sm:px-8 lg:px-10 py-3 sm:py-3 lg:py-4 w-full rounded-xl text-center"
+                  className="btn-secondary text-xs sm:text-sm md:text-base lg:text-lg px-3 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 w-full rounded-lg sm:rounded-xl text-center"
                 >
                   登录
                 </Link>
@@ -225,7 +225,7 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="ml-[8px] mt-12 sm:mt-16 relative w-full"
+            className="ml-[8px] mt-8 sm:mt-12 md:mt-16 relative w-full"
           >
             <div className="flex justify-center w-full">
               <div 

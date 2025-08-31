@@ -156,6 +156,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               avatarUrl={user.avatar_url}
               size="xl"
               shape="rounded"
+              editable={false}
               className="mt-[10px]  md:mt-[1px] md:!w-32 md:!h-32 md:!min-w-32 md:!min-h-32"
               onAvatarUpdate={handleAvatarUpdate}
             />
