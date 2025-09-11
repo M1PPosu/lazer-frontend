@@ -38,39 +38,39 @@ const HeroSection: React.FC = () => {
       <section className="relative overflow-hidden h-screen flex items-center z-10">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           {/* Main Content */}
-          <div className="w-[94vw] ml-[-15px] mt-[-100px] md:w-full text-center space-y-6 sm:space-y-8 md:space-y-12">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="px-4">
+          <div className="w-full text-center space-y-4 mt-[-100px] sm:space-y-6 md:space-y-8 lg:space-y-12 lg:mt-[-100px]">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="px-2 sm:px-4">
             {/* Logo and brand */}
-            <div className="flex items-center justify-center mb-4 sm:mb-6 md:mb-8">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center mr-2 sm:mr-3 md:mr-5 p-1 sm:p-2">
+            <div className="flex items-center justify-center mb-6 sm:mb-8 md:mb-10">
+              <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-24 lg:h-24 flex items-center justify-center mr-3 sm:mr-4 md:mr-5 p-1 sm:p-2">
                 <img src="/image/logo.svg" alt="咕哦！Logo" className="w-full h-full object-contain drop-shadow-lg" />
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold tracking-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-bold tracking-tight">
                 <span className="gradient-text">咕哦！</span>
               </h1>
             </div>
 
-            <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-gray-700 dark:text-gray-200 mb-3 sm:mb-4 md:mb-6 leading-tight max-w-4xl mx-auto">
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-semibold text-gray-700 dark:text-gray-200 mb-4 sm:mb-5 md:mb-6 leading-tight max-w-4xl mx-auto">
               可能是最好的 osu! 私服
             </h2>
 
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed px-2">
               g0v0! 是一个全新的<span className="font-bold text-pink-600 dark:text-pink-400">支持 lazer 客户端</span>的 osu! 第三方服务器。提供了 standard / taiko / catch / mania 四大模式支持，支持 RX/AP pp计算与无限制改名，让你的节奏旅程更自由。
             </p>
 
             {/* Server Status */}
-            <div className="mt-3 sm:mt-4 md:mt-8">
-              <div className="text-pink-700 dark:text-pink-300 text-xs sm:text-sm md:text-base font-bold">
-                <div className="mb-3 sm:mb-4 flex items-center justify-center gap-2 sm:gap-3 md:gap-4">
+            <div className="mt-4 sm:mt-6 md:mt-8">
+              <div className="text-pink-700 dark:text-pink-300 text-sm sm:text-base md:text-lg font-bold">
+                <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 md:gap-4">
                   <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                    <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
+                    <span className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
                     服务正常运行中
                   </span>
 
                   {/* 可选分隔线：不要就删掉这一行 */}
-                  <span className="hidden sm:block h-3 sm:h-4 w-px bg-pink-300/60 dark:bg-pink-200/40" />
+                  <span className="hidden sm:block h-4 w-px bg-pink-300/60 dark:bg-pink-200/40" />
 
-                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                  <span className="text-sm sm:text-base whitespace-nowrap">
                     加入 QQ / Discord 社区获取支持与更新
                   </span>
                 </div>
@@ -80,18 +80,18 @@ const HeroSection: React.FC = () => {
               
              {/* Community Badges */}
               <div className="w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2 md:gap-3 w-full max-w-xs sm:max-w-2xl mx-auto">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 w-full max-w-sm sm:max-w-2xl mx-auto">
                   <a
                     href="https://qm.qq.com/q/Uw8tOkgJSS"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group w-full flex flex-nowrap items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                    className="group w-full flex flex-col sm:flex-row items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-lg"
                   >
-                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center whitespace-nowrap">
-                      <FaQq className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="font-medium">QQ群</span>
+                    <div className="px-2 py-1.5 sm:px-3 sm:py-2 flex flex-col sm:flex-row items-center justify-center whitespace-nowrap w-full sm:w-auto">
+                      <FaQq className="mb-1 sm:mb-0 sm:mr-2 text-base sm:text-lg w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="font-medium text-xs sm:text-sm">QQ群</span>
                     </div>
-                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-sky-600 group-hover:bg-sky-500 dark:bg-sky-700 dark:group-hover:bg-sky-600 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
+                    <div className="hidden sm:block px-2 sm:px-3 py-1.5 sm:py-2 bg-sky-600 group-hover:bg-sky-500 dark:bg-sky-700 dark:group-hover:bg-sky-600 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
                       <span className="font-semibold text-xs sm:text-sm">1059561526</span>
                     </div>
                   </a>
@@ -100,13 +100,13 @@ const HeroSection: React.FC = () => {
                     href="https://discord.gg/AhzJXXWYfF"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group w-full flex flex-nowrap items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                    className="group w-full flex flex-col sm:flex-row items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-lg"
                   >
-                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center whitespace-nowrap">
-                      <FaDiscord className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="font-medium">Discord</span>
+                    <div className="px-2 py-1.5 sm:px-3 sm:py-2 flex flex-col sm:flex-row items-center justify-center whitespace-nowrap w-full sm:w-auto">
+                      <FaDiscord className="mb-1 sm:mb-0 sm:mr-2 text-base sm:text-lg w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="font-medium text-xs sm:text-sm">Discord</span>
                     </div>
-                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-indigo-600 group-hover:bg-indigo-500 dark:bg-indigo-700 dark:group-hover:bg-indigo-600 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
+                    <div className="hidden sm:block px-2 sm:px-3 py-1.5 sm:py-2 bg-indigo-600 group-hover:bg-indigo-500 dark:bg-indigo-700 dark:group-hover:bg-indigo-600 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
                       <span className="font-semibold text-xs sm:text-sm">咕哦!</span>
                     </div>
                   </a>
@@ -115,13 +115,13 @@ const HeroSection: React.FC = () => {
                     href="https://github.com/GooGuTeam"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group w-full flex flex-nowrap items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs sm:text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                    className="group w-full flex flex-col sm:flex-row items-center bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs transition-all duration-200 hover:scale-105 hover:shadow-lg"
                   >
-                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center whitespace-nowrap">
-                      <FaGithub className="mr-1 sm:mr-2 text-sm sm:text-base w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="font-medium">GitHub</span>
+                    <div className="px-2 py-1.5 sm:px-3 sm:py-2 flex flex-col sm:flex-row items-center justify-center whitespace-nowrap w-full sm:w-auto">
+                      <FaGithub className="mb-1 sm:mb-0 sm:mr-2 text-base sm:text-lg w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="font-medium text-xs sm:text-sm">GitHub</span>
                     </div>
-                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 group-hover:bg-gray-700 dark:bg-gray-600 dark:group-hover:bg-gray-500 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
+                    <div className="hidden sm:block px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 group-hover:bg-gray-700 dark:bg-gray-600 dark:group-hover:bg-gray-500 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
                       <span className="font-semibold text-xs sm:text-sm">GooGuTeam</span>
                     </div>
                   </a>
@@ -135,19 +135,19 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 px-4 max-w-sm sm:max-w-lg md:max-w-2xl mx-auto"
+            className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5 px-2 sm:px-4 max-w-md sm:max-w-lg md:max-w-2xl mx-auto"
           >
             {isAuthenticated ? (
               <>
                 <Link
                   to="/profile"
-                  className="btn-primary text-xs sm:text-sm md:text-base lg:text-lg px-3 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 w-full rounded-lg sm:rounded-xl shadow-lg text-center"
+                  className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl shadow-lg text-center font-medium"
                 >
                   查看资料
                 </Link>
                 <Link
                   to="/rankings"
-                  className="btn-secondary text-xs sm:text-sm md:text-base lg:text-lg px-3 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 w-full rounded-lg sm:rounded-xl text-center"
+                  className="btn-secondary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium"
                 >
                   查看排行榜
                 </Link>
@@ -156,13 +156,13 @@ const HeroSection: React.FC = () => {
               <>
                 <Link
                   to="/register"
-                  className="btn-primary text-xs sm:text-sm md:text-base lg:text-lg px-3 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 w-full rounded-lg sm:rounded-xl shadow-lg text-center"
+                  className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl shadow-lg text-center font-medium"
                 >
                   注册
                 </Link>
                 <Link
                   to="/login"
-                  className="btn-secondary text-xs sm:text-sm md:text-base lg:text-lg px-3 sm:px-6 md:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 w-full rounded-lg sm:rounded-xl text-center"
+                  className="btn-secondary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium"
                 >
                   登录
                 </Link>
