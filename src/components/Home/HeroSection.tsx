@@ -70,24 +70,26 @@ const HeroSection: React.FC = () => {
   }, [swiper]);
 
   return (
-    <section className="relative overflow-hidden min-h-[calc(100vh-128px)] md:min-h-screen flex items-center py-8 sm:py-12 md:py-20 lg:py-32">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-3"></div>
-      
-      {/* Modern geometric accents */}
-      <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-pink-200/20 dark:bg-pink-800/20 rounded-full blur-2xl"></div>
-      <div className="absolute bottom-1/3 right-1/3 w-40 h-40 bg-teal-200/20 dark:bg-teal-800/20 rounded-full blur-2xl"></div>
-      <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-blue-200/15 dark:bg-blue-800/15 rounded-full blur-xl"></div>
-      <div className="absolute bottom-1/4 left-1/3 w-36 h-36 bg-purple-200/15 dark:bg-purple-800/15 rounded-full blur-xl"></div>
-      
-      {/* Additional decorative elements for large screens */}
-      <div className="hidden lg:block absolute top-10 right-10 w-2 h-2 bg-pink-400/30 rounded-full"></div>
-      <div className="hidden lg:block absolute bottom-20 left-20 w-1 h-1 bg-teal-400/40 rounded-full"></div>
-      <div className="hidden lg:block absolute top-1/3 left-10 w-1.5 h-1.5 bg-blue-400/35 rounded-full"></div>
+    <div className="relative">
+      {/* 第一页：主要内容占满整个屏幕 */}
+      <section className="relative overflow-hidden h-screen flex items-center">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-3"></div>
+        
+        {/* Modern geometric accents */}
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-pink-200/20 dark:bg-pink-800/20 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-40 h-40 bg-teal-200/20 dark:bg-teal-800/20 rounded-full blur-2xl"></div>
+        <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-blue-200/15 dark:bg-blue-800/15 rounded-full blur-xl"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-36 h-36 bg-purple-200/15 dark:bg-purple-800/15 rounded-full blur-xl"></div>
+        
+        {/* Additional decorative elements for large screens */}
+        <div className="hidden lg:block absolute top-10 right-10 w-2 h-2 bg-pink-400/30 rounded-full"></div>
+        <div className="hidden lg:block absolute bottom-20 left-20 w-1 h-1 bg-teal-400/40 rounded-full"></div>
+        <div className="hidden lg:block absolute top-1/3 left-10 w-1.5 h-1.5 bg-blue-400/35 rounded-full"></div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Content */}
-        <div className="w-[94vw] ml-[-15px] md:w-full text-center space-y-6 sm:space-y-8 md:space-y-12 mt-4 sm:mt-8 md:mt-[-150px]">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          {/* Main Content */}
+          <div className="w-[94vw] ml-[-15px] mt-[-100px] md:w-full text-center space-y-6 sm:space-y-8 md:space-y-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="px-4">
             {/* Logo and brand */}
             <div className="flex items-center justify-center mb-4 sm:mb-6 md:mb-8">
@@ -218,8 +220,16 @@ const HeroSection: React.FC = () => {
               </>
             )}
           </motion.div>
+          </div>
+        </div>
+      </section>
 
-
+      {/* 第二页：Swiper轮播图 */}
+      <section className="relative min-h-screen flex items-center py-8 sm:py-12 md:py-20 lg:py-32">
+        {/* 添加一些背景装饰 */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-800"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           {/* Feature Cards Scrolling Container */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -227,6 +237,15 @@ const HeroSection: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="ml-[8px] mt-8 sm:mt-12 md:mt-16 relative w-full"
           >
+            <div className="text-center mb-8 sm:mb-12 md:mb-16">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+                <span className="gradient-text">功能特色</span>
+              </h3>
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                探索我们为您提供的丰富功能和特色服务
+              </p>
+            </div>
+            
             <div className="flex justify-center w-full">
               <div 
                 className="overflow-hidden cursor-pointer w-full max-w-6xl lg:max-w-7xl"
@@ -323,8 +342,8 @@ const HeroSection: React.FC = () => {
             </motion.div>
           )} */}
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 };
 
