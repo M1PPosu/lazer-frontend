@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers, FiMessageCircle } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers, FiMessageCircle, FiMenu, FiX, FiSettings } from 'react-icons/fi';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotificationContext } from '../../contexts/NotificationContext';
@@ -144,58 +144,161 @@ const NavItem = memo<{ item: NavItem }>(({ item }) => {
 
 NavItem.displayName = 'NavItem';
 
-// 将 MobileNavItem 组件也提取并使用 memo 优化
-const MobileNavItem = memo<{ item: NavItem }>(({ item }) => {
+// 手机端菜单下拉组件
+const MobileMenuDropdown = memo<{ 
+  items: NavItem[];
+  isAuthenticated: boolean;
+}>(({ items, isAuthenticated }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const IconComponent = item.icon;
-  const isActive = location.pathname === item.path;
+
+  // 关闭下拉菜单
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  // 切换下拉菜单
+  const handleToggle = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+
+  // 点击外部关闭
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // 路由变化时关闭菜单
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      className="flex-1 max-w-20" // 限制最大宽度，避免单个元素过宽
-    >
-      <Link
-        to={item.path}
-        className={`relative flex flex-col items-center py-3 px-2 rounded-2xl transition-all duration-200 w-full ${
-          isActive 
-            ? 'text-white' 
-            : 'text-gray-600 dark:text-gray-400 hover:text-osu-pink'
+    <div className="relative" ref={dropdownRef}>
+      {/* 菜单按钮 */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={handleToggle}
+        className={`p-2.5 rounded-xl transition-all duration-200 ${
+          isOpen
+            ? 'text-osu-pink bg-osu-pink/10'
+            : 'text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50'
         }`}
+        aria-label="Toggle menu"
       >
-        {isActive && (
-          <motion.div 
-            className="absolute inset-0 bg-osu-pink rounded-2xl shadow-lg shadow-osu-pink/25"
-            layoutId="mobileActiveTab"
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-        )}
-        
-        <div className="relative z-10 flex flex-col items-center">
-          {IconComponent && (
-            <div className="mb-1">
-              <IconComponent size={20} />
-            </div>
-          )}
-          <span className="text-xs font-medium">{item.title}</span>
-        </div>
+        <motion.div
+          animate={{ rotate: isOpen ? 90 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {isOpen ? <FiX size={18} /> : <FiMenu size={18} />}
+        </motion.div>
+      </motion.button>
 
-        {!isActive && (
-          <motion.div 
-            className="absolute inset-0 rounded-2xl bg-osu-pink/10"
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-          />
+      {/* 下拉菜单 */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ 
+              opacity: 0, 
+              scale: 0.95,
+              y: -10
+            }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              y: 0
+            }}
+            exit={{ 
+              opacity: 0, 
+              scale: 0.95,
+              y: -10
+            }}
+            transition={{ 
+              duration: 0.15,
+              ease: [0.16, 1, 0.3, 1]
+            }}
+            className="absolute right-0 mt-6 w-48 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 py-2 z-50 overflow-hidden"
+            style={{
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+            }}
+          >
+            {/* 菜单项 */}
+            <div className="py-1">
+              {items.map((item) => {
+                const IconComponent = item.icon;
+                const isActive = location.pathname === item.path;
+                
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={handleClose}
+                    className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? 'text-osu-pink bg-osu-pink/10'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-osu-pink'
+                    }`}
+                  >
+                    {IconComponent && <IconComponent size={16} className="mr-3" />}
+                    <span>{item.title}</span>
+                    {isActive && (
+                      <motion.div 
+                        className="ml-auto w-2 h-2 bg-osu-pink rounded-full"
+                        layoutId="mobileDropdownActiveIndicator"
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+              
+              {/* 设置按钮 - 仅在已登录时显示 */}
+              {isAuthenticated && (
+                <>
+                  <div className="border-t border-gray-200/50 dark:border-gray-700/50 my-1" />
+                  <Link
+                    to="/settings"
+                    onClick={handleClose}
+                    className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                      location.pathname === '/settings'
+                        ? 'text-osu-pink bg-osu-pink/10'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-osu-pink'
+                    }`}
+                  >
+                    <FiSettings size={16} className="mr-3" />
+                    <span>设置</span>
+                    {location.pathname === '/settings' && (
+                      <motion.div 
+                        className="ml-auto w-2 h-2 bg-osu-pink rounded-full"
+                        layoutId="mobileDropdownActiveIndicator"
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* 装饰性渐变 */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-osu-pink/5 via-transparent to-osu-blue/5 pointer-events-none" />
+          </motion.div>
         )}
-      </Link>
-    </motion.div>
+      </AnimatePresence>
+    </div>
   );
 });
 
-MobileNavItem.displayName = 'MobileNavItem';
+MobileMenuDropdown.displayName = 'MobileMenuDropdown';
 
 const Navbar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
@@ -458,18 +561,13 @@ const Navbar: React.FC = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Link to="/profile" className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200">
+                  <Link to="/profile" className="flex items-center p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200">
                     <Avatar
                       userId={user.id}
                       username={user.username}
                       avatarUrl={user.avatar_url}
                       size="sm"
                     />
-                    <div className="flex flex-col justify-center">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-16 truncate leading-tight">
-                        {user.username}
-                      </span>
-                    </div>
                   </Link>
                 </motion.div>
                 
@@ -497,18 +595,16 @@ const Navbar: React.FC = () => {
                 </Link>
               </motion.div>
             )}
+
+            {/* Mobile menu dropdown */}
+            <MobileMenuDropdown 
+              items={filteredNavItems}
+              isAuthenticated={isAuthenticated}
+            />
           </div>
         </div>
       </nav>
 
-      {/* Mobile Navigation - Bottom (页面导航) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 shadow-lg safe-area-inset-bottom">
-        <div className="flex items-center justify-center py-2 px-2">
-          {filteredNavItems.map((item) => (
-            <MobileNavItem key={item.path} item={item} />
-          ))}
-        </div>
-      </nav>
     </>
   );
 };

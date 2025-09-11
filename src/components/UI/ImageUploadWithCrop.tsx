@@ -37,13 +37,18 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
   const [showCropper, setShowCropper] = useState(false);
   const [originalImageSrc, setOriginalImageSrc] = useState<string>('');
   const [originalFileName, setOriginalFileName] = useState<string>('');
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 处理文件选择
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    processFile(file);
+  };
 
+  // 处理文件（统一的文件处理逻辑）
+  const processFile = (file: File) => {
     // 验证文件类型
     if (!acceptedTypes.includes(file.type)) {
       toast.error(`不支持的文件格式。支持的格式: ${acceptedTypes.map(type => type.split('/')[1]).join(', ')}`);
@@ -64,6 +69,27 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
       setShowCropper(true);
     };
     reader.readAsDataURL(file);
+  };
+
+  // 拖拽事件处理
+  const handleDragOver = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      processFile(files[0]);
+    }
   };
 
   // 处理裁剪完成
@@ -102,10 +128,17 @@ const ImageUploadWithCrop: React.FC<ImageUploadWithCropProps> = ({
           <button
             type="button"
             onClick={handleUploadClick}
-            className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 transition-colors"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`inline-flex items-center px-4 py-2 text-white rounded-lg transition-colors ${
+              isDragOver 
+                ? 'bg-osu-pink/80' 
+                : 'bg-osu-pink hover:bg-osu-pink/90'
+            }`}
           >
             {icon || <FiUpload className="mr-2" />}
-            {placeholder}
+            {isDragOver ? '释放文件开始上传' : placeholder}
           </button>
           {description && (
             <div className="text-sm text-gray-500 dark:text-gray-400">

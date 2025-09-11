@@ -22,6 +22,7 @@ const CoverUpload: React.FC<CoverUploadProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [step, setStep] = useState<'select' | 'crop'>('select');
   const [originalFileName, setOriginalFileName] = useState<string>('');
+  const [isDragOver, setIsDragOver] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,7 +38,11 @@ const CoverUpload: React.FC<CoverUploadProps> = ({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    processFile(file);
+  };
 
+  // 处理文件（统一的文件处理逻辑）
+  const processFile = (file: File) => {
     // 验证文件类型
     if (!['image/png', 'image/jpeg', 'image/gif'].includes(file.type)) {
       toast.error('只支持 PNG、JPEG、GIF 格式的图片');
@@ -58,6 +63,27 @@ const CoverUpload: React.FC<CoverUploadProps> = ({
       setStep('crop');
     };
     reader.readAsDataURL(file);
+  };
+
+  // 拖拽事件处理
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      processFile(files[0]);
+    }
   };
 
   // 处理裁剪完成
@@ -158,10 +184,20 @@ const CoverUpload: React.FC<CoverUploadProps> = ({
                 </div>
               )}
 
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 mb-4">
-                <FiUpload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  点击选择图片或拖拽图片到此处
+              <div 
+                className={`border-2 border-dashed rounded-lg p-8 mb-4 transition-colors cursor-pointer ${
+                  isDragOver 
+                    ? 'border-osu-pink bg-osu-pink/10' 
+                    : 'border-gray-300 dark:border-gray-600 hover:border-osu-pink/50'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <FiUpload className={`w-12 h-12 mx-auto mb-4 ${isDragOver ? 'text-osu-pink' : 'text-gray-400'}`} />
+                <p className={`mb-2 ${isDragOver ? 'text-osu-pink' : 'text-gray-600 dark:text-gray-400'}`}>
+                  {isDragOver ? '释放文件开始上传' : '点击选择图片或拖拽图片到此处'}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500">
                   支持 PNG、JPEG、GIF 格式，最大 10MB
@@ -174,7 +210,7 @@ const CoverUpload: React.FC<CoverUploadProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-gradient-to-r from-pink-400 to-teal-400 hover:from-pink-500 hover:to-teal-500 text-white px-6 py-2 rounded-lg transition-colors"
+                className="bg-osu-pink hover:bg-osu-pink/90 text-white px-6 py-2 rounded-lg transition-colors"
               >
                 选择图片
               </button>
