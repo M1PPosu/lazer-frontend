@@ -1,12 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import type { Swiper as SwiperType } from 'swiper';
-import { Autoplay } from 'swiper/modules';
 import { useAuth } from '../../hooks/useAuth';
 
-import 'swiper/swiper-bundle.css';
 import InfoCard from '../InfoCard';
 import { features } from '../../data/features';
 import { 
@@ -25,69 +21,22 @@ import {
 
 const HeroSection: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const [swiper, setSwiper] = useState<SwiperType | null>(null);
-  const [isUserInteracting, setIsUserInteracting] = useState(false);
-
-  const handleMouseEnter = useCallback(() => {
-    if (swiper && swiper.autoplay) {
-      swiper.autoplay.pause();
-    }
-  }, [swiper]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (swiper && swiper.autoplay && !isUserInteracting) {
-      swiper.autoplay.resume();
-    }
-  }, [swiper, isUserInteracting]);
-
-  // 处理触摸/拖动开始
-  const handleTouchStart = useCallback(() => {
-    setIsUserInteracting(true);
-    if (swiper && swiper.autoplay) {
-      swiper.autoplay.pause();
-    }
-  }, [swiper]);
-
-  // 处理触摸/拖动结束后恢复自动播放
-  const handleTouchEnd = useCallback(() => {
-    setIsUserInteracting(false);
-    if (swiper && swiper.autoplay) {
-      // 延迟一点时间再恢复自动播放，确保用户操作完成
-      setTimeout(() => {
-        if (swiper && swiper.autoplay) {
-          swiper.autoplay.resume();
-        }
-      }, 800);
-    }
-  }, [swiper]);
-
-  // 处理拖动过程中的状态
-  const handleSliderMove = useCallback(() => {
-    // 在拖动过程中确保自动播放暂停
-    if (swiper && swiper.autoplay && !swiper.autoplay.paused) {
-      swiper.autoplay.pause();
-    }
-  }, [swiper]);
 
   return (
     <div className="relative">
-      {/* 第一页：主要内容占满整个屏幕 */}
-      <section className="relative overflow-hidden h-screen flex items-center">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-3"></div>
-        
-        {/* Modern geometric accents */}
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-pink-200/20 dark:bg-pink-800/20 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-1/3 right-1/3 w-40 h-40 bg-teal-200/20 dark:bg-teal-800/20 rounded-full blur-2xl"></div>
-        <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-blue-200/15 dark:bg-blue-800/15 rounded-full blur-xl"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-36 h-36 bg-purple-200/15 dark:bg-purple-800/15 rounded-full blur-xl"></div>
-        
-        {/* Additional decorative elements for large screens */}
-        <div className="hidden lg:block absolute top-10 right-10 w-2 h-2 bg-pink-400/30 rounded-full"></div>
-        <div className="hidden lg:block absolute bottom-20 left-20 w-1 h-1 bg-teal-400/40 rounded-full"></div>
-        <div className="hidden lg:block absolute top-1/3 left-10 w-1.5 h-1.5 bg-blue-400/35 rounded-full"></div>
+      {/* Fixed background with parallax effect */}
+      <div className="fixed inset-0 bg-grid-pattern opacity-3 z-0"></div>
+      <div className="fixed top-1/4 left-1/4 w-32 h-32 bg-pink-200/20 dark:bg-pink-800/20 rounded-full blur-2xl z-0"></div>
+      <div className="fixed bottom-1/3 right-1/3 w-40 h-40 bg-teal-200/20 dark:bg-teal-800/20 rounded-full blur-2xl z-0"></div>
+      <div className="fixed top-1/2 right-1/4 w-24 h-24 bg-blue-200/15 dark:bg-blue-800/15 rounded-full blur-xl z-0"></div>
+      <div className="fixed bottom-1/4 left-1/3 w-36 h-36 bg-purple-200/15 dark:bg-purple-800/15 rounded-full blur-xl z-0"></div>
+      <div className="hidden lg:block fixed top-10 right-10 w-2 h-2 bg-pink-400/30 rounded-full z-0"></div>
+      <div className="hidden lg:block fixed bottom-20 left-20 w-1 h-1 bg-teal-400/40 rounded-full z-0"></div>
+      <div className="hidden lg:block fixed top-1/3 left-10 w-1.5 h-1.5 bg-blue-400/35 rounded-full z-0"></div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      {/* 第一页：主要内容占满整个屏幕 */}
+      <section className="relative overflow-hidden h-screen flex items-center z-10">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           {/* Main Content */}
           <div className="w-[94vw] ml-[-15px] mt-[-100px] md:w-full text-center space-y-6 sm:space-y-8 md:space-y-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="px-4">
@@ -225,17 +174,19 @@ const HeroSection: React.FC = () => {
       </section>
 
       {/* 第二页：Swiper轮播图 */}
-      <section className="relative min-h-screen flex items-center py-8 sm:py-12 md:py-20 lg:py-32">
-        {/* 添加一些背景装饰 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-800"></div>
+      <section className="relative min-h-screen flex items-center py-8 sm:py-12 md:py-20 lg:py-32 z-10">
+        {/* 不透明背景遮挡第一页的固定背景 */}
+        <div className="absolute inset-0 bg-white dark:bg-gray-900 z-0"></div>
+        {/* 渐变装饰层 */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-50/30 to-gray-100/30 dark:from-gray-800/30 dark:to-gray-700/30 z-0"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          {/* Feature Cards Scrolling Container */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+          {/* Feature Cards Grid Container */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="ml-[8px] mt-8 sm:mt-12 md:mt-16 relative w-full"
+            className="mt-8 sm:mt-12 md:mt-16 relative w-full"
           >
             <div className="text-center mb-8 sm:mb-12 md:mb-16">
               <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 dark:text-gray-200 mb-4">
@@ -246,84 +197,38 @@ const HeroSection: React.FC = () => {
               </p>
             </div>
             
-            <div className="flex justify-center w-full">
-              <div 
-                className="overflow-hidden cursor-pointer w-full max-w-6xl lg:max-w-7xl"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                style={{
-                  maskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%)'
-                }}
-              >
-              <Swiper
-                onSwiper={setSwiper}
-                modules={[Autoplay]}
-                slidesPerView="auto"
-                spaceBetween={24}
-                loop={true}
-                centeredSlides={true}
-                initialSlide={0}
-                autoplay={{
-                  delay: 3000,
-                  disableOnInteraction: false,
-                  pauseOnMouseEnter: false,
-                  reverseDirection: false,
-                  waitForTransition: true,
-                  stopOnLastSlide: false
-                }}
-                speed={1500}
-                allowTouchMove={true}
-                resistanceRatio={0.85}
-                longSwipesRatio={0.25}
-                loopAdditionalSlides={2}
-                watchSlidesProgress={true}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-                onSliderMove={handleSliderMove}
-                className="!px-4"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  
-                }}
-              >
-                {features.map((feature, index) => {
-                  const icons = [
-                    <FaDesktop key="desktop" className="h-6 w-6" />,
-                    <FaRocket key="rocket" className="h-6 w-6" />,
-                    <FaHeart key="heart" className="h-6 w-6" />,
-                    <FaCog key="cog" className="h-6 w-6" />,
-                    <FaBug key="bug" className="h-6 w-6" />,
-                    <FaCodeBranch key="code" className="h-6 w-6" />,
-                    <FaPaperPlane key="plane" className="h-6 w-6" />,
-                    <FaChartBar key="chart" className="h-6 w-6" />
-                  ];
-                  
-                  return (
-                    <SwiperSlide key={feature.id} className="!w-80">
-                      <div className="flex justify-center items-center w-full">
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.6, delay: 0.5 }}
-                          className="w-full max-w-sm"
-                        >
-                          <InfoCard
-                            image={feature.image}
-                            imageAlt={feature.imageAlt}
-                            title={feature.title}
-                            content={feature.content}
-                            icon={icons[index]}
-                          />
-                        </motion.div>
-                      </div>
-                    </SwiperSlide>
-                  );
-                })}
-              </Swiper>
-              </div>
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 max-w-7xl mx-auto">
+              {features.map((feature, index) => {
+                const icons = [
+                  <FaDesktop key="desktop" className="h-6 w-6" />,
+                  <FaRocket key="rocket" className="h-6 w-6" />,
+                  <FaHeart key="heart" className="h-6 w-6" />,
+                  <FaCog key="cog" className="h-6 w-6" />,
+                  <FaBug key="bug" className="h-6 w-6" />,
+                  <FaCodeBranch key="code" className="h-6 w-6" />,
+                  <FaPaperPlane key="plane" className="h-6 w-6" />,
+                  <FaChartBar key="chart" className="h-6 w-6" />
+                ];
+                
+                return (
+                  <motion.div
+                    key={feature.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.1 * index }}
+                    className="w-full"
+                  >
+                    <InfoCard
+                      image={feature.image}
+                      imageAlt={feature.imageAlt}
+                      title={feature.title}
+                      content={feature.content}
+                      icon={icons[index]}
+                    />
+                  </motion.div>
+                );
+              })}
             </div>
           </motion.div>
 

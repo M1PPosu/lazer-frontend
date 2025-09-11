@@ -2,7 +2,7 @@ export const features = [
   {
     id: 1,
     title: "全平台支持",
-    content: "gsu! 专为 lazer 而打造，这意味着您可在任何支持 osu! lazer 的系统上游玩 gsu! 而不受平台限制",
+    content: "g0v0! 专为 lazer 而打造，这意味着您可在任何支持 osu! lazer 的系统上游玩 g0v0! 而不受平台限制",
     image: "/image/card-image1.svg",
     imageAlt: "全平台支持"
   },
@@ -30,7 +30,7 @@ export const features = [
   {
     id: 5,
     title: "开发者友好",
-    content: "我们的服务端完全按照官方的 osu! v1/v2 API 规范设计，让您更加方便快速的接入bot/服务到 gsu!",
+    content: "我们的服务端完全按照官方的 osu! v1/v2 API 规范设计，让您更加方便快速的接入bot/服务到 g0v0!",
     image: "/image/card-image5.svg",
     imageAlt: "开发者友好"
   },

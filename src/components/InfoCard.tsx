@@ -30,15 +30,15 @@ const InfoCard: React.FC<InfoCardProps> = ({
           </div>
         </div>
         <div className="p-5 flex-1 flex flex-col">
-          <div className="flex justify-center items-center h-full w-full gap-x-2 mb-2 text-gray-900 group-hover:text-pink-800 dark:text-zinc-100 dark:group-hover:text-pink-100">
-            <div className="h-6 w-6 shrink-0">
+          <div className="flex justify-center items-center w-full gap-x-2 mb-3 text-gray-900 group-hover:text-pink-800 dark:text-zinc-100 dark:group-hover:text-pink-100">
+            <div className="h-5 w-5 shrink-0">
               {icon}
             </div>
-            <h3 className="text-xl line-clamp-1 text-ellipsis font-semibold transition-all duration-150 ease-in-out leading-tight">
+            <h3 className="text-lg line-clamp-1 text-ellipsis font-semibold transition-all duration-150 ease-in-out leading-tight">
               {title}
             </h3>
           </div>
-          <p className="text-zinc-600 dark:text-zinc-300 group-hover:text-pink-800/75 dark:group-hover:text-pink-300 leading-normal transition-all duration-150 ease-in-out text-base m-0 flex-1 line-clamp-4">
+          <p className="text-zinc-600 dark:text-zinc-300 group-hover:text-pink-800/75 dark:group-hover:text-pink-300 leading-relaxed transition-all duration-150 ease-in-out text-sm flex-1 line-clamp-6">
             {content}
           </p>
         </div>
