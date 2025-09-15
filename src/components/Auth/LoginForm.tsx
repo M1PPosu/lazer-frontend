@@ -30,7 +30,7 @@ const LoginForm: React.FC = () => {
     <div className="max-w-md w-full space-y-3">
       <div className="text-center">
         <div className="w-12 h-12 mx-auto flex items-center justify-center mb-2">
-          <img src="/image/logo.svg" alt="Logo" className="w-12 h-12 object-contain" />
+          <img src="/image/logos/logo.svg" alt="Logo" className="w-12 h-12 object-contain" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">登录</h2>
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">登录到你的 咕哦！ 账户</p>

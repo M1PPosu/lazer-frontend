@@ -7,6 +7,7 @@ import StatsCard from '../User/StatsCard';
 import LevelProgress from '../UI/LevelProgress';
 import { type User, type GameMode } from '../../types';
 import FriendStats from './FriendStats';
+import UserRecentActivity from './UserRecentActivity';
 import { BiSolidPencil } from 'react-icons/bi';
 import { FaTools } from "react-icons/fa";
 import { Tooltip } from 'react-tooltip';
@@ -104,7 +105,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
   const coverUrlRaw = user.cover_url || user.cover?.url || undefined;
   const coverUrl =
     coverUrlRaw === "https://assets.ppy.sh/user-profile-covers/default.jpeg"
-      ? "/image/bgcover.jpg"
+      ? "/image/backgrounds/bgcover.jpg"
       : coverUrlRaw;
   const [isUpdatingMode] = useState(false);
 
@@ -274,6 +275,11 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               />
             </div>
           </div>
+        </div>
+
+        {/* 用户最近活动 */}
+        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 lg:px-8 py-3 md:py-4 border-b border-gray-200/60 dark:border-white/10">
+          <UserRecentActivity userId={user.id} />
         </div>
 
         {/* 施工中 */}

@@ -361,7 +361,7 @@ const Navbar: React.FC = () => {
                 <Link to="/" className="flex items-center space-x-3 transition-transform duration-200">
                   <div className="relative">
                     <img 
-                      src="/image/logo.svg" 
+                      src="/image/logos/logo.svg" 
                       alt="GuSou Logo" 
                       className="w-9 h-9 object-contain"
                     />
@@ -485,7 +485,7 @@ const Navbar: React.FC = () => {
             <Link to="/" className="flex items-center space-x-3 group">
               <div className="relative">
                 <img 
-                  src="/image/logo.svg" 
+                  src="/image/logos/logo.svg" 
                   alt="GuSou Logo" 
                   className="w-8 h-8 object-contain"
                 />

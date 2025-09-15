@@ -274,6 +274,23 @@ export const userAPI = {
     console.log('上传响应:', result);
     return result;
   },
+
+  // 获取用户最近活动
+  getRecentActivity: async (
+    userId: number,
+    limit: number = 6,
+    offset: number = 0
+  ) => {
+    console.log('获取用户最近活动:', { userId, limit, offset });
+    
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    params.append('offset', offset.toString());
+    
+    const url = `/api/v2/users/${userId}/recent_activity?${params.toString()}`;
+    const response = await api.get(url);
+    return response.data;
+  },
 };
 
 // Friends API functions - osu! 使用单向关注制

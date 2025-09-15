@@ -43,7 +43,7 @@ const HeroSection: React.FC = () => {
             {/* Logo and brand */}
             <div className="flex items-center justify-center mb-6 sm:mb-8 md:mb-10">
               <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-24 lg:h-24 flex items-center justify-center mr-3 sm:mr-4 md:mr-5 p-1 sm:p-2">
-                <img src="/image/logo.svg" alt="咕哦！Logo" className="w-full h-full object-contain drop-shadow-lg" />
+                <img src="/image/logos/logo.svg" alt="咕哦！Logo" className="w-full h-full object-contain drop-shadow-lg" />
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-bold tracking-tight">
                 <span className="gradient-text">咕哦！</span>
