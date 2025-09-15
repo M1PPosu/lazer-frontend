@@ -20,18 +20,24 @@
 
 .bbcode-spoilerbox__link {
   display: block;
-  padding: 8px 12px;
-  background: #f8f8f8;
-  color: #333;
+  padding: 8px 12px !important;
+  background: #f8f8f8 !important;
+  color: #333 !important;
   text-decoration: none;
   font-weight: 500;
-  border-bottom: 1px solid #ddd;
+  border: none !important;
+  border-bottom: 1px solid #ddd !important;
   transition: background-color 0.2s;
+  cursor: pointer;
+  text-align: left !important;
+  width: 100% !important;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .bbcode-spoilerbox__link:hover {
-  background: #f0f0f0;
-  color: #333;
+  background: #f0f0f0 !important;
+  color: #333 !important;
 }
 
 .bbcode-spoilerbox__link-icon::before {
@@ -51,6 +57,25 @@
 
 .bbcode-spoilerbox__body.is-visible {
   display: block;
+}
+
+/* 暗色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .bbcode-spoilerbox {
+    border-color: #404040;
+    background: #1a1a1a;
+  }
+  
+  .bbcode-spoilerbox__link {
+    background: #2a2a2a !important;
+    color: #e0e0e0 !important;
+    border-bottom-color: #404040 !important;
+  }
+  
+  .bbcode-spoilerbox__link:hover {
+    background: #333 !important;
+    color: #fff !important;
+  }
 }
 
 /* 剧透条样式 */

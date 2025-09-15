@@ -194,7 +194,7 @@ export class BBCodeParser {
       isBlock: true,
       renderer: (content: string, param?: string) => {
         const title = param ? param.replace(/^=/, '') : 'SPOILER';
-        return `<div class="js-spoilerbox bbcode-spoilerbox"><a class="js-spoilerbox__link bbcode-spoilerbox__link" href="#"><span class="bbcode-spoilerbox__link-icon"></span>${this.escapeHtml(title)}</a><div class="js-spoilerbox__body bbcode-spoilerbox__body">${content}</div></div>`;
+        return `<div class="js-spoilerbox bbcode-spoilerbox"><button type="button" class="js-spoilerbox__link bbcode-spoilerbox__link" style="background: none; border: none; cursor: pointer; padding: 0; text-align: left; width: 100%;"><span class="bbcode-spoilerbox__link-icon"></span>${this.escapeHtml(title)}</button><div class="js-spoilerbox__body bbcode-spoilerbox__body">${content}</div></div>`;
       }
     });
 
@@ -204,7 +204,7 @@ export class BBCodeParser {
       closeTag: '[/spoilerbox]',
       allowNested: true,
       isBlock: true,
-      renderer: (content: string) => `<div class="js-spoilerbox bbcode-spoilerbox"><a class="js-spoilerbox__link bbcode-spoilerbox__link" href="#"><span class="bbcode-spoilerbox__link-icon"></span>SPOILER</a><div class="js-spoilerbox__body bbcode-spoilerbox__body">${content}</div></div>`
+      renderer: (content: string) => `<div class="js-spoilerbox bbcode-spoilerbox"><button type="button" class="js-spoilerbox__link bbcode-spoilerbox__link" style="background: none; border: none; cursor: pointer; padding: 0; text-align: left; width: 100%;"><span class="bbcode-spoilerbox__link-icon"></span>SPOILER</button><div class="js-spoilerbox__body bbcode-spoilerbox__body">${content}</div></div>`
     });
 
     // 剧透条（涂黑）
@@ -377,6 +377,11 @@ export class BBCodeParser {
   }
 
   private escapeHtml(text: string): string {
+    // 类型检查
+    if (typeof text !== 'string') {
+      text = String(text || '');
+    }
+    
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
@@ -467,6 +472,25 @@ export class BBCodeParser {
   public parse(input: string): BBCodeParseResult {
     this.errors.length = 0;
     
+    // 类型检查：确保输入是字符串
+    if (typeof input !== 'string') {
+      this.errors.push(`解析错误: 输入必须是字符串，但收到了 ${typeof input}`);
+      return {
+        html: `<div class="bbcode">无效的输入类型</div>`,
+        errors: [...this.errors],
+        valid: false
+      };
+    }
+    
+    // 空输入检查
+    if (!input || input.trim() === '') {
+      return {
+        html: `<div class="bbcode"></div>`,
+        errors: [],
+        valid: true
+      };
+    }
+    
     try {
       const html = this.parseRecursive(input);
       const wrappedHtml = `<div class="bbcode">${html}</div>`;
@@ -478,7 +502,7 @@ export class BBCodeParser {
     } catch (error) {
       this.errors.push(`解析错误: ${error}`);
       return {
-        html: `<div class="bbcode">${this.escapeHtml(input)}</div>`,
+        html: `<div class="bbcode">${this.escapeHtml(String(input))}</div>`,
         errors: [...this.errors],
         valid: false
       };
@@ -486,6 +510,11 @@ export class BBCodeParser {
   }
 
   private parseRecursive(input: string): string {
+    // 类型检查
+    if (typeof input !== 'string') {
+      return this.escapeHtml(String(input || ''));
+    }
+    
     let result = input;
     
     // 按官方顺序处理：先处理块级元素，再处理内联元素
@@ -613,6 +642,17 @@ export class BBCodeParser {
 export const bbcodeParser = new BBCodeParser();
 
 // 便捷函数
-export function parseBBCode(input: string): BBCodeParseResult {
+export function parseBBCode(input: string | any): BBCodeParseResult {
+  // 确保输入是字符串
+  if (typeof input !== 'string') {
+    console.warn('parseBBCode: 输入不是字符串类型，尝试转换', { input, type: typeof input });
+    // 尝试转换为字符串
+    if (input === null || input === undefined) {
+      input = '';
+    } else {
+      input = String(input);
+    }
+  }
+  
   return bbcodeParser.parse(input);
 }

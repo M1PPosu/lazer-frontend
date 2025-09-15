@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { userAPI } from '../../utils/api';
 import type { BBCodeValidationResponse } from '../../types';
 import { 
   FaBold, FaItalic, FaUnderline, FaStrikethrough, FaImage, FaLink, 
@@ -19,6 +18,7 @@ interface BBCodeEditorProps {
   className?: string;
   maxLength?: number;
   disabled?: boolean;
+  title?: string; // 新增标题属性
 }
 
 interface BBCodeTool {
@@ -35,6 +35,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
   className = '',
   maxLength = 60000,
   disabled = false,
+  title, // 新增标题参数
 }) => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
@@ -59,22 +60,15 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
           // 先使用本地解析器进行基础验证
           const localResult = parseBBCode(content);
           
-          // 尝试服务器验证（如果可用）
-          try {
-            const result = await userAPI.validateBBCode(content);
-            setValidationResult(result);
-          } catch (error) {
-            // 如果服务器验证失败，使用本地解析结果
-            console.warn('Server validation failed, using local parser:', error);
-            setValidationResult({
-              valid: localResult.valid,
-              errors: localResult.errors,
-              preview: {
-                html: localResult.html,
-                raw: content
-              }
-            });
-          }
+          // 设置本地验证结果，避免重复调用服务器
+          setValidationResult({
+            valid: localResult.valid,
+            errors: localResult.errors,
+            preview: {
+              html: localResult.html,
+              raw: content
+            }
+          });
         } catch (error) {
           console.error('BBCode validation error:', error);
           setValidationError('验证失败，请检查网络连接');
@@ -86,7 +80,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
         setValidationResult(null);
         setValidationLoading(false);
       }
-    }, 500);
+    }, 300); // 减少防抖时间
   }, []);
 
   // 当内容变化时触发验证
@@ -282,8 +276,19 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
   }, [insertBBCode]);
 
   return (
-    <div className={`border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800 ${className}`}>
-      {/* 工具栏 */}
+    <div className={`${className}`}>
+      {/* 标题栏 */}
+      {title && (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            {title}
+          </h2>
+        </div>
+      )}
+      
+      {/* 编辑器容器 */}
+      <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+        {/* 工具栏 */}
       <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
         <div className="flex items-center gap-1 flex-wrap">
           {/* 基础格式化工具 */}
@@ -520,6 +525,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
       />
+      </div>
     </div>
   );
 };

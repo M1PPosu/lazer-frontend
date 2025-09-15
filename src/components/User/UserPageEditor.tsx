@@ -203,6 +203,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       {/* 编辑器 */}
       <div className="p-4">
         <BBCodeEditor
+          title="个人介绍"
           value={content}
           onChange={setContent}
           placeholder={`为 ${user.username} 编写个人介绍...\n\n你可以使用BBCode格式化文本，比如：\n[b]粗体文本[/b]\n[i]斜体文本[/i]\n[color=red]彩色文本[/color]\n\n点击工具栏按钮或使用快捷键来快速插入格式。`}

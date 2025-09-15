@@ -265,7 +265,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
         </div>
 
         {/* 好友/消息 + 等级进度 */}
-        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 lg:px-8 py-4 md:py-6 relative">
+        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 lg:px-8 py-4 md:py-6 relative border-b border-gray-200/60 dark:border-white/10">
           <div className="flex items-center justify-between relative">
               <FriendStats user={user} />
             <div className="flex items-center gap-4">

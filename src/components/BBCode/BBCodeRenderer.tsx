@@ -21,17 +21,26 @@ const BBCodeRenderer: React.FC<BBCodeRendererProps> = ({ html, className = '' })
     // 初始化折叠框功能
     const initializeSpoilerBoxes = () => {
       const spoilerLinks = container.querySelectorAll('.js-spoilerbox__link');
+      const cleanupFunctions: (() => void)[] = [];
       
-      spoilerLinks.forEach((link) => {
+      spoilerLinks.forEach((button) => {
+        // 先移除可能存在的旧事件监听器
+        const existingHandler = (button as any).__spoilerClickHandler;
+        if (existingHandler) {
+          button.removeEventListener('click', existingHandler);
+        }
+        
         const handleClick = (e: Event) => {
           e.preventDefault();
-          const spoilerBox = link.closest('.js-spoilerbox');
+          e.stopPropagation();
+          
+          const spoilerBox = button.closest('.js-spoilerbox');
           const body = spoilerBox?.querySelector('.js-spoilerbox__body');
           
           if (body) {
             const isVisible = body.classList.contains('is-visible');
             body.classList.toggle('is-visible', !isVisible);
-            link.setAttribute('aria-expanded', String(!isVisible));
+            button.setAttribute('aria-expanded', String(!isVisible));
             
             // 触发自定义事件
             spoilerBox?.dispatchEvent(new CustomEvent('spoilerToggle', {
@@ -40,36 +49,42 @@ const BBCodeRenderer: React.FC<BBCodeRendererProps> = ({ html, className = '' })
           }
         };
 
-        link.addEventListener('click', handleClick);
+        // 存储事件处理器引用以便清理
+        (button as any).__spoilerClickHandler = handleClick;
+        button.addEventListener('click', handleClick);
         
-        // 设置初始状态
-        link.setAttribute('role', 'button');
-        link.setAttribute('aria-expanded', 'false');
-        link.setAttribute('tabindex', '0');
+        // 设置初始状态 - button元素默认就有正确的属性
+        button.setAttribute('aria-expanded', 'false');
         
-        // 支持键盘操作
-        link.addEventListener('keydown', (e) => {
-          const keyEvent = e as KeyboardEvent;
-          if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
-            e.preventDefault();
-            handleClick(e);
-          }
+        // 添加清理函数
+        cleanupFunctions.push(() => {
+          button.removeEventListener('click', handleClick);
+          delete (button as any).__spoilerClickHandler;
         });
-
-        // 清理函数将在组件卸载时移除事件监听器
-        return () => {
-          link.removeEventListener('click', handleClick);
-        };
       });
+      
+      // 返回总的清理函数
+      return () => {
+        cleanupFunctions.forEach(cleanup => cleanup());
+      };
     };
 
     // 初始化剧透条功能
     const initializeSpoilers = () => {
       const spoilers = container.querySelectorAll('.spoiler');
+      const cleanupFunctions: (() => void)[] = [];
       
       spoilers.forEach((spoiler) => {
         const handleReveal = () => {
           spoiler.classList.add('revealed');
+        };
+
+        const handleKeydown = (e: Event) => {
+          const keyEvent = e as KeyboardEvent;
+          if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+            e.preventDefault();
+            handleReveal();
+          }
         };
 
         // 点击显示
@@ -83,47 +98,80 @@ const BBCodeRenderer: React.FC<BBCodeRendererProps> = ({ html, className = '' })
         spoiler.setAttribute('role', 'button');
         spoiler.setAttribute('aria-label', '点击显示隐藏内容');
         
-        spoiler.addEventListener('keydown', (e) => {
-          const keyEvent = e as KeyboardEvent;
-          if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
-            e.preventDefault();
-            handleReveal();
-          }
+        spoiler.addEventListener('keydown', handleKeydown);
+        
+        // 添加清理函数
+        cleanupFunctions.push(() => {
+          spoiler.removeEventListener('click', handleReveal);
+          spoiler.removeEventListener('mouseenter', handleReveal);
+          spoiler.removeEventListener('keydown', handleKeydown);
         });
       });
+      
+      // 返回总的清理函数
+      return () => {
+        cleanupFunctions.forEach(cleanup => cleanup());
+      };
     };
 
     // 初始化图片映射功能
     const initializeImageMaps = () => {
       const imageMaps = container.querySelectorAll('.imagemap');
+      const cleanupFunctions: (() => void)[] = [];
       
       imageMaps.forEach((imageMap) => {
         const links = imageMap.querySelectorAll('.imagemap__link');
         
         links.forEach((link) => {
-          // 添加悬停效果
-          link.addEventListener('mouseenter', () => {
+          const handleMouseEnter = () => {
             link.classList.add('hover');
-          });
+          };
           
-          link.addEventListener('mouseleave', () => {
+          const handleMouseLeave = () => {
             link.classList.remove('hover');
-          });
+          };
+          
+          const handleClick = (e: Event) => {
+            e.preventDefault();
+          };
+          
+          // 添加悬停效果
+          link.addEventListener('mouseenter', handleMouseEnter);
+          link.addEventListener('mouseleave', handleMouseLeave);
           
           // 如果是信息区域（没有href），添加提示
           if (!link.getAttribute('href') || link.getAttribute('href') === '#') {
-            link.addEventListener('click', (e) => {
-              e.preventDefault();
-            });
+            link.addEventListener('click', handleClick);
           }
+          
+          // 添加清理函数
+          cleanupFunctions.push(() => {
+            link.removeEventListener('mouseenter', handleMouseEnter);
+            link.removeEventListener('mouseleave', handleMouseLeave);
+            if (!link.getAttribute('href') || link.getAttribute('href') === '#') {
+              link.removeEventListener('click', handleClick);
+            }
+          });
         });
       });
+      
+      // 返回总的清理函数
+      return () => {
+        cleanupFunctions.forEach(cleanup => cleanup());
+      };
     };
 
-    // 初始化所有交互功能
-    initializeSpoilerBoxes();
-    initializeSpoilers();
-    initializeImageMaps();
+    // 初始化所有交互功能并收集清理函数
+    const cleanupSpoilerBoxes = initializeSpoilerBoxes();
+    const cleanupSpoilers = initializeSpoilers();
+    const cleanupImageMaps = initializeImageMaps();
+    
+    // 返回总的清理函数
+    return () => {
+      cleanupSpoilerBoxes?.();
+      cleanupSpoilers?.();
+      cleanupImageMaps?.();
+    };
 
     // 处理外部链接
     const externalLinks = container.querySelectorAll('a[href^="http"]');

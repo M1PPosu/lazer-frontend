@@ -279,7 +279,14 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
   if (loading) {
     return (
       <div className={`${className}`}>
-        <h3 className="text-base sm:text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">最近活动</h3>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              最近活动
+            </h3>
+          </div>
+        </div>
         <LoadingSpinner size="md" />
       </div>
     );
@@ -288,7 +295,14 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
   if (error) {
     return (
       <div className={`${className}`}>
-        <h3 className="text-base sm:text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">最近活动</h3>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              最近活动
+            </h3>
+          </div>
+        </div>
         <div className="text-center text-red-500 dark:text-red-400 text-sm">
           {error}
         </div>
@@ -298,7 +312,14 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
 
   return (
     <div className={`${className}`}>
-      <h3 className="text-base sm:text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">最近活动</h3>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            最近活动
+          </h3>
+        </div>
+      </div>
       
       {activities.length === 0 ? (
         <div className="text-center text-gray-500 dark:text-gray-400 py-6 text-sm">

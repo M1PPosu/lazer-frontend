@@ -182,6 +182,7 @@ const UserPageEditModal: React.FC<UserPageEditModalProps> = ({
         {/* 内容 */}
         <div className="p-4 md:p-6 overflow-y-auto flex-1">
           <BBCodeEditor
+            title="个人介绍"
             value={content}
             onChange={setContent}
             placeholder="使用 BBCode 编写你的个人介绍..."
