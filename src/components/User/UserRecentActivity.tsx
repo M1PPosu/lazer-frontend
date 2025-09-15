@@ -372,7 +372,7 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-                className="min-w-[80px] sm:min-w-[100px] h-[32px] px-3 py-1.5 bg-pink-500 hover:bg-pink-600 disabled:bg-gray-400 text-white rounded text-xs sm:text-sm transition-colors flex items-center justify-center gap-1.5"
+                className="min-w-[80px] sm:min-w-[100px] h-[32px] px-3 py-1.5 bg-osu-pink hover:bg-osu-pink/90 disabled:bg-gray-400 text-white rounded text-xs sm:text-sm transition-colors flex items-center justify-center gap-1.5"
               >
                 {loadingMore ? (
                   <>
