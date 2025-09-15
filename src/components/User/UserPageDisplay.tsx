@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { FaEdit, FaUser } from 'react-icons/fa';
 import ContentContainer from '../UI/ContentContainer';
 import UserPageEditModal from './UserPageEditModal';
+import { parseBBCode } from '../../utils/bbcodeParser';
 
 interface UserPageDisplayProps {
   user: User;
@@ -41,7 +42,9 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
 
   // 从用户对象中获取页面内容
   const userPage = user.page;
-  const hasContent = userPage?.html && userPage.html.trim();
+  // 更健壮的内容检查：检查HTML或原始内容
+  const hasContent = (userPage?.html && userPage.html.trim()) || 
+                    (userPage?.raw && userPage.raw.trim());
 
   const handleEditClick = () => {
     setIsEditModalOpen(true);
@@ -116,10 +119,18 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
 
       {/* 内容 */}
       <ContentContainer maxHeight={500} className="user-page-content">
-        <div 
-          className="prose prose-sm dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: userPage.html }}
-        />
+        <div className="prose prose-sm dark:prose-invert max-w-none">
+          {userPage.html ? (
+            <div dangerouslySetInnerHTML={{ __html: userPage.html }} />
+          ) : userPage.raw ? (
+            // 如果没有HTML但有原始内容，使用本地BBCode解析器
+            <div dangerouslySetInnerHTML={{ __html: parseBBCode(userPage.raw).html }} />
+          ) : (
+            <div className="text-gray-500 dark:text-gray-400 italic">
+              内容正在处理中...
+            </div>
+          )}
+        </div>
       </ContentContainer>
 
       {/* 编辑模态框 */}

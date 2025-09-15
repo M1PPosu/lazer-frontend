@@ -677,3 +677,118 @@ input, textarea {
   -moz-user-select: text;
   user-select: text;
 }
+
+/* BBCode 样式 */
+/* 图片映射样式 - 基于 osu-web 官方实现 */
+.imagemap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.imagemap__image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.imagemap__link {
+  position: absolute;
+  z-index: 1;
+  cursor: pointer;
+  text-decoration: none;
+  /* 官方实现中链接区域是不可见的，只有 hover 时显示 */
+  background-color: transparent;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.imagemap__link:hover {
+  /* 鼠标悬停时显示半透明覆盖层 */
+  background-color: rgba(237, 110, 160, 0.3);
+  border: 1px solid rgba(237, 110, 160, 0.7);
+}
+
+/* 对于 span 元素（无链接区域），鼠标样式为默认 */
+span.imagemap__link {
+  cursor: default;
+}
+
+span.imagemap__link:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* 剧透条样式 */
+.spoiler {
+  background-color: #000;
+  color: #000;
+  border-radius: 3px;
+  padding: 0 2px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.spoiler:hover {
+  color: inherit;
+}
+
+/* BBCode 折叠框样式 */
+.bbcode-box,
+.bbcode-spoilerbox {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.bbcode-box summary,
+.bbcode-spoilerbox summary {
+  background: #f5f5f5;
+  padding: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px 4px 0 0;
+}
+
+.bbcode-box[open] summary,
+.bbcode-spoilerbox[open] summary {
+  border-radius: 4px 4px 0 0;
+}
+
+.bbcode-box > div,
+.bbcode-spoilerbox > div {
+  padding: 8px;
+}
+
+/* 深色主题下的BBCode样式调整 */
+@media (prefers-color-scheme: dark) {
+  .bbcode-box,
+  .bbcode-spoilerbox {
+    border-color: #666;
+  }
+  
+  .bbcode-box summary,
+  .bbcode-spoilerbox summary {
+    background: #333;
+    color: #fff;
+  }
+}
+
+/* 用户页面内容区域的 BBCode 样式 */
+.user-page-content .imagemap {
+  max-width: 100%;
+  margin: 8px 0;
+}
+
+.user-page-content .spoiler {
+  user-select: none;
+}
+
+.user-page-content blockquote {
+  border-left: 4px solid #ed6ea0;
+  padding-left: 12px;
+  margin: 8px 0;
+  background: rgba(237, 110, 160, 0.1);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
