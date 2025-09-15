@@ -5,7 +5,7 @@ import UserProfileLayout from '../components/User/UserProfileLayout';
 import type { GameMode } from '../types';
 
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated, isLoading, updateUserMode } = useAuth();
+  const { user, isAuthenticated, isLoading, updateUserMode, updateUser } = useAuth();
   const [selectedMode, setSelectedMode] = useState<GameMode>('osu');
 
   useEffect(() => {
@@ -41,6 +41,7 @@ const ProfilePage: React.FC = () => {
       user={user}
       selectedMode={selectedMode}
       onModeChange={setSelectedMode}
+      onUserUpdate={updateUser}
     />
   );
 };

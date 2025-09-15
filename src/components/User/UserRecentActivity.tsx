@@ -35,6 +35,29 @@ const formatTimeAgo = (dateString: string): string => {
   }
 };
 
+// 成就图标组件
+const AchievementIcon: React.FC<{ slug: string; alt: string; className?: string }> = ({ slug, alt, className = "w-6 h-6" }) => {
+  const [imgSrc, setImgSrc] = useState(`/image/achievement_images/${slug}@2x.png`);
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (!hasError) {
+      // 尝试普通版本
+      setImgSrc(`/image/achievement_images/${slug}.png`);
+      setHasError(true);
+    }
+  };
+
+  return (
+    <img 
+      src={imgSrc}
+      alt={alt}
+      className={className}
+      onError={handleError}
+    />
+  );
+};
+
 // 评级图标映射
 const getRankIcon = (rank: string) => {
   const rankImageMap: Record<string, string> = {
@@ -55,6 +78,8 @@ const getActivityIcon = (type: string) => {
   switch (type) {
     case 'rank':
       return <FaTrophy className={`text-yellow-500 ${iconClass}`} />;
+    case 'rank_lost':
+      return <FaTrophy className={`text-gray-400 ${iconClass}`} />;
     case 'achievement':
       return <FaCrown className={`text-purple-500 ${iconClass}`} />;
     case 'beatmapset_upload':
@@ -92,11 +117,13 @@ const getActivityDescription = (activity: UserActivity) => {
             {activity.beatmap?.title}
           </a>
           <span className="text-xs sm:text-sm">中获得了</span>
-          <img 
-            src={getRankIcon(activity.scorerank || 'C')} 
-            alt={activity.scorerank}
-            className="w-4 h-4"
-          />
+          {activity.scorerank && (
+            <img 
+              src={getRankIcon(activity.scorerank || 'C')} 
+              alt={activity.scorerank}
+              className="w-5 h-5"
+            />
+          )}
           <span className="text-xs sm:text-sm">评级</span>
           {activity.rank && (
             <>
@@ -106,22 +133,42 @@ const getActivityDescription = (activity: UserActivity) => {
           )}
         </div>
       );
+    case 'rank_lost':
+      return (
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+          <span className="text-xs sm:text-sm">在</span>
+          <a 
+            href={activity.beatmap?.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:underline font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none"
+            title={activity.beatmap?.title}
+          >
+            {activity.beatmap?.title}
+          </a>
+          <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">中失去了第一名</span>
+        </div>
+      );
     case 'achievement':
       return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <span className="text-xs sm:text-sm">获得了成就</span>
           {activity.achievement && (
             <>
-              {activity.achievement.icon_url && (
-                <img 
-                  src={activity.achievement.icon_url} 
-                  alt={activity.achievement.name}
-                  className="w-3 h-3"
-                />
-              )}
-              <span className="font-medium text-purple-600 dark:text-purple-400 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none" title={activity.achievement.name || activity.achievement.slug}>
+              <AchievementIcon 
+                slug={activity.achievement.slug}
+                alt={activity.achievement.name || activity.achievement.slug}
+                className="w-4 h-4 sm:w-5 sm:h-5"
+              />
+              <a
+                href={`https://inex.osekai.net/medals/${activity.achievement.name || activity.achievement.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:underline text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none"
+                title={activity.achievement.name || activity.achievement.slug}
+              >
                 {activity.achievement.name || activity.achievement.slug}
-              </span>
+              </a>
             </>
           )}
         </div>

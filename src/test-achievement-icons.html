@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试成就图标</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .icon-item {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .icon-item img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 5px;
+        }
+        .icon-name {
+            font-size: 12px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <h1>成就图标测试</h1>
+    <p>测试部分成就图标是否能正确加载：</p>
+    
+    <div class="icon-grid">
+        <div class="icon-item">
+            <img src="../public/image/achievement_images/osu-skill-pass-1@2x.png" alt="osu-skill-pass-1" onerror="this.src='../public/image/achievement_images/osu-skill-pass-1.png'">
+            <div class="icon-name">osu-skill-pass-1</div>
+        </div>
+        
+        <div class="icon-item">
+            <img src="../public/image/achievement_images/osu-skill-fc-1@2x.png" alt="osu-skill-fc-1" onerror="this.src='../public/image/achievement_images/osu-skill-fc-1.png'">
+            <div class="icon-name">osu-skill-fc-1</div>
+        </div>
+        
+        <div class="icon-item">
+            <img src="../public/image/achievement_images/all-intro-hidden@2x.png" alt="all-intro-hidden" onerror="this.src='../public/image/achievement_images/all-intro-hidden.png'">
+            <div class="icon-name">all-intro-hidden</div>
+        </div>
+        
+        <div class="icon-item">
+            <img src="../public/image/achievement_images/osu-combo-500@2x.png" alt="osu-combo-500" onerror="this.src='../public/image/achievement_images/osu-combo-500.png'">
+            <div class="icon-name">osu-combo-500</div>
+        </div>
+        
+        <div class="icon-item">
+            <img src="../public/image/achievement_images/taiko-skill-pass-5@2x.png" alt="taiko-skill-pass-5" onerror="this.src='../public/image/achievement_images/taiko-skill-pass-5.png'">
+            <div class="icon-name">taiko-skill-pass-5</div>
+        </div>
+        
+        <div class="icon-item">
+            <img src="../public/image/achievement_images/mania-skill-fc-3@2x.png" alt="mania-skill-fc-3" onerror="this.src='../public/image/achievement_images/mania-skill-fc-3.png'">
+            <div class="icon-name">mania-skill-fc-3</div>
+        </div>
+    </div>
+    
+    <h2>测试链接</h2>
+    <p>成就解释链接示例：</p>
+    <ul>
+        <li><a href="https://inex.osekai.net/medals/osu-skill-pass-1" target="_blank" style="color: #9333ea;">osu-skill-pass-1</a></li>
+        <li><a href="https://inex.osekai.net/medals/all-intro-hidden" target="_blank" style="color: #9333ea;">all-intro-hidden</a></li>
+        <li><a href="https://inex.osekai.net/medals/osu-combo-500" target="_blank" style="color: #9333ea;">osu-combo-500</a></li>
+    </ul>
+</body>
+</html>

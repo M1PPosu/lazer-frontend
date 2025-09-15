@@ -2,8 +2,8 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
 
 // API base URL - adjust this to match your osu! API server
-const API_BASE_URL = 'https://lazer-api.g0v0.top';
-
+//const API_BASE_URL = 'https://lazer-api.g0v0.top';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -289,6 +289,31 @@ export const userAPI = {
     
     const url = `/api/v2/users/${userId}/recent_activity?${params.toString()}`;
     const response = await api.get(url);
+    return response.data;
+  },
+
+  // 获取用户页面内容（仅用于编辑时获取最新内容，显示时使用用户对象中的page字段）
+  getUserPage: async (userId: number) => {
+    console.log('获取用户页面内容（编辑用）:', { userId });
+    const response = await api.get(`/api/v2/users/${userId}/page`);
+    return response.data;
+  },
+
+  // 更新用户页面内容
+  updateUserPage: async (userId: number, content: string) => {
+    console.log('更新用户页面内容:', { userId, contentLength: content.length });
+    const response = await api.put(`/api/v2/users/${userId}/page`, {
+      body: content
+    });
+    return response.data;
+  },
+
+  // 验证BBCode内容
+  validateBBCode: async (content: string) => {
+    console.log('验证BBCode内容:', { contentLength: content.length });
+    const response = await api.post('/api/v2/me/validate-bbcode', {
+      content: content
+    });
     return response.data;
   },
 };

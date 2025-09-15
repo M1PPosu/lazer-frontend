@@ -48,6 +48,7 @@ const UserPage: React.FC = () => {
       user={user}
       selectedMode={selectedMode}
       onModeChange={setSelectedMode}
+      onUserUpdate={setUser}
     />
   );
 };

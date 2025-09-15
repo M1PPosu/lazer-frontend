@@ -463,7 +463,7 @@ export interface UserSearchResponse {
 export interface UserActivity {
   id: number;
   createdAt: string;
-  type: 'rank' | 'achievement' | 'beatmapset_upload' | 'beatmapset_approve' | 'beatmapset_delete' | 'beatmapset_revive' | 'beatmapset_update' | 'username_change' | 'user_support_again' | 'user_support_first' | 'user_support_gift' | 'userpageUpdate';
+  type: 'rank' | 'rank_lost' | 'achievement' | 'beatmapset_upload' | 'beatmapset_approve' | 'beatmapset_delete' | 'beatmapset_revive' | 'beatmapset_update' | 'username_change' | 'user_support_again' | 'user_support_first' | 'user_support_gift' | 'userpageUpdate';
   scorerank?: string;
   rank?: number;
   mode?: string;
@@ -499,4 +499,35 @@ export interface UserRecentActivityResponse {
   activities: UserActivity[];
   has_more: boolean;
   total: number;
+}
+
+// 用户页面内容
+export interface UserPage {
+  html: string;
+  raw: string;
+}
+
+// BBCode验证请求
+export interface BBCodeValidationRequest {
+  content: string;
+}
+
+// BBCode验证响应
+export interface BBCodeValidationResponse {
+  valid: boolean;
+  errors: string[];
+  preview: {
+    html: string;
+    raw: string;
+  };
+}
+
+// 用户页面更新请求
+export interface UserPageUpdateRequest {
+  body: string;
+}
+
+// 用户页面更新响应
+export interface UserPageUpdateResponse {
+  html: string;
 }

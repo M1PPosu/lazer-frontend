@@ -13,6 +13,7 @@ interface AuthContextType {
   logout: () => void;
   updateUserMode: (mode?: string) => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -176,6 +177,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [isAuthenticated]);
 
+  const updateUser = useCallback((updatedUser: User) => {
+    setUser(updatedUser);
+  }, []);
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -185,6 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     updateUserMode,
     refreshUser,
+    updateUser,
   };
 
   return (
