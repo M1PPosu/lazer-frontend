@@ -83,7 +83,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
         ) : (
           // 其他人的页面：显示空状态
           <div className="text-center py-8">
-            <div className="flex justify-center items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 个人介绍
