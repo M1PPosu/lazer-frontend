@@ -32,27 +32,27 @@ const HowToJoinPage: React.FC = () => {
 
   return (
     <PhotoProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 页面标题 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            如何加入服务器
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            有两种方式连接到我们的服务器
-          </p>
-        </div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 sm:py-12 lg:py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* 页面标题 */}
+          <div className="text-center mb-12 sm:mb-16">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+              如何加入服务器
+            </h1>
+            <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              有两种方式连接到我们的服务器
+            </p>
+          </div>
 
         {/* 方法一：自定义客户端 */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-lg font-bold">
+            <div className="w-8 h-8 bg-osu-pink text-white rounded-full flex items-center justify-center text-lg font-bold">
               1
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               使用我们的自定义客户端
-              <span className="ml-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              <span className="ml-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-osu-pink/10 text-osu-pink dark:bg-osu-pink/20 dark:text-pink-300">
                 推荐
               </span>
             </h2>
@@ -66,24 +66,24 @@ const HowToJoinPage: React.FC = () => {
 
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-              <FaGamepad className="text-green-500" />
+              <FaGamepad className="text-osu-pink" />
               操作步骤：
             </h3>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
+                <div className="w-6 h-6 bg-osu-pink/10 dark:bg-osu-pink/20 text-osu-pink dark:text-pink-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
                   1
                 </div>
                 <div>
                   <p className="text-gray-700 dark:text-gray-300 mb-3">
-                    <FaDownload className="inline mr-2 text-green-500" />
+                    <FaDownload className="inline mr-2 text-osu-pink" />
                     下载 g0v0! 自定义客户端
                   </p>
                   <a
                     href="https://github.com/GooGuTeam/osu/releases/latest"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+                    className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
                   >
                     <FaDownload className="mr-2" />
                     下载 g0v0! 客户端
@@ -92,7 +92,7 @@ const HowToJoinPage: React.FC = () => {
               </div>
               
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
+                <div className="w-6 h-6 bg-osu-pink/10 dark:bg-osu-pink/20 text-osu-pink dark:text-pink-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
                   2
                 </div>
                 <div>
@@ -100,7 +100,7 @@ const HowToJoinPage: React.FC = () => {
                     启动游戏，打开 设置 → 在线，在"Custom API Server URL"字段中填入：
                   </p>
                   <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center mb-4">
-                    <code className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded flex-1">
+                    <code className="bg-osu-pink/10 dark:bg-osu-pink/20 text-osu-pink dark:text-pink-300 px-2 py-1 rounded flex-1">
                       lazer-api.g0v0.top
                     </code>
                     <CopyButton text="lazer-api.g0v0.top" label="API URL" />
@@ -122,7 +122,7 @@ const HowToJoinPage: React.FC = () => {
               </div>
               
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
+                <div className="w-6 h-6 bg-osu-pink/10 dark:bg-osu-pink/20 text-osu-pink dark:text-pink-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
                   3
                 </div>
                 <div>
@@ -138,7 +138,7 @@ const HowToJoinPage: React.FC = () => {
         {/* 方法二：Authlib Injector */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-lg font-bold">
+            <div className="w-8 h-8 bg-osu-blue text-white rounded-full flex items-center justify-center text-lg font-bold">
               2
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -159,24 +159,24 @@ const HowToJoinPage: React.FC = () => {
 
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-              <FaCog className="text-blue-500" />
+              <FaCog className="text-osu-blue" />
               操作步骤：
             </h3>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
+                <div className="w-6 h-6 bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
                   1
                 </div>
                 <div>
                   <p className="text-gray-700 dark:text-gray-300 mb-3">
-                    <FaDownload className="inline mr-2 text-green-500" />
+                    <FaDownload className="inline mr-2 text-osu-blue" />
                     下载 LazerAuthlibInjection
                   </p>
                   <a
                     href="https://github.com/MingxuanGame/LazerAuthlibInjection/releases/latest"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"
+                    className="btn-secondary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
                   >
                     <FaDownload className="mr-2" />
                     下载 LazerAuthlibInjection
@@ -185,7 +185,7 @@ const HowToJoinPage: React.FC = () => {
               </div>
               
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
+                <div className="w-6 h-6 bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
                   2
                 </div>
                 <div>
@@ -196,7 +196,7 @@ const HowToJoinPage: React.FC = () => {
               </div>
               
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
+                <div className="w-6 h-6 bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
                   3
                 </div>
                 <div>
@@ -206,14 +206,14 @@ const HowToJoinPage: React.FC = () => {
                   <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg space-y-2">
                     <div className="flex items-center">
                       <span className="font-semibold text-gray-800 dark:text-gray-200">API URL：</span>
-                      <code className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded ml-2 flex-1">
+                      <code className="bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 px-2 py-1 rounded ml-2 flex-1">
                         https://lazer-api.g0v0.top
                       </code>
                       <CopyButton text="https://lazer-api.g0v0.top" label="Authlib API URL" />
                     </div>
                     <div className="flex items-center">
                       <span className="font-semibold text-gray-800 dark:text-gray-200">Website URL：</span>
-                      <code className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded ml-2 flex-1">
+                      <code className="bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 px-2 py-1 rounded ml-2 flex-1">
                         https://lazer.g0g0.top
                       </code>
                       <CopyButton text="https://lazer.g0g0.top" label="Website URL" />
@@ -223,7 +223,7 @@ const HowToJoinPage: React.FC = () => {
               </div>
               
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
+                <div className="w-6 h-6 bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mt-1">
                   4
                 </div>
                 <div>
@@ -255,13 +255,13 @@ const HowToJoinPage: React.FC = () => {
         <div className="text-center mt-12">
           <button
             onClick={() => window.history.back()}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-osu-pink hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
+            className="btn-primary inline-flex items-center px-6 py-3 text-base font-medium rounded-lg"
           >
             返回上一页
           </button>
         </div>
+        </div>
       </div>
-    </div>
     </PhotoProvider>
   );
 };

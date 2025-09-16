@@ -135,39 +135,53 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5 px-2 sm:px-4 max-w-md sm:max-w-lg md:max-w-2xl mx-auto"
+            className="space-y-3 sm:space-y-4 px-2 sm:px-4 max-w-md sm:max-w-lg md:max-w-2xl mx-auto"
           >
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/profile"
-                  className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl shadow-lg text-center font-medium"
-                >
-                  查看资料
-                </Link>
-                <Link
-                  to="/rankings"
-                  className="btn-secondary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium"
-                >
-                  查看排行榜
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/register"
-                  className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl shadow-lg text-center font-medium"
-                >
-                  注册
-                </Link>
-                <Link
-                  to="/login"
-                  className="btn-secondary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium"
-                >
-                  登录
-                </Link>
-              </>
-            )}
+            {/* 如何加入按钮 - 始终显示 */}
+            <div className="w-full">
+              <Link
+                to="/how-to-join"
+                className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium shadow-lg flex items-center justify-center gap-2"
+              >
+                <FaRocket className="w-4 h-4 sm:w-5 sm:h-5" />
+                如何加入服务器
+              </Link>
+            </div>
+            
+            {/* 登录状态相关按钮 */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5">
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/profile"
+                    className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl shadow-lg text-center font-medium"
+                  >
+                    查看资料
+                  </Link>
+                  <Link
+                    to="/rankings"
+                    className="btn-secondary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium"
+                  >
+                    查看排行榜
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/register"
+                    className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl shadow-lg text-center font-medium"
+                  >
+                    注册
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="btn-secondary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium"
+                  >
+                    登录
+                  </Link>
+                </>
+              )}
+            </div>
           </motion.div>
           </div>
         </div>
