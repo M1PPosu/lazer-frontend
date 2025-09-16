@@ -60,42 +60,50 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
       <div className={className}>
         {canEdit ? (
           // 自己的页面：显示编辑按钮
-          <div className="text-center py-8">
-            <div className="mb-4">
-              <div className="flex justify-center items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  个人介绍
-                </h3>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                还没有写个人介绍
-              </p>
-            </div>
-            <button
-              onClick={handleEditClick}
-              className="flex items-center gap-2 px-6 py-3 bg-osu-pink hover:bg-pink-600 text-white rounded-lg transition-colors mx-auto"
-            >
-              <FaEdit className="w-4 h-4" />
-              <span>编写个人介绍</span>
-            </button>
-          </div>
-        ) : (
-          // 其他人的页面：显示空状态
-          <div className="text-center py-8">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="pt-0 pb-24 min-h-[300px] md:min-h-[400px] flex flex-col">
+            {/* 标题在左上角 */}
+            <div className="flex items-center gap-3 mb-8">
               <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 个人介绍
               </h3>
             </div>
-            <FaUser className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-              {user.username} 还没有写个人介绍
-            </h4>
-            <p className="text-gray-600 dark:text-gray-400">
-              这里还是空的
-            </p>
+            
+            {/* 中心内容 */}
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <p className="text-gray-600 dark:text-gray-400 mb-8">
+                还没有写个人介绍
+              </p>
+              <button
+                onClick={handleEditClick}
+                className="flex items-center gap-2 px-6 py-3 bg-osu-pink hover:bg-pink-600 text-white rounded-lg transition-colors"
+              >
+                <FaEdit className="w-4 h-4" />
+                <span>编写个人介绍</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          // 其他人的页面：显示空状态
+          <div className="pt-0 pb-24 min-h-[400px] md:min-h-[600px] flex flex-col">
+            {/* 标题在左上角 */}
+            <div className="flex items-center gap-3 mb-12">
+              <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                个人介绍
+              </h3>
+            </div>
+            
+            {/* 中心内容 */}
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <FaUser className="w-16 h-16 text-gray-400 mx-auto mb-6" />
+              <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {user.username} 还没有写个人介绍
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400">
+                这里还是空的
+              </p>
+            </div>
           </div>
         )}
 
@@ -112,7 +120,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
 
   // 有内容的正常显示
   return (
-    <div className={className}>
+    <div className={`${className} min-h-[400px] md:min-h-[600px]`}>
       {/* 头部标题和编辑按钮 */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
