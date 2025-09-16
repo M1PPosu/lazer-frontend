@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers, FiMessageCircle, FiMenu, FiX, FiSettings } from 'react-icons/fi';
+import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers, FiMessageCircle, FiMenu, FiX, FiSettings, FiServer } from 'react-icons/fi';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotificationContext } from '../../contexts/NotificationContext';
@@ -325,6 +325,7 @@ const Navbar: React.FC = () => {
     { path: '/rankings', title: '排行榜', icon: FiTrendingUp, requireAuth: true },
     { path: '/beatmaps', title: '谱面', icon: FiMusic, requireAuth: true },
     { path: '/teams', title: '战队', icon: FiUsers, requireAuth: true },
+    { path: '/how-to-join', title: '加入服务器', icon: FiServer },
     { path: '/messages', title: '消息', icon: FiMessageCircle, requireAuth: true },
     { path: '/profile', title: '个人资料', icon: FiUser, requireAuth: true },
   ], []);

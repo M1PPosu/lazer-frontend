@@ -13,6 +13,7 @@ import TeamsPage from './pages/TeamsPage';
 import TeamDetailPage from './pages/TeamDetailPage';
 import CreateTeamPage from './pages/CreateTeamPage';
 import MessagesPage from './pages/MessagesPage';
+import HowToJoinPage from './pages/HowToJoinPage';
 import BBCodeTester from './components/BBCode/BBCodeTester';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
             <Route path="teams/:teamId" element={<TeamDetailPage />} />
             <Route path="teams/:teamId/edit" element={<CreateTeamPage />} />
             <Route path="messages" element={<MessagesPage />} />
+            <Route path="how-to-join" element={<HowToJoinPage />} />
             <Route path="bbcode-test" element={<BBCodeTester />} />
             <Route
               path="beatmaps"
