@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Avatar from '../UI/Avatar';
 import GameModeSelector from '../UI/GameModeSelector';
 import RankHistoryChart from '../UI/RankHistoryChart';
@@ -88,7 +89,8 @@ const CoverImage: React.FC<{ src?: string; alt?: string }> = ({ src, alt = 'cove
 };
 
 const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMode, onModeChange, onUserUpdate }) => {
-  const { refreshUser } = useAuth();
+  const { refreshUser, user: currentUser } = useAuth();
+  const navigate = useNavigate();
   
   const stats = user.statistics;
   const gradeCounts = stats?.grade_counts ?? { ssh: 0, ss: 0, sh: 0, s: 0, a: 0 };
@@ -111,6 +113,14 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
       ? "/image/backgrounds/bgcover.jpg"
       : coverUrlRaw;
   const [isUpdatingMode] = useState(false);
+
+  // 检查是否可以编辑（仅自己的页面）
+  const canEdit = currentUser?.id === user.id;
+
+  // 处理编辑按钮点击
+  const handleEditClick = () => {
+    navigate('/settings');
+  };
 
   // 处理头像更新
   const handleAvatarUpdate = async (newAvatarUrl: string) => {
@@ -144,10 +154,16 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
           {/* 头图懒加载 */}
           <CoverImage src={coverUrl} alt={`${user.username} cover`} />
 
-          {/* 编辑按钮 */}
-          <button className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-7 h-7 md:w-9 md:h-9 rounded-full bg-black/50 text-white grid place-items-center edit-button-shadow text-xs md:text-sm" aria-label="编辑封面">
-            <BiSolidPencil />
-          </button>
+          {/* 编辑按钮 - 仅在自己的页面显示 */}
+          {canEdit && (
+            <button 
+              onClick={handleEditClick}
+              className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-7 h-7 md:w-9 md:h-9 rounded-full bg-black/50 text-white grid place-items-center edit-button-shadow text-xs md:text-sm hover:bg-black/70 transition-colors" 
+              aria-label="编辑封面"
+            >
+              <BiSolidPencil />
+            </button>
+          )}
         </div>
 
         {/* 头像与基本信息条 */}
