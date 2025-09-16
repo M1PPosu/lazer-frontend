@@ -147,8 +147,9 @@ NavItem.displayName = 'NavItem';
 // 手机端菜单下拉组件
 const MobileMenuDropdown = memo<{ 
   items: NavItem[];
+  helpItems: NavItem[];
   isAuthenticated: boolean;
-}>(({ items, isAuthenticated }) => {
+}>(({ items, helpItems, isAuthenticated }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -234,6 +235,7 @@ const MobileMenuDropdown = memo<{
           >
             {/* 菜单项 */}
             <div className="py-1">
+              {/* 主要导航项 */}
               {items.map((item) => {
                 const IconComponent = item.icon;
                 const isActive = location.pathname === item.path;
@@ -261,6 +263,40 @@ const MobileMenuDropdown = memo<{
                   </Link>
                 );
               })}
+
+              {/* 帮助项分隔符和内容 */}
+              {helpItems.length > 0 && (
+                <>
+                  <div className="border-t border-gray-200/50 dark:border-gray-700/50 my-1" />
+                  {helpItems.map((item) => {
+                    const IconComponent = item.icon;
+                    const isActive = location.pathname === item.path;
+                    
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={handleClose}
+                        className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                          isActive
+                            ? 'text-osu-pink bg-osu-pink/10'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-osu-pink'
+                        }`}
+                      >
+                        {IconComponent && <IconComponent size={16} className="mr-3" />}
+                        <span>{item.title}</span>
+                        {isActive && (
+                          <motion.div 
+                            className="ml-auto w-2 h-2 bg-osu-pink rounded-full"
+                            layoutId="mobileDropdownActiveIndicator"
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </>
+              )}
               
               {/* 设置按钮 - 仅在已登录时显示 */}
               {isAuthenticated && (
@@ -321,13 +357,19 @@ const Navbar: React.FC = () => {
   //const location = useLocation();
 
   const navItems: NavItem[] = React.useMemo(() => [
+    // 核心功能
     { path: '/', title: '主页', icon: FiHome },
     { path: '/rankings', title: '排行榜', icon: FiTrendingUp, requireAuth: true },
     { path: '/beatmaps', title: '谱面', icon: FiMusic, requireAuth: true },
     { path: '/teams', title: '战队', icon: FiUsers, requireAuth: true },
-    { path: '/how-to-join', title: '加入服务器', icon: FiServer },
+    // 用户功能
     { path: '/messages', title: '消息', icon: FiMessageCircle, requireAuth: true },
     { path: '/profile', title: '个人资料', icon: FiUser, requireAuth: true },
+  ], []);
+
+  // 独立的帮助链接
+  const helpItems: NavItem[] = React.useMemo(() => [
+    { path: '/how-to-join', title: '加入服务器', icon: FiServer },
   ], []);
 
   const filteredNavItems = React.useMemo(() => 
@@ -382,10 +424,25 @@ const Navbar: React.FC = () => {
 
             {/* Navigation Links - Center (真正居中) */}
             <div className="flex items-center justify-center">
-              <div className="flex items-center space-x-1">
-                {filteredNavItems.map((item) => (
-                  <NavItem key={item.path} item={item} />
-                ))}
+              <div className="flex items-center">
+                {/* 主要导航项 */}
+                <div className="flex items-center space-x-1">
+                  {filteredNavItems.map((item) => (
+                    <NavItem key={item.path} item={item} />
+                  ))}
+                </div>
+                
+                {/* 分隔符 */}
+                {filteredNavItems.length > 0 && helpItems.length > 0 && (
+                  <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-3"></div>
+                )}
+                
+                {/* 帮助项 */}
+                <div className="flex items-center space-x-1">
+                  {helpItems.map((item) => (
+                    <NavItem key={item.path} item={item} />
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -600,6 +657,7 @@ const Navbar: React.FC = () => {
             {/* Mobile menu dropdown */}
             <MobileMenuDropdown 
               items={filteredNavItems}
+              helpItems={helpItems}
               isAuthenticated={isAuthenticated}
             />
           </div>
