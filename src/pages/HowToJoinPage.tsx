@@ -79,15 +79,45 @@ const HowToJoinPage: React.FC = () => {
                     <FaDownload className="inline mr-2 text-osu-pink" />
                     下载 g0v0! 自定义客户端
                   </p>
-                  <a
-                    href="https://github.com/GooGuTeam/osu/releases/latest"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
-                  >
-                    <FaDownload className="mr-2" />
-                    下载 g0v0! 客户端
-                  </a>
+                  
+                  {/* PC 版本下载 */}
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">PC 版本：</p>
+                    <a
+                      href="https://github.com/GooGuTeam/osu/releases/latest"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
+                    >
+                      <FaDownload className="mr-2" />
+                      下载 PC 版 g0v0! 客户端
+                    </a>
+                  </div>
+
+                  {/* 安卓版本下载 */}
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">安卓版本：</p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <a
+                        href="https://pan.wo.cn/s/1D1e0H30675"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
+                      >
+                        <FaDownload className="mr-2" />
+                        国内网盘下载
+                      </a>
+                      <a
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-secondary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
+                      >
+                        <FaDownload className="mr-2" />
+                        国外网盘下载
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
               
