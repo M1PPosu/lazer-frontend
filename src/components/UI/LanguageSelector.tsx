@@ -1,88 +1,105 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { FiChevronDown, FiGlobe } from 'react-icons/fi';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { FiChevronDown, FiGlobe, FiCheck } from 'react-icons/fi';
 import type { AppLanguages } from '../../i18n/resources';
 
-interface Language {
+// 语言配置接口
+interface LanguageConfig {
   code: AppLanguages;
   name: string;
   nativeName: string;
-  flag?: string;
+  flag: string;
 }
 
 // 支持的语言列表
-const SUPPORTED_LANGUAGES: Language[] = [
+const SUPPORTED_LANGUAGES: LanguageConfig[] = [
   {
     code: 'zh',
     name: 'Chinese',
     nativeName: '中文',
-    flag: '🇨🇳'
+    flag: 'cn'
   },
   {
     code: 'en',
     name: 'English',
     nativeName: 'English',
-    flag: '🇺🇸'
+    flag: 'us'
   },
-  // 可以轻松扩展更多语言
+  // // 其他支持的语言
   // {
   //   code: 'ja',
   //   name: 'Japanese',
   //   nativeName: '日本語',
-  //   flag: '🇯🇵'
+  //   flag: 'jp'
   // },
   // {
   //   code: 'ko',
   //   name: 'Korean',
   //   nativeName: '한국어',
-  //   flag: '🇰🇷'
+  //   flag: 'kr'
   // },
   // {
   //   code: 'es',
   //   name: 'Spanish',
   //   nativeName: 'Español',
-  //   flag: '🇪🇸'
+  //   flag: 'es'
   // },
   // {
   //   code: 'fr',
   //   name: 'French',
   //   nativeName: 'Français',
-  //   flag: '🇫🇷'
+  //   flag: 'fr'
   // },
   // {
   //   code: 'de',
   //   name: 'German',
   //   nativeName: 'Deutsch',
-  //   flag: '🇩🇪'
+  //   flag: 'de'
   // },
   // {
   //   code: 'ru',
   //   name: 'Russian',
   //   nativeName: 'Русский',
-  //   flag: '🇷🇺'
-  // }
+  //   flag: 'ru'
+  // },
 ];
 
 interface LanguageSelectorProps {
+  variant?: 'desktop' | 'mobile';
   className?: string;
-  variant?: 'button' | 'dropdown' | 'compact';
-  showLabel?: boolean;
 }
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({
-  className = '',
-  variant = 'dropdown',
-  showLabel = false
+const LanguageSelector: React.FC<LanguageSelectorProps> = memo(({ 
+  variant = 'desktop',
+  className = ''
 }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const resolvedLanguage = (i18n.resolvedLanguage ?? i18n.language) as string;
-  const currentLanguage: AppLanguages = resolvedLanguage.startsWith('zh') ? 'zh' : 'en';
-  const currentLangData = SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage) || SUPPORTED_LANGUAGES[0];
+  // 获取当前语言配置
+  const currentLanguage = SUPPORTED_LANGUAGES.find(
+    lang => lang.code === (i18n.resolvedLanguage ?? i18n.language)
+  ) || SUPPORTED_LANGUAGES[0];
 
+  // 切换下拉菜单
+  const handleToggle = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+
+  // 选择语言
+  const handleLanguageSelect = useCallback((languageCode: AppLanguages) => {
+    void i18n.changeLanguage(languageCode);
+    setIsOpen(false);
+  }, [i18n]);
+
+  // 关闭下拉菜单
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  // 点击外部关闭
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -91,127 +108,168 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
-  const handleLanguageChange = (language: AppLanguages) => {
-    void i18n.changeLanguage(language);
-    setIsOpen(false);
-  };
+  // 键盘导航支持
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setIsOpen(false);
+    }
+  }, []);
 
-  // 简单按钮切换模式（仅支持中英文切换）
-  if (variant === 'button') {
-    const nextLanguage: AppLanguages = currentLanguage === 'zh' ? 'en' : 'zh';
-    const nextLangData = SUPPORTED_LANGUAGES.find(lang => lang.code === nextLanguage);
-    
-    return (
-      <button
-        onClick={() => handleLanguageChange(nextLanguage)}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${className}`}
-        title={t('common.language.switch', { language: nextLangData?.nativeName })}
-      >
-        <FiGlobe className="w-4 h-4" />
-        {showLabel && <span className="text-sm">{currentLangData.flag} {currentLangData.nativeName}</span>}
-      </button>
-    );
-  }
+  const isMobile = variant === 'mobile';
 
-  // 紧凑模式
-  if (variant === 'compact') {
-    return (
-      <div className={`relative ${className}`} ref={dropdownRef}>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-1 px-2 py-1 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-          title={t('common.language.label')}
-        >
-          <span className="text-lg">{currentLangData.flag}</span>
-          <FiChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.15 }}
-              className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-w-[160px] z-50"
-            >
-              {SUPPORTED_LANGUAGES.map((language) => (
-                <button
-                  key={language.code}
-                  onClick={() => handleLanguageChange(language.code)}
-                  className={`w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 focus:bg-gray-100 dark:focus:bg-gray-600 focus:outline-none flex items-center gap-3 first:rounded-t-lg last:rounded-b-lg ${
-                    currentLanguage === language.code ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'
-                  }`}
-                >
-                  <span className="text-lg">{language.flag}</span>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{language.nativeName}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">{language.name}</span>
-                  </div>
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  }
-
-  // 默认下拉框模式
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-w-[160px]"
+    <div 
+      className={`relative ${className}`} 
+      ref={dropdownRef}
+      onKeyDown={handleKeyDown}
+    >
+      {/* 语言选择按钮 */}
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={handleToggle}
+        className={`
+          flex items-center space-x-2 rounded-xl transition-all duration-200 group
+          ${isMobile 
+            ? 'px-3 py-2 text-xs font-medium' 
+            : 'px-3 py-2 text-sm font-medium'
+          }
+          ${isOpen
+            ? 'text-osu-pink bg-osu-pink/10'
+            : 'text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50'
+          }
+        `}
+        aria-label={t('common.language.label')}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
       >
-        <FiGlobe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-        <div className="flex items-center gap-2 flex-1">
-          <span className="text-lg">{currentLangData.flag}</span>
-          <div className="flex flex-col items-start">
-            {showLabel && <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.language.label')}</span>}
-            <span className="text-sm font-medium text-gray-900 dark:text-white">{currentLangData.nativeName}</span>
-          </div>
+        {/* 地球图标或国旗 */}
+        <div className="flex items-center space-x-1.5">
+          {isMobile ? (
+            <FiGlobe size={14} />
+          ) : (
+            <img
+              src={`/image/flag/${currentLanguage.flag}.svg`}
+              alt={`${currentLanguage.name} flag`}
+              className="w-4 h-4 rounded-sm"
+            />
+          )}
+          
+          {/* 语言名称 */}
+          <span className="whitespace-nowrap">
+            {isMobile ? currentLanguage.code.toUpperCase() : currentLanguage.nativeName}
+          </span>
         </div>
-        <FiChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
 
+        {/* 下拉箭头 */}
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <FiChevronDown size={isMobile ? 12 : 14} />
+        </motion.div>
+      </motion.button>
+
+      {/* 下拉菜单 */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50"
+            initial={{ 
+              opacity: 0, 
+              scale: 0.95,
+              y: -10
+            }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              y: 0
+            }}
+            exit={{ 
+              opacity: 0, 
+              scale: 0.95,
+              y: -10
+            }}
+            transition={{ 
+              duration: 0.15,
+              ease: [0.16, 1, 0.3, 1]
+            }}
+            className={`
+              absolute right-0 mt-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl 
+              rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 
+              py-2 z-50 overflow-hidden
+              ${isMobile ? 'w-40' : 'w-48'}
+            `}
+            style={{
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+            }}
+            role="listbox"
+            aria-label={t('common.language.label')}
           >
-            {SUPPORTED_LANGUAGES.map((language) => (
-              <button
-                key={language.code}
-                onClick={() => handleLanguageChange(language.code)}
-                className={`w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-600 focus:bg-gray-100 dark:focus:bg-gray-600 focus:outline-none flex items-center gap-3 first:rounded-t-lg last:rounded-b-lg ${
-                  currentLanguage === language.code ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'
-                }`}
-              >
-                <span className="text-lg">{language.flag}</span>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">{language.nativeName}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{language.name}</span>
-                </div>
-                {currentLanguage === language.code && (
-                  <div className="ml-auto">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  </div>
-                )}
-              </button>
-            ))}
+            {/* 语言选项 */}
+            <div className="py-1">
+              {SUPPORTED_LANGUAGES.map((language) => {
+                const isSelected = language.code === currentLanguage.code;
+                
+                return (
+                  <motion.button
+                    key={language.code}
+                    onClick={() => handleLanguageSelect(language.code)}
+                    className={`
+                      w-full flex items-center justify-between px-4 py-3 text-sm font-medium 
+                      transition-all duration-200 group
+                      ${isSelected
+                        ? 'text-osu-pink bg-osu-pink/10'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-osu-pink'
+                      }
+                    `}
+                    role="option"
+                    aria-selected={isSelected}
+                    whileHover={{ x: 4 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <img
+                        src={`/image/flag/${language.flag}.svg`}
+                        alt={`${language.name} flag`}
+                        className="w-5 h-5 rounded-sm"
+                      />
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{language.nativeName}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {language.name}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* 选中指示器 */}
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      >
+                        <FiCheck size={16} className="text-osu-pink" />
+                      </motion.div>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* 装饰性渐变 */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-osu-pink/5 via-transparent to-osu-blue/5 pointer-events-none" />
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
-};
+});
+
+LanguageSelector.displayName = 'LanguageSelector';
 
 export default LanguageSelector;

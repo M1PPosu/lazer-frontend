@@ -8,8 +8,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNotificationContext } from '../../contexts/NotificationContext';
 import UserDropdown from '../UI/UserDropdown';
 import Avatar from '../UI/Avatar';
+import LanguageSelector from '../UI/LanguageSelector';
 import type { NavItem } from '../../types';
-import type { AppLanguages } from '../../i18n/resources';
 
 // 将 NavItem 组件提取并使用 memo 优化，防止不必要的重新渲染
 const NavItem = memo<{ item: NavItem }>(({ item }) => {
@@ -342,7 +342,7 @@ MobileMenuDropdown.displayName = 'MobileMenuDropdown';
 const Navbar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   // 通过全局通知上下文获取统一的 unreadCount
   let unreadCount = { total: 0, team_requests: 0, private_messages: 0, friend_requests: 0 } as any;
   let isConnected = false;
@@ -360,15 +360,6 @@ const Navbar: React.FC = () => {
   const isFullyConnected = isConnected && chatConnected;
   //const location = useLocation();
 
-  const resolvedLanguage = (i18n.resolvedLanguage ?? i18n.language) as string;
-  const currentLanguage: AppLanguages = resolvedLanguage.startsWith('zh') ? 'zh' : 'en';
-  const currentLanguageLabel = currentLanguage === 'zh' ? t('common.language.zh') : t('common.language.en');
-  const nextLanguageLabel = currentLanguage === 'zh' ? t('common.language.en') : t('common.language.zh');
-
-  const handleLanguageToggle = useCallback(() => {
-    const nextLanguage: AppLanguages = currentLanguage === 'zh' ? 'en' : 'zh';
-    void i18n.changeLanguage(nextLanguage);
-  }, [currentLanguage, i18n]);
 
   const navItems: NavItem[] = React.useMemo(() => [
     // 核心功能
@@ -462,15 +453,8 @@ const Navbar: React.FC = () => {
 
             {/* Right side actions */}
             <div className="flex items-center justify-end space-x-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleLanguageToggle}
-                className="px-3 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 text-sm font-medium"
-                aria-label={t('common.language.switch', { language: nextLanguageLabel })}
-              >
-                {currentLanguageLabel}
-              </motion.button>
+              {/* Language Selector */}
+              <LanguageSelector variant="desktop" />
 
               {/* Notification (if authenticated) */}
               {isAuthenticated && (
@@ -635,15 +619,8 @@ const Navbar: React.FC = () => {
               </motion.div>
             </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleLanguageToggle}
-              className="px-3 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 text-xs font-medium"
-              aria-label={t('common.language.switch', { language: nextLanguageLabel })}
-            >
-              {currentLanguageLabel}
-            </motion.button>
+            {/* Language Selector */}
+            <LanguageSelector variant="mobile" />
 
             {/* User actions */}
             {isAuthenticated && user ? (
