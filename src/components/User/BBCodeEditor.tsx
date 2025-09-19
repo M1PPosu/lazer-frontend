@@ -32,13 +32,14 @@ interface BBCodeTool {
 const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
   value,
   onChange,
-  placeholder,// = t('profile.bbcodeEditor.placeholder'),
+  placeholder,
   className = '',
   maxLength = 60000,
   disabled = false,
   title, // 新增标题参数
 }) => {
   const { t } = useTranslation();
+  const defaultPlaceholder = placeholder || t('profile.bbcodeEditor.placeholder');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [validationResult, setValidationResult] = useState<BBCodeValidationResponse | null>(null);
@@ -269,13 +270,13 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
 
   // 颜色选择器
   const insertColor = useCallback((color: string) => {
-    insertBBCode(`[color=${color}]`, '[/color]', '彩色文本');
-  }, [insertBBCode]);
+    insertBBCode(`[color=${color}]`, '[/color]', t('profile.bbcodeEditor.insertText.colorText'));
+  }, [insertBBCode, t]);
 
   // 字体大小选择器
   const insertSize = useCallback((size: number) => {
-    insertBBCode(`[size=${size}]`, '[/size]', `${size}px文本`);
-  }, [insertBBCode]);
+    insertBBCode(`[size=${size}]`, '[/size]', `${size}px ${t('profile.bbcodeEditor.insertText.text')}`);
+  }, [insertBBCode, t]);
 
   return (
     <div className={`${className}`}>
@@ -360,7 +361,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
                 disabled={disabled}
                 className="w-6 h-6 rounded border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform disabled:cursor-not-allowed"
                 style={{ backgroundColor: color }}
-                title={`${color}色文本`}
+                title={`${color} ${t('profile.bbcodeEditor.colors.text')}`}
               />
             ))}
           </div>
@@ -375,11 +376,11 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
             className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
             defaultValue=""
           >
-            <option value="" disabled>字体大小</option>
-            <option value="50">极小 (50)</option>
-            <option value="85">小 (85)</option>
-            <option value="100">普通 (100)</option>
-            <option value="150">大 (150)</option>
+            <option value="" disabled>{t('profile.bbcodeEditor.fontSize.label')}</option>
+            <option value="50">{t('profile.bbcodeEditor.fontSize.extraSmall')} (50)</option>
+            <option value="85">{t('profile.bbcodeEditor.fontSize.small')} (85)</option>
+            <option value="100">{t('profile.bbcodeEditor.fontSize.normal')} (100)</option>
+            <option value="150">{t('profile.bbcodeEditor.fontSize.large')} (150)</option>
           </select>
         </div>
 
@@ -394,10 +395,10 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
             onClick={(e) => handleToolClick(e, () => setIsHelpModalOpen(true))}
             disabled={disabled}
             className="flex items-center gap-1 px-2 py-1 text-xs hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="BBCode帮助"
+            title={t('profile.bbcodeEditor.help.title')}
           >
             <FaQuestionCircle className="w-3 h-3" />
-            <span className="hidden sm:inline">帮助</span>
+            <span className="hidden sm:inline">{t('profile.bbcodeEditor.help.button')}</span>
           </button>
           
           <button
@@ -429,7 +430,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
             {validationLoading ? (
               <div className="flex items-center justify-center py-8">
                 <LoadingSpinner size="sm" />
-                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">生成预览中...</span>
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">{t('profile.bbcodeEditor.preview.generating')}</span>
               </div>
             ) : validationError ? (
               <div className="text-center py-8 text-red-500 dark:text-red-400 text-sm">
@@ -453,7 +454,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={placeholder}
+            placeholder={defaultPlaceholder}
             disabled={disabled}
             maxLength={maxLength}
             className="w-full p-4 min-h-[300px] h-[50vh] resize-none bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 font-mono text-sm leading-relaxed disabled:opacity-50 disabled:cursor-not-allowed"
@@ -467,7 +468,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
             {validationLoading && (
               <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-xs">
                 <LoadingSpinner size="sm" />
-                <span>验证中</span>
+                <span>{t('profile.bbcodeEditor.validation.validating')}</span>
               </div>
             )}
             
@@ -477,7 +478,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
                   ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                   : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
               }`}>
-                {validationResult.valid ? '✓ 语法正确' : `✗ ${validationResult.errors.length}个错误`}
+                {validationResult.valid ? `✓ ${t('profile.bbcodeEditor.validation.syntaxCorrect')}` : `✗ ${validationResult.errors.length}${t('profile.bbcodeEditor.validation.errors')}`}
               </div>
             )}
           </div>
@@ -488,7 +489,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
       {validationResult && !validationResult.valid && validationResult.errors.length > 0 && (
         <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-red-50 dark:bg-red-900/10">
           <div className="text-sm font-medium text-red-700 dark:text-red-300 mb-2">
-            BBCode语法错误:
+            {t('profile.bbcodeEditor.validation.syntaxErrors')}:
           </div>
           <ul className="list-disc list-inside space-y-1">
             {validationResult.errors.map((error, index) => (
@@ -504,20 +505,20 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
       <div className="border-t border-gray-200 dark:border-gray-700 px-2 py-1 bg-gray-50 dark:bg-gray-700/30">
         <details className="text-xs text-gray-600 dark:text-gray-400">
           <summary className="cursor-pointer hover:text-gray-800 dark:hover:text-gray-200 py-1">
-            BBCode帮助
+            {t('profile.bbcodeEditor.help.title')}
           </summary>
           <div className="mt-1 pb-1 grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-0.5 text-xs">
-            <div><strong>[b]粗体[/b]</strong></div>
-            <div><em>[i]斜体[/i]</em></div>
-            <div><u>[u]下划线[/u]</u></div>
-            <div><del>[s]删除线[/s]</del></div>
-            <div>[color=red]彩色[/color]</div>
-            <div>[size=16]大小[/size]</div>
-            <div>[url=链接]文本[/url]</div>
-            <div>[img]图片URL[/img]</div>
-            <div>[quote]引用[/quote]</div>
-            <div>[code]代码[/code]</div>
-            <div className="md:col-span-1 col-span-2">[list][*]项目1[*]项目2[/list]</div>
+            <div><strong>[b]{t('profile.bbcodeEditor.help.examples.bold')}[/b]</strong></div>
+            <div><em>[i]{t('profile.bbcodeEditor.help.examples.italic')}[/i]</em></div>
+            <div><u>[u]{t('profile.bbcodeEditor.help.examples.underline')}[/u]</u></div>
+            <div><del>[s]{t('profile.bbcodeEditor.help.examples.strikethrough')}[/s]</del></div>
+            <div>[color=red]{t('profile.bbcodeEditor.help.examples.color')}[/color]</div>
+            <div>[size=16]{t('profile.bbcodeEditor.help.examples.size')}[/size]</div>
+            <div>[url={t('profile.bbcodeEditor.help.examples.link')}]{t('profile.bbcodeEditor.help.examples.text')}[/url]</div>
+            <div>[img]{t('profile.bbcodeEditor.help.examples.imageUrl')}[/img]</div>
+            <div>[quote]{t('profile.bbcodeEditor.help.examples.quote')}[/quote]</div>
+            <div>[code]{t('profile.bbcodeEditor.help.examples.code')}[/code]</div>
+            <div className="md:col-span-1 col-span-2">[list][*]{t('profile.bbcodeEditor.help.examples.item1')}[*]{t('profile.bbcodeEditor.help.examples.item2')}[/list]</div>
           </div>
         </details>
       </div>
