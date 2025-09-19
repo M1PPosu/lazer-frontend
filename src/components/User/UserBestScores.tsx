@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { userAPI } from '../../utils/api';
 import type { BestScore, GameMode, User } from '../../types';
 import LoadingSpinner from '../UI/LoadingSpinner';
+import LazyBackgroundImage from '../UI/LazyBackgroundImage';
 
 interface UserBestScoresProps {
   userId: number;
@@ -85,9 +86,17 @@ const ScoreCard: React.FC<{ score: BestScore }> = ({ score }) => {
   const mods = score.mods || []; // MOD列表
 
   const beatmapUrl = score.beatmap?.url || '#';
+  const coverImage = score.beatmapset?.covers?.['cover@2x'] || score.beatmapset?.covers?.cover;
 
   return (
-    <div className="relative bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-150 group border-b border-gray-100 dark:border-gray-700/50 last:border-b-0">
+    <LazyBackgroundImage 
+      src={coverImage}
+      className="relative overflow-hidden border-b border-gray-100 dark:border-gray-700/50 last:border-b-0"
+    >
+      {/* 渐变遮罩层确保文字可读性 */}
+      <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/90 to-white/70 dark:from-gray-800/95 dark:via-gray-800/90 dark:to-gray-800/70" />
+      
+      <div className="relative bg-transparent hover:bg-white/20 dark:hover:bg-gray-800/20 transition-colors duration-150 group">
       {/* 主要内容区域 */}
       <div className="flex items-center h-12 pl-5 pr-24">
         {/* 等级徽章 */}
@@ -150,7 +159,8 @@ const ScoreCard: React.FC<{ score: BestScore }> = ({ score }) => {
           {originalPp} PP
         </div>
       </div>
-    </div>
+      </div>
+    </LazyBackgroundImage>
   );
 };
 
