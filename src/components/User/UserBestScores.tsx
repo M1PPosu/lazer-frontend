@@ -279,29 +279,38 @@ const UserBestScores: React.FC<UserBestScoresProps> = ({ userId, selectedMode, u
           暂无最佳成绩
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200/50 dark:border-gray-600/30">
-          {scores.map((score) => (
-            <ScoreCard key={score.id} score={score} />
-          ))}
+        <div className="shadow-sm overflow-hidden rounded-lg">
+          {/* 头部圆角div */}
+          <div className="bg-white dark:bg-gray-800 h-[30px] rounded-t-lg border-x border-t border-gray-200/50 dark:border-gray-600/30"></div>
+          
+          {/* 主要内容区域 - 无圆角 */}
+          <div className="bg-white dark:bg-gray-800 border-x border-gray-200/50 dark:border-gray-600/30">
+            {scores.map((score) => (
+              <ScoreCard key={score.id} score={score} />
+            ))}
 
-          {hasMore && (
-            <div className="flex justify-center p-4 border-t border-gray-100 dark:border-gray-700/50">
-              <button
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-                className="min-w-[80px] sm:min-w-[100px] h-[32px] px-3 py-1.5 bg-osu-pink hover:bg-osu-pink/90 disabled:bg-gray-400 text-white rounded text-xs sm:text-sm transition-colors flex items-center justify-center gap-1.5"
-              >
-                {loadingMore ? (
-                  <>
-                    <LoadingSpinner size="sm" />
-                    <span>加载中...</span>
-                  </>
-                ) : (
-                  <span>加载更多</span>
-                )}
-              </button>
-            </div>
-          )}
+            {hasMore && (
+              <div className="flex justify-center p-4 border-t border-gray-100 dark:border-gray-700/50">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="min-w-[80px] sm:min-w-[100px] h-[32px] px-3 py-1.5 bg-osu-pink hover:bg-osu-pink/90 disabled:bg-gray-400 text-white rounded text-xs sm:text-sm transition-colors flex items-center justify-center gap-1.5"
+                >
+                  {loadingMore ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      <span>加载中...</span>
+                    </>
+                  ) : (
+                    <span>加载更多</span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {/* 尾部圆角div */}
+          <div className="bg-white dark:bg-gray-800 h-[30px] rounded-b-lg border-x border-b border-gray-200/50 dark:border-gray-600/30"></div>
         </div>
       )}
     </div>
