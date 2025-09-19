@@ -181,7 +181,8 @@ export const pages = {
   
   // Teams page
   teams: {
-    title: 'Teams',
+    title: 'Team Rankings',
+    description: 'View the performance and ranking of teams',
     tabs: {
       teams: 'Team Rankings',
     },
@@ -191,6 +192,7 @@ export const pages = {
     viewTeam: 'View Team',
     editTeam: 'Edit Team',
     teamRankings: 'Team Rankings',
+    loadingTeams: 'Loading team rankings data...',
     gameModes: {
       osu: 'osu!',
       taiko: 'osu!taiko',
@@ -200,6 +202,9 @@ export const pages = {
     rankingTypes: {
       performance: 'Performance',
       score: 'Score',
+    },
+    rankingType: {
+      label: 'Ranking Type',
     },
     subModes: {
       vanilla: 'Vanilla',
@@ -222,6 +227,79 @@ export const pages = {
     errors: {
       loadFailed: 'Failed to load teams',
       noData: 'No team data available',
+    },
+    detail: {
+      createdAt: 'Created on {{date}}',
+      members: '{{count}} members',
+      captain: 'Captain',
+      membersSectionTitle: 'Members',
+      teamMembers: 'Team Members',
+      memberCount: '({{count}} people)',
+      loading: 'Loading team details...',
+      notFound: 'Team not found',
+      notFoundDescription: 'The team information was not found',
+      backToTeams: 'Back to teams',
+      teamInfo: 'Team header information',
+      coverImage: 'Cover image',
+      teamFlag: 'Team flag',
+      teamBasicInfo: 'Team basic information',
+      teamActions: 'Team action buttons',
+      captainInfo: 'Captain information',
+      memberActions: 'Member action buttons',
+      joinTeam: 'Request to Join',
+      joining: 'Requesting...',
+      leaveTeam: 'Leave Team',
+      leaving: 'Leaving...',
+      editTeam: 'Edit Team',
+      deleteTeam: 'Delete Team',
+      kickMember: 'Kick',
+      kicking: 'Kicking...',
+      joinRequestSent: 'Join request sent, please wait for captain approval',
+      leftTeam: 'Left the team',
+      confirmLeave: 'Are you sure you want to leave this team?',
+      confirmDelete: 'Are you sure you want to delete this team? This action cannot be undone!',
+      confirmKick: 'Are you sure you want to kick {{username}}?',
+      teamDeleted: 'Team deleted',
+      memberKicked: '{{username}} has been kicked from the team',
+    },
+    create: {
+      loginRequired: 'You need to login to create or edit teams',
+      nameRequired: 'Please enter team name',
+      shortNameRequired: 'Please enter team short name',
+      assetsRequired: 'Please upload team flag and cover',
+      updateSuccess: 'Team information updated successfully',
+      createSuccess: 'Team created successfully',
+      loading: 'Loading team information...',
+      editTeam: 'Edit Team',
+      createTeam: 'Create Team',
+      editDescription: 'Modify your team information',
+      createDescription: 'Create a new team and invite friends to play together',
+      basicInfo: 'Basic Information',
+      teamName: 'Team Name',
+      teamNamePlaceholder: 'Enter team name',
+      teamShortName: 'Team Short Name',
+      teamShortNamePlaceholder: 'Enter team short name',
+      shortNameDescription: 'Short name will be displayed in rankings, recommend using 2-5 characters',
+      teamFlag: 'Team Flag',
+      selectFlag: 'Select flag',
+      flagDescription: 'Standard size: 240×120px, max 2MB, supports cropping',
+      teamCover: 'Team Cover',
+      selectCover: 'Select cover',
+      coverDescription: 'Recommended size: 1920×1280px, max 10MB, supports cropping',
+      creatingTeam: 'Creating team...',
+      memberManagement: 'Member Management',
+      leaderTransfer: 'Transfer Leadership (Optional)',
+      keepCurrentLeader: 'Keep current leader',
+      leaderTransferDescription: 'Select a new leader. If not selected, current leader will remain. After transferring leadership, you will lose management permissions.',
+      currentMembers: 'Current members ({{count}} people)',
+      currentLeader: 'Current leader',
+      willBecomeLeader: 'Will become new leader',
+      noMembersAvailable: 'No members available for selection',
+      unknown: 'Unknown',
+      cancel: 'Cancel',
+      saving: 'Saving...',
+      saveChanges: 'Save Changes',
+      required: '*',
     },
   },
   
@@ -282,35 +360,68 @@ export const pages = {
   // How to join page
   howToJoin: {
     title: 'How to Join the Server',
-    subtitle: 'Follow these steps to start your g0v0! journey',
-    steps: {
-      download: {
-        title: 'Download osu!lazer',
-        description: 'Download the latest version of osu!lazer client from the official website',
-        button: 'Download osu!lazer',
-      },
-      register: {
-        title: 'Register Account',
-        description: 'Create your account on the g0v0! website',
-        button: 'Sign up now',
-      },
-      configure: {
-        title: 'Configure Client',
-        description: 'Configure server settings in osu!lazer',
-        serverUrl: 'Server URL',
-        instructions: 'Open osu!lazer → Settings → Online → Custom Server',
-      },
-      enjoy: {
-        title: 'Start Playing',
-        description: 'Log in to your account and start enjoying the game!',
-        button: 'View Rankings',
+    subtitle: 'There are two ways to connect to our server',
+    copyFailed: 'Copy failed:',
+    clickToCopy: 'Click to copy',
+    
+    method1: {
+      title: 'Use our Custom Client',
+      recommended: 'Recommended',
+      description: 'This method is recommended for all users who can run osu!lazer on their platform.',
+      steps: {
+        title: 'Steps:',
+        step1: {
+          title: 'Download g0v0! Custom Client',
+          pcVersion: 'PC Version:',
+          androidVersion: 'Android Version:',
+          downloadPc: 'Download PC g0v0! Client',
+          downloadAndroidDomestic: 'Domestic Download',
+          downloadAndroidOverseas: 'Overseas Download',
+        },
+        step2: {
+          title: 'Launch the game, open Settings → Online, and enter in the "Custom API Server URL" field:',
+          clickToView: 'Click image to view larger:',
+          settingExample: 'Settings example',
+        },
+        step3: {
+          title: 'Restart the game and start enjoying!',
+        },
       },
     },
-    support: {
-      title: 'Need Help?',
-      description: 'Join our community for support',
-      discord: 'Discord Server',
-      qq: 'QQ Group',
+    
+    method2: {
+      title: 'Use Authlib Injector (for x86_64 platforms)',
+      suitableFor: 'This method is suitable for the following users:',
+      platforms: [
+        'Windows (x64 or x86 platform)',
+        'Linux (x64 or x86 platform)',
+        'Non-Apple Silicon Mac (such as MacBooks from before 2020)',
+      ],
+      steps: {
+        title: 'Steps:',
+        step1: {
+          title: 'Download LazerAuthlibInjection',
+          button: 'Download LazerAuthlibInjection',
+        },
+        step2: {
+          title: 'Install it as a ruleset in osu!lazer',
+          description: 'Install the downloaded LazerAuthlibInjection as a ruleset in osu!lazer',
+        },
+        step3: {
+          title: 'Launch the game, go to Settings → Rulesets, then fill in the following information:',
+          description: 'Configure server connection information in game settings',
+          apiUrl: 'API URL:',
+          websiteUrl: 'Website URL:',
+        },
+        step4: {
+          title: 'After seeing the "API settings changed" notification, restart the client and start enjoying the game!',
+          description: 'Restart the client after completing the setup to connect to the server',
+        },
+      },
+      warning: {
+        title: 'Important Notice',
+        description: 'If you use this method\'s installation patch, please do not log in and play on the official server. Otherwise, your account may be banned. Please use with caution.',
+      },
     },
   },
   

@@ -453,8 +453,10 @@ const Navbar: React.FC = () => {
 
             {/* Right side actions */}
             <div className="flex items-center justify-end space-x-3">
-              {/* Language Selector */}
-              <LanguageSelector variant="desktop" />
+              {/* Language Selector - only show when not authenticated */}
+              {!isAuthenticated && (
+                <LanguageSelector variant="desktop" />
+              )}
 
               {/* Notification (if authenticated) */}
               {isAuthenticated && (
@@ -619,8 +621,10 @@ const Navbar: React.FC = () => {
               </motion.div>
             </motion.button>
 
-            {/* Language Selector */}
-            <LanguageSelector variant="mobile" />
+            {/* Language Selector - only show when not authenticated */}
+            {!isAuthenticated && (
+              <LanguageSelector variant="mobile" />
+            )}
 
             {/* User actions */}
             {isAuthenticated && user ? (

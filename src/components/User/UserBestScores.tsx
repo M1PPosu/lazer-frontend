@@ -40,16 +40,25 @@ const formatTimeAgo = (dateString: string): string => {
 // 评级图标映射
 const getRankIcon = (rank: string) => {
   const rankImageMap: Record<string, string> = {
-    'SS': '/image/grades/GradeSmall-SS.svg',
-    'S': '/image/grades/GradeSmall-S.svg',
-    'A': '/image/grades/GradeSmall-A.svg',
-    'B': '/image/grades/GradeSmall-B.svg',
-    'C': '/image/grades/GradeSmall-C.svg',
-    'D': '/image/grades/GradeSmall-D.svg',
-    'F': '/image/grades/GradeSmall-F.svg',
+    // SS 系列
+    XH: '/image/grades/GradeSmall-SS-Silver.svg', // 银 SS（SSH）
+    X:  '/image/grades/GradeSmall-SS.svg',        // 金 SS（SS）
+
+    // S 系列
+    SH: '/image/grades/GradeSmall-S-Silver.svg',  // 银 S
+    S:  '/image/grades/GradeSmall-S.svg',         // 金 S
+
+    // 其他等级
+    A:  '/image/grades/GradeSmall-A.svg',
+    B:  '/image/grades/GradeSmall-B.svg',
+    C:  '/image/grades/GradeSmall-C.svg',
+    D:  '/image/grades/GradeSmall-D.svg',
+    F:  '/image/grades/GradeSmall-F.svg', 
   };
+
   return rankImageMap[rank] || rankImageMap['F'];
 };
+
 
 // MOD 图标组件
 const ModIcon: React.FC<{ mod: { acronym: string } }> = ({ mod }) => {

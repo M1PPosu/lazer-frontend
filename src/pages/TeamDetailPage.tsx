@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiArrowLeft, FiLoader, FiUsers, FiCalendar, FiAward } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { teamsAPI, handleApiError } from '../utils/api';
 import TeamDetailUserCard from '../components/Rankings/TeamDetailUserCard';
 import TeamActions from '../components/Teams/TeamActions';
@@ -8,6 +9,7 @@ import MemberActions from '../components/Teams/MemberActions';
 import type { TeamDetailResponse, User } from '../types';
 
 const TeamDetailPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { teamId } = useParams<{ teamId: string }>();
   const [teamDetail, setTeamDetail] = useState<TeamDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +34,7 @@ const TeamDetailPage: React.FC = () => {
   }, [teamId]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-CN', {
+    return new Date(dateString).toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -71,7 +73,7 @@ const TeamDetailPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <FiLoader className="animate-spin h-12 w-12 text-blue-500 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400 font-medium">加载战队详情中...</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">{t('teams.detail.loading')}</p>
         </div>
       </div>
     );
@@ -83,17 +85,17 @@ const TeamDetailPage: React.FC = () => {
         <div className="text-center">
           <FiUsers className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            战队不存在
+            {t('teams.detail.notFound')}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            未找到该战队信息
+            {t('teams.detail.notFoundDescription')}
           </p>
           <Link
             to="/teams"
             className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 transition-colors"
           >
             <FiArrowLeft className="mr-2" />
-            返回战队列表
+            {t('teams.detail.backToTeams')}
           </Link>
         </div>
       </div>
@@ -114,7 +116,7 @@ const TeamDetailPage: React.FC = () => {
             className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <FiArrowLeft className="mr-2" />
-            返回战队列表
+            {t('teams.detail.backToTeams')}
           </Link>
         </div>
 
@@ -166,11 +168,11 @@ const TeamDetailPage: React.FC = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400">
                       <div className="flex items-center gap-1">
                         <FiCalendar className="w-4 h-4" />
-                        <span>创建于 {formatDate(team.created_at)}</span>
+                        <span>{t('teams.detail.createdAt', { date: formatDate(team.created_at) })}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <FiUsers className="w-4 h-4" />
-                        <span>{members.length} 名成员</span>
+                        <span>{t('teams.detail.members', { count: members.length })}</span>
                       </div>
                     </div>
                     
@@ -194,7 +196,7 @@ const TeamDetailPage: React.FC = () => {
           <div className="sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 sm:p-6 mb-8">
             <div className="flex items-center gap-3 mb-4 px-4 sm:px-0">
               <FiAward className="w-5 h-5 text-yellow-500" />
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">队长</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('teams.detail.captain')}</h2>
             </div>
             <div className="-mx-4 sm:-mx-6 sm:border sm:border-gray-200 sm:dark:border-gray-700 overflow-hidden">
               <TeamDetailUserCard
@@ -215,9 +217,9 @@ const TeamDetailPage: React.FC = () => {
           <div className="sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 sm:p-6">
             <div className="flex items-center gap-3 mb-6 px-4 sm:px-0">
               <FiUsers className="w-5 h-5 text-blue-500" />
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">团队成员</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('teams.detail.teamMembers')}</h2>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                ({nonLeaderMembers.length} 人)
+                {t('teams.detail.memberCount', { count: nonLeaderMembers.length })}
               </span>
             </div>
 

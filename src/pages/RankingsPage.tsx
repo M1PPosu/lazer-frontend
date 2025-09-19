@@ -4,6 +4,7 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 import { useTranslation } from 'react-i18next';
 import { rankingsAPI, handleApiError } from '../utils/api';
 import CountrySelect from '../components/UI/CountrySelect';
+import RankingTypeSelector from '../components/UI/RankingTypeSelector';
 import UserRankingsList from '../components/Rankings/UserRankingsList';
 import CountryRankingsList from '../components/Rankings/CountryRankingsList';
 import PaginationControls from '../components/Rankings/PaginationControls';
@@ -255,16 +256,12 @@ const RankingsPage: React.FC = () => {
           {/* Filter options for user rankings */}
           {selectedTab === 'users' && (
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <select
-                value={rankingType}
-                onChange={(e) => setRankingType(e.target.value as RankingType)}
-                className="px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm min-h-[44px] sm:min-h-[48px]
-                         focus:ring-2 focus:ring-osu-pink focus:border-transparent font-medium text-sm sm:text-base"
-              >
-                <option value="performance">{t('rankings.rankingTypes.performance')}</option>
-                <option value="score">{t('rankings.rankingTypes.score')}</option>
-              </select>
+              <div className="w-full sm:w-48">
+                <RankingTypeSelector
+                  value={rankingType}
+                  onChange={setRankingType}
+                />
+              </div>
 
               <div className="w-full sm:w-64">
                 <CountrySelect

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiSave, FiImage, FiFlag, FiUsers, FiLoader } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { teamsAPI, handleApiError } from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 import ImageUploadWithCrop from '../components/UI/ImageUploadWithCrop';
+import MemberSelector from '../components/UI/MemberSelector';
 import toast from 'react-hot-toast';
 import type { User, TeamDetailResponse } from '../types';
 
 const CreateTeamPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId: string }>();
   const { user } = useAuth();
@@ -64,11 +67,6 @@ const CreateTeamPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 处理队长选择
-  const handleLeaderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const leaderId = e.target.value ? parseInt(e.target.value) : null;
-    setFormData(prev => ({ ...prev, leader_id: leaderId }));
-  };
 
   // 处理旗帜文件选择
   const handleFlagSelect = (file: File) => {
@@ -91,17 +89,17 @@ const CreateTeamPage: React.FC = () => {
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      toast.error('请输入战队名称');
+      toast.error(t('teams.create.nameRequired'));
       return;
     }
 
     if (!formData.short_name.trim()) {
-      toast.error('请输入战队简称');
+      toast.error(t('teams.create.shortNameRequired'));
       return;
     }
 
     if (!isEditing && (!flagFile || !coverFile)) {
-      toast.error('请上传战队旗帜和封面');
+      toast.error(t('teams.create.assetsRequired'));
       return;
     }
 
@@ -139,10 +137,10 @@ const CreateTeamPage: React.FC = () => {
 
       if (isEditing) {
         await teamsAPI.updateTeam(parseInt(teamId!), data);
-        toast.success('战队信息更新成功');
+        toast.success(t('teams.create.updateSuccess'));
       } else {
         const result = await teamsAPI.createTeam(data);
-        toast.success('战队创建成功');
+        toast.success(t('teams.create.createSuccess'));
         navigate(`/teams/${result.id}`);
         return;
       }
@@ -161,10 +159,10 @@ const CreateTeamPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            请先登录
+            {t('teams.create.loginRequired')}
           </h3>
           <p className="text-gray-500 dark:text-gray-400">
-            您需要登录后才能创建或编辑战队
+            {t('teams.create.loginRequired')}
           </p>
         </div>
       </div>
@@ -176,7 +174,7 @@ const CreateTeamPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <FiLoader className="animate-spin h-12 w-12 text-blue-500 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400 font-medium">加载战队信息中...</p>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">{t('teams.create.loading')}</p>
         </div>
       </div>
     );
@@ -192,17 +190,17 @@ const CreateTeamPage: React.FC = () => {
             className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <FiArrowLeft className="mr-2" />
-            返回
+            {t('common.back')}
           </button>
         </div>
 
         {/* 页面标题 */}
         <div className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            {isEditing ? '编辑战队' : '创建战队'}
+            {isEditing ? t('teams.create.editTeam') : t('teams.create.createTeam')}
           </h1>
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
-            {isEditing ? '修改您的战队信息' : '创建一个新的战队，邀请朋友一起游戏'}
+            {isEditing ? t('teams.create.editDescription') : t('teams.create.createDescription')}
           </p>
         </div>
 
@@ -211,12 +209,12 @@ const CreateTeamPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* 基本信息 */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">基本信息</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('teams.create.basicInfo')}</h2>
               
               <div className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    战队名称 *
+                    {t('teams.create.teamName')} {t('teams.create.required')}
                   </label>
                   <input
                     type="text"
@@ -227,14 +225,14 @@ const CreateTeamPage: React.FC = () => {
                     className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg
                              bg-white dark:bg-gray-800 text-gray-900 dark:text-white
                              focus:ring-2 focus:ring-osu-pink focus:border-transparent"
-                    placeholder="输入战队名称"
+                    placeholder={t('teams.create.teamNamePlaceholder')}
                     maxLength={50}
                   />
                 </div>
 
                 <div>
                   <label htmlFor="short_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    战队简称 *
+                    {t('teams.create.teamShortName')} {t('teams.create.required')}
                   </label>
                   <input
                     type="text"
@@ -245,11 +243,11 @@ const CreateTeamPage: React.FC = () => {
                     className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg
                              bg-white dark:bg-gray-800 text-gray-900 dark:text-white
                              focus:ring-2 focus:ring-osu-pink focus:border-transparent"
-                    placeholder="输入战队简称"
+                    placeholder={t('teams.create.teamShortNamePlaceholder')}
                     maxLength={10}
                   />
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    简称将显示在排行榜中，建议使用 2-5 个字符
+                    {t('teams.create.shortNameDescription')}
                   </p>
                 </div>
               </div>
@@ -257,7 +255,7 @@ const CreateTeamPage: React.FC = () => {
 
             {/* 旗帜上传 */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">战队旗帜</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('teams.create.teamFlag')}</h2>
               
               <ImageUploadWithCrop
                 onImageSelect={handleFlagSelect}
@@ -266,18 +264,18 @@ const CreateTeamPage: React.FC = () => {
                 maxWidth={240}
                 maxHeight={120}
                 maxFileSize={2}
-                placeholder="选择旗帜"
-                description="标准尺寸: 240×120px，最大 2MB，支持裁剪调整"
+                placeholder={t('teams.create.selectFlag')}
+                description={t('teams.create.flagDescription')}
                 icon={<FiFlag className="mr-2" />}
                 acceptedTypes={['image/png', 'image/jpeg', 'image/gif', 'image/webp']}
                 isUploading={isSubmitting}
-                uploadingText="创建战队中..."
+                uploadingText={t('teams.create.creatingTeam')}
               />
             </div>
 
             {/* 封面上传 */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">战队封面</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('teams.create.teamCover')}</h2>
               
               <ImageUploadWithCrop
                 onImageSelect={handleCoverSelect}
@@ -286,12 +284,12 @@ const CreateTeamPage: React.FC = () => {
                 maxWidth={1920}
                 maxHeight={1280}
                 maxFileSize={10}
-                placeholder="选择封面"
-                description="推荐尺寸: 1920×1280px，最大 10MB，支持裁剪调整"
+                placeholder={t('teams.create.selectCover')}
+                description={t('teams.create.coverDescription')}
                 icon={<FiImage className="mr-2" />}
                 acceptedTypes={['image/png', 'image/jpeg', 'image/gif', 'image/webp']}
                 isUploading={isSubmitting}
-                uploadingText="创建战队中..."
+                uploadingText={t('teams.create.creatingTeam')}
               />
             </div>
 
@@ -300,40 +298,30 @@ const CreateTeamPage: React.FC = () => {
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
                   <FiUsers className="mr-3" />
-                  队员管理
+                  {t('teams.create.memberManagement')}
                 </h2>
                 
                 {/* 队长转让选择 */}
                 <div className="mb-6">
-                  <label htmlFor="leader_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    队长转让 (可选)
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    {t('teams.create.leaderTransfer')}
                   </label>
-                  <select
-                    id="leader_id"
-                    value={formData.leader_id || ''}
-                    onChange={handleLeaderChange}
-                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg
-                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                             focus:ring-2 focus:ring-osu-pink focus:border-transparent"
-                  >
-                    <option value="">保持当前队长</option>
-                    {members
-                      .filter(member => member.id !== teamDetail?.team.leader_id)
-                      .map(member => (
-                        <option key={member.id} value={member.id}>
-                          {member.username}
-                        </option>
-                      ))}
-                  </select>
+                  <MemberSelector
+                    value={formData.leader_id}
+                    onChange={(value) => setFormData(prev => ({ ...prev, leader_id: value }))}
+                    members={members}
+                    currentLeaderId={teamDetail?.team.leader_id}
+                    placeholder={t('teams.create.keepCurrentLeader')}
+                  />
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    选择一个新的队长，如果不选择则保持当前队长不变。转让队长权限后，您将失去管理权限。
+                    {t('teams.create.leaderTransferDescription')}
                   </p>
                 </div>
 
                 {/* 队员列表 */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    当前队员 ({members.length} 人)
+                    {t('teams.create.currentMembers', { count: members.length })}
                   </h3>
                   <div className="space-y-3">
                     {members.map(member => (
@@ -353,23 +341,23 @@ const CreateTeamPage: React.FC = () => {
                             </p>
                             {member.id === teamDetail?.team.leader_id && (
                               <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                                当前队长
+                                {t('teams.create.currentLeader')}
                               </p>
                             )}
                             {member.id === formData.leader_id && formData.leader_id !== teamDetail?.team.leader_id && (
                               <p className="text-xs text-green-600 dark:text-green-400">
-                                将成为新队长
+                                {t('teams.create.willBecomeLeader')}
                               </p>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-gray-500 dark:text-gray-400">
-                            {member.country?.name || '未知'}
+                            {member.country?.name || t('teams.create.unknown')}
                           </span>
                           {member.country?.code && (
                             <img
-                              src={`/public/image/flag/${member.country.code.toLowerCase()}.svg`}
+                              src={`/image/flag/${member.country.code.toLowerCase()}.svg`}
                               alt={member.country.name}
                               className="w-5 h-3"
                             />
@@ -389,7 +377,7 @@ const CreateTeamPage: React.FC = () => {
                 onClick={() => navigate(-1)}
                 className="px-6 py-3 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                取消
+                {t('teams.create.cancel')}
               </button>
               <button
                 type="submit"
@@ -397,7 +385,7 @@ const CreateTeamPage: React.FC = () => {
                 className="inline-flex items-center px-6 py-3 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FiSave className="mr-2" />
-                {isSubmitting ? '保存中...' : (isEditing ? '保存修改' : '创建战队')}
+                {isSubmitting ? t('teams.create.saving') : (isEditing ? t('teams.create.saveChanges') : t('teams.create.createTeam'))}
               </button>
             </div>
           </form>

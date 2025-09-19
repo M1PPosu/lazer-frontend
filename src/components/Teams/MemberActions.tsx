@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiUserX, FiMoreHorizontal } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { teamsAPI, handleApiError } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const MemberActions: React.FC<Props> = ({ member, team, onMemberRemoved }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [showActions, setShowActions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,12 +24,12 @@ const MemberActions: React.FC<Props> = ({ member, team, onMemberRemoved }) => {
 
   // 踢出成员
   const handleKickMember = async () => {
-    if (!confirm(`确定要踢出 ${member.username} 吗？`)) return;
+    if (!confirm(t('teams.detail.confirmKick', { username: member.username }))) return;
 
     setIsSubmitting(true);
     try {
       await teamsAPI.removeMember(team.id, member.id);
-      toast.success(`已将 ${member.username} 踢出战队`);
+      toast.success(t('teams.detail.memberKicked', { username: member.username }));
       onMemberRemoved?.();
     } catch (error) {
       handleApiError(error);
@@ -58,7 +60,7 @@ const MemberActions: React.FC<Props> = ({ member, team, onMemberRemoved }) => {
                 className="flex items-center w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
               >
                 <FiUserX className="mr-2 w-3 h-3" />
-                {isSubmitting ? '踢出中...' : '踢出'}
+                {isSubmitting ? t('teams.detail.kicking') : t('teams.detail.kickMember')}
               </button>
             </div>
           </div>

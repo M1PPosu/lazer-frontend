@@ -1,10 +1,35 @@
 import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiUser, FiLogOut, FiSettings, FiChevronDown } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiSettings, FiChevronDown, FiChevronRight, FiCheck } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import Avatar from './Avatar';
 import type { User } from '../../types';
+import type { AppLanguages } from '../../i18n/resources';
+
+// 语言配置接口
+interface LanguageConfig {
+  code: AppLanguages;
+  name: string;
+  nativeName: string;
+  flag: string;
+}
+
+// 支持的语言列表
+const SUPPORTED_LANGUAGES: LanguageConfig[] = [
+  {
+    code: 'zh',
+    name: 'Chinese',
+    nativeName: '中文',
+    flag: 'cn'
+  },
+  {
+    code: 'en',
+    name: 'English',
+    nativeName: 'English',
+    flag: 'us'
+  },
+];
 
 interface UserDropdownProps {
   user: User;
@@ -12,15 +37,22 @@ interface UserDropdownProps {
 }
 
 const UserDropdown: React.FC<UserDropdownProps> = memo(({ user, onLogout }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 获取当前语言配置
+  const currentLanguage = SUPPORTED_LANGUAGES.find(
+    lang => lang.code === (i18n.resolvedLanguage ?? i18n.language)
+  ) || SUPPORTED_LANGUAGES[0];
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setLanguageOpen(false);
       }
     };
 
@@ -58,6 +90,16 @@ const UserDropdown: React.FC<UserDropdownProps> = memo(({ user, onLogout }) => {
   const handleMenuItemClick = useCallback(() => {
     setIsOpen(false);
   }, []);
+
+  const handleLanguageToggle = useCallback(() => {
+    setLanguageOpen(prev => !prev);
+  }, []);
+
+  const handleLanguageSelect = useCallback((languageCode: AppLanguages) => {
+    void i18n.changeLanguage(languageCode);
+    setLanguageOpen(false);
+    setIsOpen(false);
+  }, [i18n]);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -121,7 +163,7 @@ const UserDropdown: React.FC<UserDropdownProps> = memo(({ user, onLogout }) => {
               duration: 0.15,
               ease: [0.16, 1, 0.3, 1]
             }}
-            className="absolute right-0 mt-3 w-52 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 py-2 z-50 overflow-hidden"
+            className="absolute right-0 mt-3 w-52 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 py-2 z-50 overflow-visible"
             style={{
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)'
             }}
@@ -141,6 +183,81 @@ const UserDropdown: React.FC<UserDropdownProps> = memo(({ user, onLogout }) => {
                 label={t('nav.settings')}
                 onClick={handleMenuItemClick}
               />
+
+              {/* Language Selector */}
+              <div className="relative">
+                <button
+                  onClick={handleLanguageToggle}
+                  className="flex items-center justify-between w-full px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-osu-pink dark:hover:text-osu-pink transition-all duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={`/image/flag/${currentLanguage.flag}.svg`}
+                      alt={`${currentLanguage.name} flag`}
+                      className="w-5 h-4 rounded object-cover flex-shrink-0"
+                    />
+                    <span className="font-medium">{currentLanguage.nativeName}</span>
+                  </div>
+                  <motion.div
+                    animate={{ rotate: languageOpen ? 90 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <FiChevronRight size={14} />
+                  </motion.div>
+                </button>
+
+                {/* Language Submenu - Floating below */}
+                <AnimatePresence>
+                  {languageOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 py-2 shadow-xl z-[60] overflow-hidden min-w-[200px]"
+                      style={{
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                      }}
+                    >
+                      {SUPPORTED_LANGUAGES.map((language) => {
+                        const isSelected = language.code === currentLanguage.code;
+                        
+                        return (
+                          <button
+                            key={language.code}
+                            onClick={() => handleLanguageSelect(language.code)}
+                            className={`
+                              w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium 
+                              transition-all duration-200
+                              ${
+                                isSelected
+                                  ? 'text-osu-pink bg-osu-pink/10'
+                                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-osu-pink'
+                              }
+                            `}
+                          >
+                            <div className="flex items-center space-x-3">
+                              <img
+                                src={`/image/flag/${language.flag}.svg`}
+                                alt={`${language.name} flag`}
+                                className="w-5 h-4 rounded object-cover flex-shrink-0"
+                              />
+                              <span className="font-medium">{language.nativeName}</span>
+                            </div>
+                            
+                            {/* 选中指示器 */}
+                            {isSelected && (
+                              <div className="text-osu-pink">
+                                <FiCheck size={16} />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             {/* Logout */}

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { FaDownload, FaExclamationTriangle, FaCog, FaGamepad, FaCopy, FaCheck } from 'react-icons/fa';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
+import { useTranslation } from 'react-i18next';
 import 'react-photo-view/dist/react-photo-view.css';
 
 const HowToJoinPage: React.FC = () => {
+  const { t } = useTranslation();
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   const copyToClipboard = async (text: string, label: string) => {
@@ -12,7 +14,7 @@ const HowToJoinPage: React.FC = () => {
       setCopiedText(label);
       setTimeout(() => setCopiedText(null), 2000);
     } catch (err) {
-      console.error('复制失败:', err);
+      console.error(`${t('howToJoin.copyFailed')}`, err);
     }
   };
 
@@ -20,7 +22,7 @@ const HowToJoinPage: React.FC = () => {
     <button
       onClick={() => copyToClipboard(text, label)}
       className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-      title="点击复制"
+      title={t('howToJoin.clickToCopy')}
     >
       {copiedText === label ? (
         <FaCheck className="w-3 h-3 text-green-500" />
@@ -37,10 +39,10 @@ const HowToJoinPage: React.FC = () => {
           {/* 页面标题 */}
           <div className="text-center mb-12 sm:mb-16">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
-              如何加入服务器
+              {t('howToJoin.title')}
             </h1>
             <p className="text-lg sm:text-xl lg:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              有两种方式连接到我们的服务器
+              {t('howToJoin.subtitle')}
             </p>
           </div>
 
@@ -51,23 +53,23 @@ const HowToJoinPage: React.FC = () => {
               1
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              使用我们的自定义客户端
+              {t('howToJoin.method1.title')}
               <span className="ml-3 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-osu-pink/10 text-osu-pink dark:bg-osu-pink/20 dark:text-pink-300">
-                推荐
+                {t('howToJoin.method1.recommended')}
               </span>
             </h2>
           </div>
 
           <div className="mb-6">
             <p className="text-gray-600 dark:text-gray-300">
-              此方法推荐给所有能在其平台上运行 osu!lazer 的用户。
+              {t('howToJoin.method1.description')}
             </p>
           </div>
 
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
               <FaGamepad className="text-osu-pink" />
-              操作步骤：
+              {t('howToJoin.method1.steps.title')}
             </h3>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
@@ -77,12 +79,12 @@ const HowToJoinPage: React.FC = () => {
                 <div>
                   <p className="text-gray-700 dark:text-gray-300 mb-3">
                     <FaDownload className="inline mr-2 text-osu-pink" />
-                    下载 g0v0! 自定义客户端
+                    {t('howToJoin.method1.steps.step1.title')}
                   </p>
                   
                   {/* PC 版本下载 */}
                   <div className="mb-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">PC 版本：</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t('howToJoin.method1.steps.step1.pcVersion')}</p>
                     <a
                       href="https://github.com/GooGuTeam/osu/releases/latest"
                       target="_blank"
@@ -90,13 +92,13 @@ const HowToJoinPage: React.FC = () => {
                       className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
                     >
                       <FaDownload className="mr-2" />
-                      下载 PC 版 g0v0! 客户端
+                      {t('howToJoin.method1.steps.step1.downloadPc')}
                     </a>
                   </div>
 
                   {/* 安卓版本下载 */}
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">安卓版本：</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t('howToJoin.method1.steps.step1.androidVersion')}</p>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <a
                         href="https://pan.wo.cn/s/1D1e0H30675"
@@ -105,7 +107,7 @@ const HowToJoinPage: React.FC = () => {
                         className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
                       >
                         <FaDownload className="mr-2" />
-                        国内网盘下载
+                        {t('howToJoin.method1.steps.step1.downloadAndroidDomestic')}
                       </a>
                       <a
                         href="#"
@@ -114,7 +116,7 @@ const HowToJoinPage: React.FC = () => {
                         className="btn-secondary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
                       >
                         <FaDownload className="mr-2" />
-                        国外网盘下载
+                        {t('howToJoin.method1.steps.step1.downloadAndroidOverseas')}
                       </a>
                     </div>
                   </div>
@@ -127,7 +129,7 @@ const HowToJoinPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-700 dark:text-gray-300 mb-2">
-                    启动游戏，打开 设置 → 在线，在"Custom API Server URL"字段中填入：
+                    {t('howToJoin.method1.steps.step2.description')}
                   </p>
                   <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center mb-4">
                     <code className="bg-osu-pink/10 dark:bg-osu-pink/20 text-osu-pink dark:text-pink-300 px-2 py-1 rounded flex-1">
@@ -138,11 +140,11 @@ const HowToJoinPage: React.FC = () => {
                   
                   {/* 示例图片 */}
                   <div className="mt-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">点击图片查看大图：</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t('howToJoin.method1.steps.step2.imageHint')}</p>
                     <PhotoView src="/image/join_photos/1.png">
                       <img 
                         src="/image/join_photos/1.png" 
-                        alt="设置示例图" 
+                        alt={t('howToJoin.method1.steps.step2.imageAlt')}
                         className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
                         style={{ maxHeight: '300px' }}
                       />
@@ -157,7 +159,7 @@ const HowToJoinPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-700 dark:text-gray-300">
-                    重启游戏，开始享受游戏！
+                    {t('howToJoin.method1.steps.step3.description')}
                   </p>
                 </div>
               </div>
@@ -172,25 +174,25 @@ const HowToJoinPage: React.FC = () => {
               2
             </div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              使用 Authlib Injector（适用于 x86_64 平台）
+              {t('howToJoin.method2.title')}
             </h2>
           </div>
 
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">
-              此方法适用于以下用户：
+              {t('howToJoin.method2.suitableFor')}
             </h3>
             <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-300 ml-4">
-              <li>Windows（x64 或 x86 平台）</li>
-              <li>Linux（x64 或 x86 平台）</li>
-              <li>非 Apple Silicon 的 Mac（如 2020 年之前的 MacBook）</li>
+              <li>{t('howToJoin.method2.platforms.windows')}</li>
+              <li>{t('howToJoin.method2.platforms.linux')}</li>
+              <li>{t('howToJoin.method2.platforms.mac')}</li>
             </ul>
           </div>
 
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
               <FaCog className="text-osu-blue" />
-              操作步骤：
+              {t('howToJoin.method2.steps.title')}
             </h3>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
@@ -200,7 +202,7 @@ const HowToJoinPage: React.FC = () => {
                 <div>
                   <p className="text-gray-700 dark:text-gray-300 mb-3">
                     <FaDownload className="inline mr-2 text-osu-blue" />
-                    下载 LazerAuthlibInjection
+                    {t('howToJoin.method2.steps.step1.title')}
                   </p>
                   <a
                     href="https://github.com/MingxuanGame/LazerAuthlibInjection/releases/latest"
@@ -209,7 +211,7 @@ const HowToJoinPage: React.FC = () => {
                     className="btn-secondary inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg"
                   >
                     <FaDownload className="mr-2" />
-                    下载 LazerAuthlibInjection
+                    {t('howToJoin.method2.steps.step1.download')}
                   </a>
                 </div>
               </div>
@@ -220,7 +222,7 @@ const HowToJoinPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-700 dark:text-gray-300">
-                    将其作为规则集安装到 osu!lazer 中
+                    {t('howToJoin.method2.steps.step2.description')}
                   </p>
                 </div>
               </div>
@@ -231,18 +233,18 @@ const HowToJoinPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-700 dark:text-gray-300 mb-2">
-                    启动游戏，进入 设置 → 游戏模式，然后填入以下信息：
+                    {t('howToJoin.method2.steps.step3.description')}
                   </p>
                   <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg space-y-2">
                     <div className="flex items-center">
-                      <span className="font-semibold text-gray-800 dark:text-gray-200">API URL：</span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">{t('howToJoin.method2.steps.step3.apiUrl')}</span>
                       <code className="bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 px-2 py-1 rounded ml-2 flex-1">
                         https://lazer-api.g0v0.top
                       </code>
                       <CopyButton text="https://lazer-api.g0v0.top" label="Authlib API URL" />
                     </div>
                     <div className="flex items-center">
-                      <span className="font-semibold text-gray-800 dark:text-gray-200">Website URL：</span>
+                      <span className="font-semibold text-gray-800 dark:text-gray-200">{t('howToJoin.method2.steps.step3.websiteUrl')}</span>
                       <code className="bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 px-2 py-1 rounded ml-2 flex-1">
                         https://lazer.g0g0.top
                       </code>
@@ -258,7 +260,7 @@ const HowToJoinPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-700 dark:text-gray-300">
-                    出现"API 设置已更改"通知后，重启客户端，开始享受游戏！
+                    {t('howToJoin.method2.steps.step4.description')}
                   </p>
                 </div>
               </div>
@@ -271,10 +273,10 @@ const HowToJoinPage: React.FC = () => {
               <FaExclamationTriangle className="text-red-500 text-xl mt-1" />
               <div>
                 <h4 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-2">
-                  重要提示
+                  {t('howToJoin.method2.warning.title')}
                 </h4>
                 <p className="text-red-700 dark:text-red-300">
-                  如果您使用了此方法的安装补丁，请不要登录并在官方服务器上游戏。否则，您的账户可能会被封禁。请谨慎使用。
+                  {t('howToJoin.method2.warning.description')}
                 </p>
               </div>
             </div>
@@ -287,7 +289,7 @@ const HowToJoinPage: React.FC = () => {
             onClick={() => window.history.back()}
             className="btn-primary inline-flex items-center px-6 py-3 text-base font-medium rounded-lg"
           >
-            返回上一页
+            {t('common.backToPrevious')}
           </button>
         </div>
         </div>

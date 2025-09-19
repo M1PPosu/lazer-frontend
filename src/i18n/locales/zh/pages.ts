@@ -181,7 +181,8 @@ export const pages = {
   
   // Teams page
   teams: {
-    title: '战队',
+    title: '战队排行榜',
+    description: '查看各个战队的表现和实力排名',
     tabs: {
       teams: '战队排行',
     },
@@ -191,6 +192,7 @@ export const pages = {
     viewTeam: '查看战队',
     editTeam: '编辑战队',
     teamRankings: '战队排行榜',
+    loadingTeams: '加载战队排行榜数据中...',
     gameModes: {
       osu: 'osu!',
       taiko: 'osu!taiko',
@@ -200,6 +202,9 @@ export const pages = {
     rankingTypes: {
       performance: '表现分',
       score: '分数',
+    },
+    rankingType: {
+      label: '排行类型',
     },
     subModes: {
       vanilla: '常规',
@@ -222,6 +227,79 @@ export const pages = {
     errors: {
       loadFailed: '加载战队失败',
       noData: '暂无战队数据',
+    },
+    detail: {
+      createdAt: '创建于 {{date}}',
+      members: '{{count}} 名成员',
+      captain: '队长',
+      membersSectionTitle: '成员',
+      teamMembers: '团队成员',
+      memberCount: '({{count}} 人)',
+      loading: '加载战队详情中...',
+      notFound: '战队不存在',
+      notFoundDescription: '未找到该战队信息',
+      backToTeams: '返回战队列表',
+      teamInfo: '战队头部信息',
+      coverImage: '封面图片',
+      teamFlag: '战队旗帜',
+      teamBasicInfo: '战队基本信息',
+      teamActions: '战队操作按钮',
+      captainInfo: '队长信息',
+      memberActions: '成员操作按钮',
+      joinTeam: '请求加入',
+      joining: '请求中...',
+      leaveTeam: '退出战队',
+      leaving: '退出中...',
+      editTeam: '编辑战队',
+      deleteTeam: '删除战队',
+      kickMember: '踢出',
+      kicking: '踢出中...',
+      joinRequestSent: '加入请求已发送，请等待队长审核',
+      leftTeam: '已退出战队',
+      confirmLeave: '确定要退出这个战队吗？',
+      confirmDelete: '确定要删除这个战队吗？此操作不可撤销！',
+      confirmKick: '确定要踢出 {{username}} 吗？',
+      teamDeleted: '战队已删除',
+      memberKicked: '已将 {{username}} 踢出战队',
+    },
+    create: {
+      loginRequired: '您需要登录后才能创建或编辑战队',
+      nameRequired: '请输入战队名称',
+      shortNameRequired: '请输入战队简称',
+      assetsRequired: '请上传战队旗帜和封面',
+      updateSuccess: '战队信息更新成功',
+      createSuccess: '战队创建成功',
+      loading: '加载战队信息中...',
+      editTeam: '编辑战队',
+      createTeam: '创建战队',
+      editDescription: '修改您的战队信息',
+      createDescription: '创建一个新的战队，邀请朋友一起游戏',
+      basicInfo: '基本信息',
+      teamName: '战队名称',
+      teamNamePlaceholder: '输入战队名称',
+      teamShortName: '战队简称',
+      teamShortNamePlaceholder: '输入战队简称',
+      shortNameDescription: '简称将显示在排行榜中，建议使用 2-5 个字符',
+      teamFlag: '战队旗帜',
+      selectFlag: '选择旗帜',
+      flagDescription: '标准尺寸: 240×120px，最大 2MB，支持裁剪调整',
+      teamCover: '战队封面',
+      selectCover: '选择封面',
+      coverDescription: '推荐尺寸: 1920×1280px，最大 10MB，支持裁剪调整',
+      creatingTeam: '创建战队中...',
+      memberManagement: '队员管理',
+      leaderTransfer: '队长转让 (可选)',
+      keepCurrentLeader: '保持当前队长',
+      leaderTransferDescription: '选择一个新的队长，如果不选择则保持当前队长不变。转让队长权限后，您将失去管理权限。',
+      currentMembers: '当前队员 ({{count}} 人)',
+      currentLeader: '当前队长',
+      willBecomeLeader: '将成为新队长',
+      noMembersAvailable: '没有可选择的成员',
+      unknown: '未知',
+      cancel: '取消',
+      saving: '保存中...',
+      saveChanges: '保存修改',
+      required: '*',
     },
   },
   
@@ -282,35 +360,68 @@ export const pages = {
   // How to join page
   howToJoin: {
     title: '如何加入服务器',
-    subtitle: '跟随以下步骤开始您的 g0v0! 之旅',
-    steps: {
-      download: {
-        title: '下载 osu!lazer',
-        description: '从官方网站下载最新版本的 osu!lazer 客户端',
-        button: '下载 osu!lazer',
-      },
-      register: {
-        title: '注册账户',
-        description: '在 g0v0! 网站上创建您的账户',
-        button: '立即注册',
-      },
-      configure: {
-        title: '配置客户端',
-        description: '在 osu!lazer 中配置服务器设置',
-        serverUrl: '服务器地址',
-        instructions: '打开 osu!lazer → 设置 → 在线 → 自定义服务器',
-      },
-      enjoy: {
-        title: '开始游戏',
-        description: '登录您的账户并开始享受游戏！',
-        button: '查看排行榜',
+    subtitle: '有两种方式连接到我们的服务器',
+    copyFailed: '复制失败:',
+    clickToCopy: '点击复制',
+    
+    method1: {
+      title: '使用我们的自定义客户端',
+      recommended: '推荐',
+      description: '此方法推荐给所有能在其平台上运行 osu!lazer 的用户。',
+      steps: {
+        title: '操作步骤：',
+        step1: {
+          title: '下载 g0v0! 自定义客户端',
+          pcVersion: 'PC 版本：',
+          androidVersion: '安卓版本：',
+          downloadPc: '下载 PC 版 g0v0! 客户端',
+          downloadAndroidDomestic: '国内网盘下载',
+          downloadAndroidOverseas: '国外网盘下载',
+        },
+        step2: {
+          title: '启动游戏，打开 设置 → 在线，在"Custom API Server URL"字段中填入：',
+          clickToView: '点击图片查看大图：',
+          settingExample: '设置示例图',
+        },
+        step3: {
+          title: '重启游戏，开始享受游戏！',
+        },
       },
     },
-    support: {
-      title: '需要帮助？',
-      description: '加入我们的社区获取支持',
-      discord: 'Discord 服务器',
-      qq: 'QQ 群',
+    
+    method2: {
+      title: '使用 Authlib Injector（适用于 x86_64 平台）',
+      suitableFor: '此方法适用于以下用户：',
+      platforms: [
+        'Windows（x64 或 x86 平台）',
+        'Linux（x64 或 x86 平台）',
+        '非 Apple Silicon 的 Mac（如 2020 年之前的 MacBook）',
+      ],
+      steps: {
+        title: '操作步骤：',
+        step1: {
+          title: '下载 LazerAuthlibInjection',
+          button: '下载 LazerAuthlibInjection',
+        },
+        step2: {
+          title: '将其作为规则集安装到 osu!lazer 中',
+          description: '将下载的 LazerAuthlibInjection 作为规则集安装到 osu!lazer 中',
+        },
+        step3: {
+          title: '启动游戏，进入 设置 → 游戏模式，然后填入以下信息：',
+          description: '在游戏设置中配置服务器连接信息',
+          apiUrl: 'API URL：',
+          websiteUrl: 'Website URL：',
+        },
+        step4: {
+          title: '出现"API 设置已更改"通知后，重启客户端，开始享受游戏！',
+          description: '完成设置后重启客户端即可连接到服务器',
+        },
+      },
+      warning: {
+        title: '重要提示',
+        description: '如果您使用了此方法的安装补丁，请不要登录并在官方服务器上游戏。否则，您的账户可能会被封禁。请谨慎使用。',
+      },
     },
   },
   

@@ -24,6 +24,7 @@ export const common = {
   edit: 'Edit',
   delete: 'Delete',
   back: 'Back',
+  backToPrevious: 'Back to previous page',
   next: 'Next',
   previous: 'Previous',
   search: 'Search',
@@ -56,7 +57,7 @@ export const common = {
   content: 'Content',
   username: 'Username',
   messageContent: 'Message content',
-  noDataFound: 'No data found for current filter criteria',
+  noDataFound: 'No data found',
   playCount: 'plays',
   score: 'score',
 } as const;

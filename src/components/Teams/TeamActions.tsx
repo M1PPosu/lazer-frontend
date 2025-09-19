@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiEdit, FiTrash2, FiUserPlus, FiLogOut, FiMoreHorizontal } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { teamsAPI, handleApiError } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const TeamActions: React.FC<Props> = ({ team, members, onTeamUpdate }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showActions, setShowActions] = useState(false);
@@ -28,7 +30,7 @@ const TeamActions: React.FC<Props> = ({ team, members, onTeamUpdate }) => {
     setIsSubmitting(true);
     try {
       await teamsAPI.requestJoinTeam(team.id);
-      toast.success('加入请求已发送，请等待队长审核');
+      toast.success(t('teams.detail.joinRequestSent'));
     } catch (error) {
       handleApiError(error);
     } finally {
@@ -38,12 +40,12 @@ const TeamActions: React.FC<Props> = ({ team, members, onTeamUpdate }) => {
 
   // 退出战队
   const handleLeaveTeam = async () => {
-    if (!user || !confirm('确定要退出这个战队吗？')) return;
+    if (!user || !confirm(t('teams.detail.confirmLeave'))) return;
 
     setIsSubmitting(true);
     try {
       await teamsAPI.removeMember(team.id, user.id);
-      toast.success('已退出战队');
+      toast.success(t('teams.detail.leftTeam'));
       onTeamUpdate?.();
     } catch (error) {
       handleApiError(error);
@@ -54,12 +56,12 @@ const TeamActions: React.FC<Props> = ({ team, members, onTeamUpdate }) => {
 
   // 删除战队
   const handleDeleteTeam = async () => {
-    if (!confirm('确定要删除这个战队吗？此操作不可撤销！')) return;
+    if (!confirm(t('teams.detail.confirmDelete'))) return;
 
     setIsSubmitting(true);
     try {
       await teamsAPI.deleteTeam(team.id);
-      toast.success('战队已删除');
+      toast.success(t('teams.detail.teamDeleted'));
       navigate('/teams');
     } catch (error) {
       handleApiError(error);
@@ -82,7 +84,7 @@ const TeamActions: React.FC<Props> = ({ team, members, onTeamUpdate }) => {
             className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <FiUserPlus className="mr-2" />
-            {isSubmitting ? '请求中...' : '请求加入'}
+            {isSubmitting ? t('teams.detail.joining') : t('teams.detail.joinTeam')}
           </button>
         )}
 
@@ -94,7 +96,7 @@ const TeamActions: React.FC<Props> = ({ team, members, onTeamUpdate }) => {
             className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <FiLogOut className="mr-2" />
-            {isSubmitting ? '退出中...' : '退出战队'}
+            {isSubmitting ? t('teams.detail.leaving') : t('teams.detail.leaveTeam')}
           </button>
         )}
 
@@ -107,7 +109,7 @@ const TeamActions: React.FC<Props> = ({ team, members, onTeamUpdate }) => {
               className="inline-flex items-center px-4 py-2 bg-osu-pink text-white rounded-lg hover:bg-osu-pink/90 transition-colors"
             >
               <FiEdit className="mr-2" />
-              编辑战队
+              {t('teams.detail.editTeam')}
             </Link>
 
             {/* 更多操作按钮 */}
@@ -132,7 +134,7 @@ const TeamActions: React.FC<Props> = ({ team, members, onTeamUpdate }) => {
                       className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                     >
                       <FiTrash2 className="mr-3 w-4 h-4" />
-                      删除战队
+                      {t('teams.detail.deleteTeam')}
                     </button>
                   </div>
                 </div>

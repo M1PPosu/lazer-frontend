@@ -61,7 +61,9 @@ const AchievementIcon: React.FC<{ slug: string; alt: string; className?: string 
 // 评级图标映射
 const getRankIcon = (rank: string) => {
   const rankImageMap: Record<string, string> = {
+    'SSH': '/image/grades/GradeSmall-SS-Silver.svg',  // SS-Silver
     'SS': '/image/grades/GradeSmall-SS.svg',
+    'SH': '/image/grades/GradeSmall-S-Silver.svg',   // S-Silver
     'S': '/image/grades/GradeSmall-S.svg',
     'A': '/image/grades/GradeSmall-A.svg',
     'B': '/image/grades/GradeSmall-B.svg',
