@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { User, UserPage } from '../../types';
+import type { User } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { FaEdit, FaUser } from 'react-icons/fa';
 import ContentContainer from '../UI/ContentContainer';

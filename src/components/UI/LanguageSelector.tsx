@@ -94,10 +94,6 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = memo(({
     setIsOpen(false);
   }, [i18n]);
 
-  // 关闭下拉菜单
-  const handleClose = useCallback(() => {
-    setIsOpen(false);
-  }, []);
 
   // 点击外部关闭
   useEffect(() => {

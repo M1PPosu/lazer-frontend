@@ -488,7 +488,6 @@ export const pages = {
         code: '代码块',
         list: '列表',
         box: '折叠框',
-        spoiler: '剧透条',
         center: '居中对齐',
         heading: '标题',
         notice: '通知框',
