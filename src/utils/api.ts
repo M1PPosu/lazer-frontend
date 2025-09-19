@@ -316,6 +316,32 @@ export const userAPI = {
     });
     return response.data;
   },
+
+  // 获取用户最佳成绩
+  getBestScores: async (
+    userId: number,
+    mode: string = 'osu',
+    limit: number = 6,
+    offset: number = 0
+  ) => {
+    console.log('获取用户最佳成绩:', { userId, mode, limit, offset });
+    
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    params.append('offset', offset.toString());
+    params.append('mode', mode);
+    
+    const url = `/api/v2/users/${userId}/scores/best?${params.toString()}`;
+    
+    // 添加 x-api-version 请求头，确保获取完整的 Best Performance 数据
+    // 版本 >= 20220705 支持 weight 字段和其他扩展功能
+    const response = await api.get(url, {
+      headers: {
+        'x-api-version': '20220705'
+      }
+    });
+    return response.data;
+  },
 };
 
 // Friends API functions - osu! 使用单向关注制

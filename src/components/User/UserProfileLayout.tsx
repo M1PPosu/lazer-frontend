@@ -9,6 +9,7 @@ import LevelProgress from '../UI/LevelProgress';
 import { type User, type GameMode } from '../../types';
 import FriendStats from './FriendStats';
 import UserRecentActivity from './UserRecentActivity';
+import UserBestScores from './UserBestScores';
 import UserPageDisplay from './UserPageDisplay';
 import { BiSolidPencil } from 'react-icons/bi';
 import { FaTools } from "react-icons/fa";
@@ -296,17 +297,22 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
           </div>
         </div>
 
-        {/* 用户最近活动 */}
-        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 lg:px-8 py-3 md:py-4 border-b border-gray-200/60 dark:border-white/10">
-          <UserRecentActivity userId={user.id} />
-        </div>
-
         {/* 个人页面 */}
         <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 lg:px-8 py-3 md:py-4 border-b border-gray-200/60 dark:border-white/10">
           <UserPageDisplay
             user={user}
             onUserUpdate={onUserUpdate}
           />
+        </div>
+
+        {/* 用户最近活动 */}
+        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 lg:px-8 py-3 md:py-4 border-b border-gray-200/60 dark:border-white/10">
+          <UserRecentActivity userId={user.id} />
+        </div>
+
+        {/* 用户最佳成绩 */}
+        <div className="bg-white/95 dark:bg-gray-900/85 px-3 md:px-6 lg:px-8 py-3 md:py-4 border-b border-gray-200/60 dark:border-white/10">
+          <UserBestScores userId={user.id} selectedMode={selectedMode} user={user} />
         </div>
 
         {/* 施工中 */}

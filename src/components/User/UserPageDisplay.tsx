@@ -60,7 +60,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
       <div className={className}>
         {canEdit ? (
           // 自己的页面：显示编辑按钮
-          <div className="pt-0 pb-24 min-h-[300px] md:min-h-[400px] flex flex-col">
+          <div className="pt-0 pb-16 min-h-[200px] md:min-h-[250px] flex flex-col">
             {/* 标题在左上角 */}
             <div className="flex items-center gap-3 mb-8">
               <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
@@ -85,7 +85,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
           </div>
         ) : (
           // 其他人的页面：显示空状态
-          <div className="pt-0 pb-24 min-h-[400px] md:min-h-[600px] flex flex-col">
+          <div className="pt-0 pb-16 min-h-[250px] md:min-h-[300px] flex flex-col">
             {/* 标题在左上角 */}
             <div className="flex items-center gap-3 mb-12">
               <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
@@ -120,7 +120,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
 
   // 有内容的正常显示
   return (
-    <div className={`${className} min-h-[400px] md:min-h-[600px]`}>
+    <div className={`${className} min-h-[250px] md:min-h-[300px]`}>
       {/* 头部标题和编辑按钮 */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
@@ -141,7 +141,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
       </div>
 
       {/* 内容 */}
-      <ContentContainer maxHeight={500} className="user-page-content">
+      <ContentContainer maxHeight={300} className="user-page-content">
         <div className="prose prose-sm dark:prose-invert max-w-none">
           {userPage.html ? (
             <div dangerouslySetInnerHTML={{ __html: userPage.html }} />
