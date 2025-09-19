@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FiLoader } from 'react-icons/fi';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
+import { useTranslation } from 'react-i18next';
 import { rankingsAPI, handleApiError } from '../utils/api';
 import CountrySelect from '../components/UI/CountrySelect';
 import UserRankingsList from '../components/Rankings/UserRankingsList';
@@ -22,6 +23,7 @@ import type {
 } from '../types';
 
 const RankingsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedMode, setSelectedMode] = useState<GameMode>('osu');
   const [selectedMainMode, setSelectedMainMode] = useState<MainGameMode>('osu');
   const [showSubModes, setShowSubModes] = useState<MainGameMode | null>(null);
@@ -35,7 +37,7 @@ const RankingsPage: React.FC = () => {
   const [countryRankings, setCountryRankings] = useState<CountryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 点击外部关闭子模式菜单
+  // Click outside to close sub-mode menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modeSelectRef.current && !modeSelectRef.current.contains(event.target as Node)) {
@@ -49,7 +51,7 @@ const RankingsPage: React.FC = () => {
     };
   }, []);
 
-  // 处理主模式切换
+  // Handle main mode switching
   const handleMainModeChange = (mainMode: MainGameMode) => {
     if (selectedMainMode === mainMode) {
       setShowSubModes(showSubModes === mainMode ? null : mainMode);
@@ -61,13 +63,13 @@ const RankingsPage: React.FC = () => {
     }
   };
 
-  // 处理子模式选择
+  // Handle sub-mode selection
   const handleSubModeSelect = (mode: GameMode) => {
     setSelectedMode(mode);
     setShowSubModes(null);
   };
   
-  // 加载用户排行榜
+  // Load user rankings
   const loadUserRankings = async () => {
     setIsLoading(true);
     try {
@@ -80,13 +82,13 @@ const RankingsPage: React.FC = () => {
       setUserRankings(response);
     } catch (error) {
       handleApiError(error);
-      console.error('加载用户排行榜失败:', error);
+      console.error(t('rankings.errors.loadFailed'), error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 加载国家排行榜
+  // Load country rankings
   const loadCountryRankings = async () => {
     setIsLoading(true);
     try {
@@ -94,13 +96,13 @@ const RankingsPage: React.FC = () => {
       setCountryRankings(response);
     } catch (error) {
       handleApiError(error);
-      console.error('加载国家排行榜失败:', error);
+      console.error(t('rankings.errors.loadFailed'), error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 重置分页并加载数据
+  // Reset pagination and load data
   const resetAndLoad = () => {
     setCurrentPage(1);
     if (selectedTab === 'users') {
@@ -110,12 +112,12 @@ const RankingsPage: React.FC = () => {
     }
   };
 
-  // 模式改变时重置并加载数据
+  // Reset and load data when mode changes
   useEffect(() => {
     resetAndLoad();
   }, [selectedMode, selectedTab, rankingType, selectedCountry]);
 
-  // 分页改变时加载数据
+  // Load data when pagination changes
   useEffect(() => {
     if (selectedTab === 'users') {
       loadUserRankings();
@@ -131,20 +133,20 @@ const RankingsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* 页面标题 */}
+        {/* Page title */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            排行榜
+            {t('rankings.title')}
           </h1>
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
-            查看全球顶尖玩家和国家的表现
+            {t('nav.rankings')}
           </p>
         </div>
 
-        {/* 控制面板：模式选择 + 标签页和筛选选项 */}
+        {/* Control panel: mode selection + tabs and filter options */}
         <div className="flex flex-col xl:flex-row xl:items-center gap-4 sm:gap-6 mb-4 sm:mb-6">
           
-          {/* 游戏模式选择 */}
+          {/* Game mode selection */}
           <div className="flex justify-start" ref={modeSelectRef}>
             <div className="inline-flex gap-1 sm:gap-2 bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-sm border border-gray-200 dark:border-gray-700 min-h-[44px] sm:min-h-[48px] items-center">
               {(Object.keys(GAME_MODE_GROUPS) as MainGameMode[]).map((mainMode) => (
@@ -157,10 +159,7 @@ const RankingsPage: React.FC = () => {
                         : 'opacity-70 hover:opacity-100'
                     }`}
                     data-tooltip-id={`main-mode-${mainMode}`}
-                    data-tooltip-content={mainMode === 'osu' ? 'osu!' : 
-                                        mainMode === 'taiko' ? 'osu!taiko' :
-                                        mainMode === 'fruits' ? 'osu!catch' :
-                                        'osu!mania'}
+                    data-tooltip-content={GAME_MODE_NAMES[GAME_MODE_GROUPS[mainMode][0]]}
                   >
                     <div
                       className="absolute inset-0 rounded-md sm:rounded-lg transition-all duration-200"
@@ -178,7 +177,7 @@ const RankingsPage: React.FC = () => {
                     />
                   </button>
 
-                  {/* 子模式弹出选项 */}
+                  {/* Sub-mode popup options */}
                   {showSubModes === mainMode && (
                     <div className="absolute top-full mt-1 sm:mt-2 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl p-1.5 sm:p-2 min-w-28 sm:min-w-32 shadow-lg sm:shadow-xl z-30">
                       {GAME_MODE_GROUPS[mainMode].map((mode) => (
@@ -193,9 +192,9 @@ const RankingsPage: React.FC = () => {
                           style={{
                             backgroundColor: selectedMode === mode ? GAME_MODE_COLORS[mode] : 'transparent',
                           }}
-                        >
-                          {GAME_MODE_NAMES[mode]}
-                        </button>
+                >
+                  {GAME_MODE_NAMES[mode]}
+                </button>
                       ))}
                     </div>
                   )}
@@ -216,9 +215,9 @@ const RankingsPage: React.FC = () => {
             ))}
           </div>
 
-          {/* 标签页和筛选选项 */}
+          {/* Tabs and filter options */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 sm:gap-4 xl:flex-1">
-          {/* 标签页切换 */}
+          {/* Tab switching */}
           <div className="flex-1">
             <div className="inline-flex bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-sm border border-gray-200 dark:border-gray-700 min-h-[44px] sm:min-h-[48px] items-center">
               <button
@@ -229,7 +228,7 @@ const RankingsPage: React.FC = () => {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
               >
-                用户排行榜
+                {t('rankings.tabs.users')}
               </button>
               <button
                 onClick={() => setSelectedTab('countries')}
@@ -239,12 +238,12 @@ const RankingsPage: React.FC = () => {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
               >
-                国家排行榜
+                {t('rankings.tabs.countries')}
               </button>
             </div>
           </div>
 
-          {/* 用户排行榜的筛选选项 */}
+          {/* Filter options for user rankings */}
           {selectedTab === 'users' && (
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <select
@@ -254,15 +253,15 @@ const RankingsPage: React.FC = () => {
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm min-h-[44px] sm:min-h-[48px]
                          focus:ring-2 focus:ring-osu-pink focus:border-transparent font-medium text-sm sm:text-base"
               >
-                <option value="performance">表现分数 (pp)</option>
-                <option value="score">总分</option>
+                <option value="performance">{t('rankings.rankingTypes.performance')}</option>
+                <option value="score">{t('rankings.rankingTypes.score')}</option>
               </select>
 
               <div className="w-full sm:w-64">
                 <CountrySelect
                   value={selectedCountry}
                   onChange={setSelectedCountry}
-                  placeholder="筛选国家"
+                  placeholder={t('rankings.filters.country')}
                 />
               </div>
             </div>
@@ -270,13 +269,13 @@ const RankingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 排行榜内容 */}
+        {/* Rankings content */}
         <div className="-mx-4 sm:mx-0 sm:bg-white sm:dark:bg-gray-800 sm:rounded-xl sm:shadow-sm sm:border sm:border-gray-200 sm:dark:border-gray-700 sm:p-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-16 px-4 sm:px-0">
               <div className="text-center">
                 <FiLoader className="animate-spin h-12 w-12 text-blue-500 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400 font-medium">加载排行榜数据中...</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">{t('common.loading')}</p>
               </div>
             </div>
           ) : selectedTab === 'users' ? (
@@ -294,7 +293,7 @@ const RankingsPage: React.FC = () => {
             />
           )}
 
-          {/* 分页 */}
+          {/* Pagination */}
           {!isLoading && (
             <PaginationControls
               total={selectedTab === 'users' ? userRankings?.total || 0 : countryRankings?.total || 0}

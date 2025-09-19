@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import RankBadge from '../UI/RankBadge';
 import LazyFlag from '../UI/LazyFlag';
 import { GAME_MODE_COLORS } from '../../types';
@@ -11,6 +12,7 @@ interface Props {
 }
 
 const CountryRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode }) => {
+  const { t } = useTranslation();
   const isTopThree = rank <= 3;
 
   return (
@@ -39,7 +41,7 @@ const CountryRankingCard: React.FC<Props> = ({ ranking, rank, selectedMode }) =>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">{ranking.name}</div>
           <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            <span>{ranking.active_users.toLocaleString()} 活跃用户 • {ranking.play_count.toLocaleString()} 次游戏</span>
+            <span>{ranking.active_users.toLocaleString()} {t('rankings.countryCard.activeUsers')} • {ranking.play_count.toLocaleString()} {t('rankings.countryCard.playCount')}</span>
           </div>
         </div>
 

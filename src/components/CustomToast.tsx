@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { userAPI } from '../utils/api';
 import { FiMessageCircle, FiUsers, FiBell, FiX } from 'react-icons/fi';
 
@@ -22,6 +23,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
   username,
   onDismiss
 }) => {
+  const { t } = useTranslation();
   const [userInfo, setUserInfo] = useState<{ username: string; avatar_url: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,9 +39,9 @@ export const CustomToast: React.FC<CustomToastProps> = ({
           });
         })
         .catch(error => {
-          console.error('获取用户信息失败:', error);
+          console.error(t('common.fetchUserInfoFailed'), error);
           setUserInfo({
-            username: '未知用户',
+            username: t('common.unknownUser'),
             avatar_url: userAPI.getAvatarUrl(sourceUserId)
           });
         })
@@ -74,7 +76,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
   const getDisplayUsername = () => {
     if (username) return username;
     if (userInfo?.username) return userInfo.username;
-    return '加载中...';
+    return t('common.loadingUser');
   };
 
   const avatarUrl = getAvatarUrl();
@@ -100,7 +102,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
             alt={displayUsername}
             className="w-12 h-12 rounded-lg object-cover border-2 border-gray-200 dark:border-gray-600"
             onError={(e) => {
-              // 如果头像加载失败，显示默认图标
+              // {t('common.avatarLoadFailed')}
               e.currentTarget.style.display = 'none';
               const iconContainer = e.currentTarget.nextElementSibling as HTMLElement;
               if (iconContainer) {
@@ -140,7 +142,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
         {/* 用户名 */}
         {(username || userInfo?.username) && (
           <div className="flex items-center space-x-1 mb-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400">来自:</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.from')}</span>
             <span className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
               {displayUsername}
             </span>

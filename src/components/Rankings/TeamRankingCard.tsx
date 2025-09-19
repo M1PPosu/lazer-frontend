@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiUsers, FiTrendingUp } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import RankBadge from '../UI/RankBadge';
 import LazyBackgroundImage from '../UI/LazyBackgroundImage';
 import { GAME_MODE_COLORS } from '../../types';
@@ -23,6 +24,7 @@ const TeamRankingCard: React.FC<Props> = ({
   rankingType,
   isLoading = false 
 }) => {
+  const { t } = useTranslation();
   const formatNumber = (num: number): string => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
@@ -122,7 +124,7 @@ const TeamRankingCard: React.FC<Props> = ({
               <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                 <FiUsers className="w-3 h-3" />
                 <span className="text-xs">
-                  {ranking.play_count || 0} 场游戏
+                  {ranking.play_count || 0} {t('common.playCount')}
                 </span>
               </div>
               <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
@@ -130,7 +132,7 @@ const TeamRankingCard: React.FC<Props> = ({
                 <span className="text-xs">
                   {rankingType === 'performance' 
                     ? `${formatNumber(ranking.performance || 0)}pp`
-                    : `${formatNumber(ranking.ranked_score || 0)} 分`
+                    : `${formatNumber(ranking.ranked_score || 0)} ${t('common.score')}`
                   }
                 </span>
               </div>
@@ -196,7 +198,7 @@ const TeamRankingCard: React.FC<Props> = ({
             <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
               <FiUsers className="w-3 h-3" />
               <span className="text-xs">
-                {ranking.play_count || 0} 场游戏
+                {ranking.play_count || 0} {t('common.playCount')}
               </span>
             </div>
             <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
@@ -204,7 +206,7 @@ const TeamRankingCard: React.FC<Props> = ({
               <span className="text-xs">
                 {rankingType === 'performance' 
                   ? `${formatNumber(ranking.performance || 0)}pp`
-                  : `${formatNumber(ranking.ranked_score || 0)} 分`
+                  : `${formatNumber(ranking.ranked_score || 0)} ${t('common.score')}`
                 }
               </span>
             </div>

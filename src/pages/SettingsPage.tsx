@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiUser, FiCheck, FiX, FiImage, FiCamera } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -10,6 +11,7 @@ import Avatar from '../components/UI/Avatar';
 import AvatarUpload from '../components/UI/AvatarUpload';
 
 const SettingsPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user, isAuthenticated, isLoading, refreshUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [newUsername, setNewUsername] = useState('');
@@ -33,10 +35,10 @@ const SettingsPage: React.FC = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <div className="text-6xl mb-4">😕</div>
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-          无法加载设置
+          {t('settings.errors.loadFailed')}
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
-          请尝试刷新页面
+          {t('settings.errors.tryRefresh')}
         </p>
       </div>
     );
@@ -54,12 +56,12 @@ const SettingsPage: React.FC = () => {
 
   const handleSubmitUsername = async () => {
     if (!newUsername.trim()) {
-      toast.error('用户名不能为空');
+      toast.error(t('settings.username.errors.empty'));
       return;
     }
 
     if (newUsername.trim() === user.username) {
-      toast.error('新用户名与当前用户名相同');
+      toast.error(t('settings.username.errors.sameAsOld'));
       return;
     }
 
@@ -67,7 +69,7 @@ const SettingsPage: React.FC = () => {
     try {
       await userAPI.rename(newUsername.trim());
       
-      toast.success('用户名修改成功！');
+      toast.success(t('settings.username.success'));
       setIsEditing(false);
       setNewUsername('');
       
@@ -79,11 +81,11 @@ const SettingsPage: React.FC = () => {
       console.error('修改用户名失败:', error);
       const err = error as { response?: { status?: number } };
       if (err.response?.status === 409) {
-        toast.error('用户名已被占用，请选择其他用户名');
+        toast.error(t('settings.username.errors.taken'));
       } else if (err.response?.status === 404) {
-        toast.error('找不到指定用户');
+        toast.error(t('settings.username.errors.userNotFound'));
       } else {
-        toast.error('修改用户名失败，请稍后重试');
+        toast.error(t('settings.username.errors.failed'));
       }
     } finally {
       setIsSubmitting(false);
@@ -92,7 +94,7 @@ const SettingsPage: React.FC = () => {
 
   const handleAvatarUpdate = async (newAvatarUrl: string) => {
     console.log('头像更新成功:', newAvatarUrl);
-    toast.success('头像修改成功！');
+    toast.success(t('settings.avatar.success'));
     setShowAvatarUpload(false);
     
     // 延迟刷新用户信息
@@ -110,10 +112,10 @@ const SettingsPage: React.FC = () => {
         className="text-center"
       >
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          账户设置
+          {t('settings.title')}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          管理您的账户信息和偏好设置
+          {t('settings.description')}
         </p>
       </motion.div>
 
@@ -127,14 +129,14 @@ const SettingsPage: React.FC = () => {
         <div className="flex items-center gap-3 mb-6">
           <FiUser className="w-6 h-6 text-osu-pink" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            用户名设置
+            {t('settings.username.title')}
           </h2>
         </div>
 
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              当前用户名
+              {t('settings.username.current')}
             </label>
             {!isEditing ? (
               <div className="flex items-center justify-between">
@@ -145,7 +147,7 @@ const SettingsPage: React.FC = () => {
                   onClick={handleStartEdit}
                   className="btn-secondary !px-4 !py-2 text-sm"
                 >
-                  修改用户名
+                  {t('settings.username.change')}
                 </button>
               </div>
             ) : (
@@ -156,11 +158,11 @@ const SettingsPage: React.FC = () => {
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-osu-pink focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="输入新的用户名"
+                    placeholder={t('settings.username.placeholder')}
                     maxLength={50}
                   />
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    用户名修改后，您的原用户名将保存在历史记录中
+                    {t('settings.username.hint')}
                   </p>
                 </div>
                 
@@ -171,7 +173,7 @@ const SettingsPage: React.FC = () => {
                     className="flex items-center gap-2 btn-primary !px-4 !py-2 !text-sm !inline-flex disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <FiCheck className="w-4 h-4" />
-                    {isSubmitting ? '保存中...' : '保存'}
+                    {isSubmitting ? t('settings.username.saving') : t('settings.username.save')}
                   </button>
                   <button
                     onClick={handleCancelEdit}
@@ -179,7 +181,7 @@ const SettingsPage: React.FC = () => {
                     className="flex items-center gap-2 btn-secondary !px-4 !py-2 !text-sm !inline-flex disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <FiX className="w-4 h-4" />
-                    取消
+                    {t('settings.username.cancel')}
                   </button>
                 </div>
               </div>
@@ -198,14 +200,14 @@ const SettingsPage: React.FC = () => {
         <div className="flex items-center gap-3 mb-6">
           <FiCamera className="w-6 h-6 text-osu-pink" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            头像设置
+            {t('settings.avatar.title')}
           </h2>
         </div>
 
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              当前头像
+              {t('settings.avatar.current')}
             </label>
             <div className="flex items-center gap-4">
               <Avatar
@@ -223,10 +225,10 @@ const SettingsPage: React.FC = () => {
                   className="btn-primary !px-4 !py-2 text-sm flex items-center gap-2"
                 >
                   <FiCamera className="w-4 h-4" />
-                  修改头像
+                  {t('settings.avatar.change')}
                 </button>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  支持 PNG、JPEG、GIF 格式，建议尺寸 256x256 像素，最大 5MB
+                  {t('settings.avatar.hint')}
                 </p>
               </div>
             </div>
@@ -244,17 +246,17 @@ const SettingsPage: React.FC = () => {
         <div className="flex items-center gap-3 mb-6">
           <FiImage className="w-6 h-6 text-osu-pink" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            头图设置
+            {t('settings.cover.title')}
           </h2>
         </div>
 
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              个人资料头图
+              {t('settings.cover.label')}
             </label>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-              建议尺寸：2000x500 像素（官方推荐 4:1 比例），支持 PNG、JPEG、GIF 格式，最大 10MB
+              {t('settings.cover.hint')}
             </p>
             <EditableCover
               userId={user.id}
@@ -281,13 +283,13 @@ const SettingsPage: React.FC = () => {
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
       >
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-          账户信息
+          {t('settings.account.title')}
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              用户 ID
+              {t('settings.account.userId')}
             </label>
             <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <span className="text-gray-900 dark:text-white font-mono">
@@ -299,11 +301,11 @@ const SettingsPage: React.FC = () => {
           {user.join_date && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                注册时间
+                {t('settings.account.joinDate')}
               </label>
               <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <span className="text-gray-900 dark:text-white">
-                  {new Date(user.join_date).toLocaleDateString('zh-CN', {
+                  {new Date(user.join_date).toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
@@ -316,7 +318,7 @@ const SettingsPage: React.FC = () => {
           {user.country && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                国家/地区
+                {t('settings.account.country')}
               </label>
               <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <div className="flex items-center gap-2">
@@ -336,11 +338,11 @@ const SettingsPage: React.FC = () => {
           {user.last_visit && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                最后访问
+                {t('settings.account.lastVisit')}
               </label>
               <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <span className="text-gray-900 dark:text-white">
-                  {new Date(user.last_visit).toLocaleDateString('zh-CN', {
+                  {new Date(user.last_visit).toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
