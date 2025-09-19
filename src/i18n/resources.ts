@@ -151,8 +151,8 @@ export const resources = {
   en: {
     translation: {
       common: {
-        brandName: 'GuSou!',
-        brandAlt: 'GuSou! logo',
+        brandName: 'g0v0!',
+        brandAlt: 'g0v0! logo',
         language: {
           label: 'Language',
           switch: 'Switch to {{language}}',
@@ -195,7 +195,7 @@ export const resources = {
           qq: 'QQ Group',
           discord: 'Discord',
           github: 'GitHub',
-          discordTag: 'GuSou!',
+          discordTag: 'g0v0!',
         },
       },
       features: {
@@ -256,7 +256,7 @@ export const resources = {
       auth: {
         login: {
           title: 'Sign in',
-          subtitle: 'Sign in to your GuSou! account',
+          subtitle: 'Sign in to your g0v0! account',
           username: 'Username',
           password: 'Password',
           usernamePlaceholder: 'Enter username',
@@ -267,7 +267,7 @@ export const resources = {
         },
         register: {
           title: 'Sign up',
-          subtitle: 'Create your GuSou! account',
+          subtitle: 'Create your g0v0! account',
           username: 'Username',
           email: 'Email',
           password: 'Password',
