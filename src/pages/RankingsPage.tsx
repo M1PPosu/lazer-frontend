@@ -147,7 +147,7 @@ const RankingsPage: React.FC = () => {
         <div className="flex flex-col xl:flex-row xl:items-center gap-4 sm:gap-6 mb-4 sm:mb-6">
           
           {/* Game mode selection */}
-          <div className="flex justify-start" ref={modeSelectRef}>
+          <div className="flex justify-start relative" ref={modeSelectRef}>
             <div className="inline-flex gap-1 sm:gap-2 bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-sm border border-gray-200 dark:border-gray-700 min-h-[44px] sm:min-h-[48px] items-center">
               {(Object.keys(GAME_MODE_GROUPS) as MainGameMode[]).map((mainMode) => (
                 <div key={mainMode} className="relative">
@@ -156,7 +156,7 @@ const RankingsPage: React.FC = () => {
                     className={`relative px-3 py-2 sm:px-4 sm:py-2.5 rounded-md sm:rounded-lg transition-all duration-200 focus:outline-none flex items-center justify-center min-h-[32px] sm:min-h-[36px] ${
                       selectedMainMode === mainMode
                         ? 'shadow-sm sm:shadow-md'
-                        : 'opacity-70 hover:opacity-100'
+                        : 'opacity-70 hover:opacity-100 hover:scale-105 hover:shadow-sm cursor-pointer'
                     }`}
                     data-tooltip-id={`main-mode-${mainMode}`}
                     data-tooltip-content={GAME_MODE_NAMES[GAME_MODE_GROUPS[mainMode][0]]}
@@ -169,12 +169,21 @@ const RankingsPage: React.FC = () => {
                           : 'transparent'
                       }}
                     />
-                    <i
-                      className={`${MAIN_MODE_ICONS[mainMode]} relative z-10 text-xl sm:text-2xl transition-colors duration-200`}
-                      style={{
-                        color: selectedMainMode === mainMode ? '#fff' : 'var(--text-primary)'
-                      }}
-                    />
+                    <div className="flex items-center justify-center gap-1">
+                      <i
+                        className={`${MAIN_MODE_ICONS[mainMode]} relative z-10 text-xl sm:text-2xl transition-colors duration-200`}
+                        style={{
+                          color: selectedMainMode === mainMode ? '#fff' : 'var(--text-primary)'
+                        }}
+                      />
+                      <i
+                        className="fas fa-chevron-down relative z-10 text-[8px] sm:text-[10px] transition-all duration-200 opacity-60"
+                        style={{
+                          color: selectedMainMode === mainMode ? '#fff' : 'var(--text-primary)',
+                          transform: showSubModes === mainMode ? 'rotate(180deg)' : 'rotate(0deg)'
+                        }}
+                      />
+                    </div>
                   </button>
 
                   {/* Sub-mode popup options */}

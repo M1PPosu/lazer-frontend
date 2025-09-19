@@ -156,7 +156,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = memo(({
             <img
               src={`/image/flag/${currentLanguage.flag}.svg`}
               alt={`${currentLanguage.name} flag`}
-              className="w-4 h-4 rounded-sm"
+              className="w-5 h-4 rounded-sm object-cover"
             />
           )}
           
@@ -216,7 +216,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = memo(({
                 const isSelected = language.code === currentLanguage.code;
                 
                 return (
-                  <motion.button
+                  <button
                     key={language.code}
                     onClick={() => handleLanguageSelect(language.code)}
                     className={`
@@ -229,14 +229,12 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = memo(({
                     `}
                     role="option"
                     aria-selected={isSelected}
-                    whileHover={{ x: 4 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   >
                     <div className="flex items-center space-x-3">
                       <img
                         src={`/image/flag/${language.flag}.svg`}
                         alt={`${language.name} flag`}
-                        className="w-5 h-5 rounded-sm"
+                        className="w-5 h-4 rounded-sm object-cover flex-shrink-0"
                       />
                       <div className="flex flex-col items-start">
                         <span className="font-medium">{language.nativeName}</span>
@@ -248,15 +246,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = memo(({
                     
                     {/* 选中指示器 */}
                     {isSelected && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      >
-                        <FiCheck size={16} className="text-osu-pink" />
-                      </motion.div>
+                      <div className="text-osu-pink">
+                        <FiCheck size={16} />
+                      </div>
                     )}
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
