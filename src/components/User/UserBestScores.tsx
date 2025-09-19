@@ -281,7 +281,9 @@ const UserBestScores: React.FC<UserBestScoresProps> = ({ userId, selectedMode, u
       ) : (
         <div className="shadow-sm overflow-hidden rounded-lg">
           {/* 头部圆角div */}
-          <div className="bg-white dark:bg-gray-800 h-[30px] rounded-t-lg border-x border-t border-gray-200/50 dark:border-gray-600/30"></div>
+          <div className="bg-white dark:bg-gray-800 h-[30px] rounded-t-lg border-x border-t border-gray-200/50 dark:border-gray-600/30 flex items-center justify-center">
+            <div className="w-16 h-1 bg-osu-pink rounded-full"></div>
+          </div>
           
           {/* 主要内容区域 - 无圆角 */}
           <div className="bg-white dark:bg-gray-800 border-x border-gray-200/50 dark:border-gray-600/30">
@@ -310,7 +312,8 @@ const UserBestScores: React.FC<UserBestScoresProps> = ({ userId, selectedMode, u
           </div>
           
           {/* 尾部圆角div */}
-          <div className="bg-white dark:bg-gray-800 h-[30px] rounded-b-lg border-x border-b border-gray-200/50 dark:border-gray-600/30"></div>
+          <div className="bg-white dark:bg-gray-800 h-[30px] rounded-b-lg border-x border-b border-gray-200/50 dark:border-gray-600/30 flex items-center justify-center">
+          </div>
         </div>
       )}
     </div>
