@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { useTranslation, Trans } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 
 import InfoCard from '../InfoCard';
@@ -21,6 +22,7 @@ import {
 
 const HeroSection: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <div className="relative">
@@ -43,19 +45,24 @@ const HeroSection: React.FC = () => {
             {/* Logo and brand */}
             <div className="flex items-center justify-center mb-6 sm:mb-8 md:mb-10">
               <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-24 lg:h-24 flex items-center justify-center mr-3 sm:mr-4 md:mr-5 p-1 sm:p-2">
-                <img src="/image/logos/logo.svg" alt="咕哦！Logo" className="w-full h-full object-contain drop-shadow-lg" />
+                <img src="/image/logos/logo.svg" alt={t('common.brandAlt')} className="w-full h-full object-contain drop-shadow-lg" />
               </div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-bold tracking-tight">
-                <span className="gradient-text">咕哦！</span>
+                <span className="gradient-text">{t('common.brandName')}</span>
               </h1>
             </div>
 
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-semibold text-gray-700 dark:text-gray-200 mb-4 sm:mb-5 md:mb-6 leading-tight max-w-4xl mx-auto">
-              可能是最好的 osu! 私服
+              {t('hero.tagline')}
             </h2>
 
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed px-2">
-              g0v0! 是一个全新的<span className="font-bold text-pink-600 dark:text-pink-400">支持 lazer 客户端</span>的 osu! 第三方服务器。提供了 standard / taiko / catch / mania 四大模式支持，支持 RX/AP pp计算与无限制改名，让你的节奏旅程更自由。
+              <Trans
+                i18nKey="hero.description"
+                components={{
+                  bold: <span className="font-bold text-pink-600 dark:text-pink-400" />,
+                }}
+              />
             </p>
 
             {/* Server Status */}
@@ -64,14 +71,14 @@ const HeroSection: React.FC = () => {
                 <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 md:gap-4">
                   <span className="inline-flex items-center gap-2 whitespace-nowrap">
                     <span className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-green-500 dark:bg-green-400 animate-pulse" />
-                    服务正常运行中
+                    {t('hero.statusOperational')}
                   </span>
 
                   {/* 可选分隔线：不要就删掉这一行 */}
                   <span className="hidden sm:block h-4 w-px bg-pink-300/60 dark:bg-pink-200/40" />
 
                   <span className="text-sm sm:text-base whitespace-nowrap">
-                    加入 QQ / Discord 社区获取支持与更新
+                    {t('hero.statusCommunity')}
                   </span>
                 </div>
               </div>
@@ -89,7 +96,7 @@ const HeroSection: React.FC = () => {
                   >
                     <div className="px-2 py-1.5 sm:px-3 sm:py-2 flex flex-col sm:flex-row items-center justify-center whitespace-nowrap w-full sm:w-auto">
                       <FaQq className="mb-1 sm:mb-0 sm:mr-2 text-base sm:text-lg w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="font-medium text-xs sm:text-sm">QQ群</span>
+                      <span className="font-medium text-xs sm:text-sm">{t('hero.community.qq')}</span>
                     </div>
                     <div className="hidden sm:block px-2 sm:px-3 py-1.5 sm:py-2 bg-sky-600 group-hover:bg-sky-500 dark:bg-sky-700 dark:group-hover:bg-sky-600 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
                       <span className="font-semibold text-xs sm:text-sm">1059561526</span>
@@ -104,10 +111,10 @@ const HeroSection: React.FC = () => {
                   >
                     <div className="px-2 py-1.5 sm:px-3 sm:py-2 flex flex-col sm:flex-row items-center justify-center whitespace-nowrap w-full sm:w-auto">
                       <FaDiscord className="mb-1 sm:mb-0 sm:mr-2 text-base sm:text-lg w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="font-medium text-xs sm:text-sm">Discord</span>
+                      <span className="font-medium text-xs sm:text-sm">{t('hero.community.discord')}</span>
                     </div>
                     <div className="hidden sm:block px-2 sm:px-3 py-1.5 sm:py-2 bg-indigo-600 group-hover:bg-indigo-500 dark:bg-indigo-700 dark:group-hover:bg-indigo-600 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
-                      <span className="font-semibold text-xs sm:text-sm">咕哦!</span>
+                      <span className="font-semibold text-xs sm:text-sm">{t('hero.community.discordTag')}</span>
                     </div>
                   </a>
 
@@ -119,7 +126,7 @@ const HeroSection: React.FC = () => {
                   >
                     <div className="px-2 py-1.5 sm:px-3 sm:py-2 flex flex-col sm:flex-row items-center justify-center whitespace-nowrap w-full sm:w-auto">
                       <FaGithub className="mb-1 sm:mb-0 sm:mr-2 text-base sm:text-lg w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="font-medium text-xs sm:text-sm">GitHub</span>
+                      <span className="font-medium text-xs sm:text-sm">{t('hero.community.github')}</span>
                     </div>
                     <div className="hidden sm:block px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-800 group-hover:bg-gray-700 dark:bg-gray-600 dark:group-hover:bg-gray-500 text-white rounded-r-lg transition-colors duration-200 whitespace-nowrap w-full">
                       <span className="font-semibold text-xs sm:text-sm">GooGuTeam</span>
@@ -144,7 +151,7 @@ const HeroSection: React.FC = () => {
                 className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium shadow-lg flex items-center justify-center gap-2"
               >
                 <FaRocket className="w-4 h-4 sm:w-5 sm:h-5" />
-                如何加入服务器
+                {t('hero.joinCta')}
               </Link>
             </div>
             
@@ -156,13 +163,13 @@ const HeroSection: React.FC = () => {
                     to="/profile"
                     className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl shadow-lg text-center font-medium"
                   >
-                    查看资料
+                    {t('hero.viewProfile')}
                   </Link>
                   <Link
                     to="/rankings"
                     className="btn-secondary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium"
                   >
-                    查看排行榜
+                    {t('hero.viewRankings')}
                   </Link>
                 </>
               ) : (
@@ -171,13 +178,13 @@ const HeroSection: React.FC = () => {
                     to="/register"
                     className="btn-primary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl shadow-lg text-center font-medium"
                   >
-                    注册
+                    {t('hero.register')}
                   </Link>
                   <Link
                     to="/login"
                     className="btn-secondary text-sm sm:text-base md:text-lg lg:text-xl px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-3.5 lg:py-4 w-full rounded-xl text-center font-medium"
                   >
-                    登录
+                    {t('hero.login')}
                   </Link>
                 </>
               )}
@@ -204,13 +211,13 @@ const HeroSection: React.FC = () => {
           >
             <div className="text-center mb-8 sm:mb-12 md:mb-16">
               <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-                <span className="gradient-text">功能特色</span>
+                <span className="gradient-text">{t('hero.featuresTitle')}</span>
               </h3>
               <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                探索我们为您提供的丰富功能和特色服务
+                {t('hero.featuresSubtitle')}
               </p>
             </div>
-            
+
             {/* Features Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 max-w-7xl mx-auto">
               {features.map((feature, index) => {
@@ -235,9 +242,9 @@ const HeroSection: React.FC = () => {
                   >
                     <InfoCard
                       image={feature.image}
-                      imageAlt={feature.imageAlt}
-                      title={feature.title}
-                      content={feature.content}
+                      imageAlt={t(feature.imageAltKey)}
+                      title={t(feature.titleKey)}
+                      content={t(feature.contentKey)}
                       icon={icons[index]}
                     />
                   </motion.div>

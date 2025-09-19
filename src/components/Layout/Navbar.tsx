@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiSun, FiMoon, FiUser, FiLogOut, FiHome, FiTrendingUp, FiMusic, FiBell, FiUsers, FiMessageCircle, FiMenu, FiX, FiSettings, FiServer } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { useNotificationContext } from '../../contexts/NotificationContext';
 import UserDropdown from '../UI/UserDropdown';
 import Avatar from '../UI/Avatar';
 import type { NavItem } from '../../types';
+import type { AppLanguages } from '../../i18n/resources';
 
 // 将 NavItem 组件提取并使用 memo 优化，防止不必要的重新渲染
 const NavItem = memo<{ item: NavItem }>(({ item }) => {
@@ -145,7 +147,7 @@ const NavItem = memo<{ item: NavItem }>(({ item }) => {
 NavItem.displayName = 'NavItem';
 
 // 手机端菜单下拉组件
-const MobileMenuDropdown = memo<{ 
+const MobileMenuDropdown = memo<{
   items: NavItem[];
   helpItems: NavItem[];
   isAuthenticated: boolean;
@@ -153,6 +155,7 @@ const MobileMenuDropdown = memo<{
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const { t } = useTranslation();
 
   // 关闭下拉菜单
   const handleClose = useCallback(() => {
@@ -312,9 +315,9 @@ const MobileMenuDropdown = memo<{
                     }`}
                   >
                     <FiSettings size={16} className="mr-3" />
-                    <span>设置</span>
+                    <span>{t('nav.settings')}</span>
                     {location.pathname === '/settings' && (
-                      <motion.div 
+                      <motion.div
                         className="ml-auto w-2 h-2 bg-osu-pink rounded-full"
                         layoutId="mobileDropdownActiveIndicator"
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -339,6 +342,7 @@ MobileMenuDropdown.displayName = 'MobileMenuDropdown';
 const Navbar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
+  const { t, i18n } = useTranslation();
   // 通过全局通知上下文获取统一的 unreadCount
   let unreadCount = { total: 0, team_requests: 0, private_messages: 0, friend_requests: 0 } as any;
   let isConnected = false;
@@ -356,21 +360,31 @@ const Navbar: React.FC = () => {
   const isFullyConnected = isConnected && chatConnected;
   //const location = useLocation();
 
+  const resolvedLanguage = (i18n.resolvedLanguage ?? i18n.language) as string;
+  const currentLanguage: AppLanguages = resolvedLanguage.startsWith('zh') ? 'zh' : 'en';
+  const currentLanguageLabel = currentLanguage === 'zh' ? t('common.language.zh') : t('common.language.en');
+  const nextLanguageLabel = currentLanguage === 'zh' ? t('common.language.en') : t('common.language.zh');
+
+  const handleLanguageToggle = useCallback(() => {
+    const nextLanguage: AppLanguages = currentLanguage === 'zh' ? 'en' : 'zh';
+    void i18n.changeLanguage(nextLanguage);
+  }, [currentLanguage, i18n]);
+
   const navItems: NavItem[] = React.useMemo(() => [
     // 核心功能
-    { path: '/', title: '主页', icon: FiHome },
-    { path: '/rankings', title: '排行榜', icon: FiTrendingUp, requireAuth: true },
-    { path: '/beatmaps', title: '谱面', icon: FiMusic, requireAuth: true },
-    { path: '/teams', title: '战队', icon: FiUsers, requireAuth: true },
+    { path: '/', title: t('nav.home'), icon: FiHome },
+    { path: '/rankings', title: t('nav.rankings'), icon: FiTrendingUp, requireAuth: true },
+    { path: '/beatmaps', title: t('nav.beatmaps'), icon: FiMusic, requireAuth: true },
+    { path: '/teams', title: t('nav.teams'), icon: FiUsers, requireAuth: true },
     // 用户功能
-    { path: '/messages', title: '消息', icon: FiMessageCircle, requireAuth: true },
-    { path: '/profile', title: '个人资料', icon: FiUser, requireAuth: true },
-  ], []);
+    { path: '/messages', title: t('nav.messages'), icon: FiMessageCircle, requireAuth: true },
+    { path: '/profile', title: t('nav.profile'), icon: FiUser, requireAuth: true },
+  ], [t]);
 
   // 独立的帮助链接
   const helpItems: NavItem[] = React.useMemo(() => [
-    { path: '/how-to-join', title: '加入服务器', icon: FiServer },
-  ], []);
+    { path: '/how-to-join', title: t('nav.join'), icon: FiServer },
+  ], [t]);
 
   const filteredNavItems = React.useMemo(() => 
     navItems.filter(item => 
@@ -403,9 +417,9 @@ const Navbar: React.FC = () => {
               >
                 <Link to="/" className="flex items-center space-x-3 transition-transform duration-200">
                   <div className="relative">
-                    <img 
-                      src="/image/logos/logo.svg" 
-                      alt="GuSou Logo" 
+                    <img
+                      src="/image/logos/logo.svg"
+                      alt={t('common.brandAlt')}
                       className="w-9 h-9 object-contain"
                     />
                     <motion.div 
@@ -416,7 +430,7 @@ const Navbar: React.FC = () => {
                     />
                   </div>
                   <span className="text-xl font-bold text-osu-pink">
-                    咕哦！
+                    {t('common.brandName')}
                   </span>
                 </Link>
               </motion.div>
@@ -448,6 +462,16 @@ const Navbar: React.FC = () => {
 
             {/* Right side actions */}
             <div className="flex items-center justify-end space-x-3">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleLanguageToggle}
+                className="px-3 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 text-sm font-medium"
+                aria-label={t('common.language.switch', { language: nextLanguageLabel })}
+              >
+                {currentLanguageLabel}
+              </motion.button>
+
               {/* Notification (if authenticated) */}
               {isAuthenticated && (
                 <Link to="/messages">
@@ -507,24 +531,24 @@ const Navbar: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Link
-                      to="/login"
-                      className="px-5 py-2.5 text-sm font-medium text-osu-blue hover:text-osu-blue/80 border border-osu-blue/30 hover:border-osu-blue/50 rounded-xl hover:bg-osu-blue/5 transition-all duration-200"
-                    >
-                      登录
-                    </Link>
-                  </motion.div>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                  <Link
+                    to="/login"
+                    className="px-5 py-2.5 text-sm font-medium text-osu-blue hover:text-osu-blue/80 border border-osu-blue/30 hover:border-osu-blue/50 rounded-xl hover:bg-osu-blue/5 transition-all duration-200"
                   >
-                    <Link
-                      to="/register"
-                      className="px-5 py-2.5 text-sm font-medium text-white bg-osu-pink hover:bg-osu-pink/90 rounded-xl shadow-lg shadow-osu-pink/25 hover:shadow-osu-pink/35 transition-all duration-200"
-                    >
-                      注册
-                    </Link>
-                  </motion.div>
+                    {t('nav.login')}
+                  </Link>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    to="/register"
+                    className="px-5 py-2.5 text-sm font-medium text-white bg-osu-pink hover:bg-osu-pink/90 rounded-xl shadow-lg shadow-osu-pink/25 hover:shadow-osu-pink/35 transition-all duration-200"
+                  >
+                    {t('nav.register')}
+                  </Link>
+                </motion.div>
                 </div>
               )}
             </div>
@@ -542,9 +566,9 @@ const Navbar: React.FC = () => {
           >
             <Link to="/" className="flex items-center space-x-3 group">
               <div className="relative">
-                <img 
-                  src="/image/logos/logo.svg" 
-                  alt="GuSou Logo" 
+                <img
+                  src="/image/logos/logo.svg"
+                  alt={t('common.brandAlt')}
                   className="w-8 h-8 object-contain"
                 />
                 <motion.div 
@@ -555,7 +579,7 @@ const Navbar: React.FC = () => {
                 />
               </div>
               <span className="text-lg font-bold text-osu-pink">
-                咕哦！
+                {t('common.brandName')}
               </span>
             </Link>
           </motion.div>
@@ -611,6 +635,16 @@ const Navbar: React.FC = () => {
               </motion.div>
             </motion.button>
 
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleLanguageToggle}
+              className="px-3 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-osu-pink hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 text-xs font-medium"
+              aria-label={t('common.language.switch', { language: nextLanguageLabel })}
+            >
+              {currentLanguageLabel}
+            </motion.button>
+
             {/* User actions */}
             {isAuthenticated && user ? (
               <div className="flex items-center space-x-2">
@@ -649,7 +683,7 @@ const Navbar: React.FC = () => {
                   to="/login"
                   className="px-4 py-2 text-sm font-medium text-osu-pink hover:text-osu-pink/80 bg-osu-pink/10 hover:bg-osu-pink/15 rounded-xl transition-all duration-200"
                 >
-                  登录
+                  {t('nav.login')}
                 </Link>
               </motion.div>
             )}
