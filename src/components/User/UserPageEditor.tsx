@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { userAPI } from '../../utils/api';
 import type { UserPage, User } from '../../types';
 import BBCodeEditor from './BBCodeEditor';
@@ -19,6 +20,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
   onSaved,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   
   const [content, setContent] = useState('');
@@ -45,7 +47,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       setHasChanges(false);
       setLoading(false);
     } else {
-      setError('您没有权限编辑此用户的页面');
+      setError(t('profile.userPage.noEditPermission'));
       setLoading(false);
     }
   }, [user, canEdit]);
@@ -68,7 +70,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       setOriginalContent(content);
       setHasChanges(false);
       setError(null);
-      setSuccessMessage('个人页面已保存成功！');
+      setSuccessMessage(t('profile.userPage.saveSuccess'));
 
       if (onSaved) {
         onSaved({
@@ -85,7 +87,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       }, 1500);
     } catch (err: any) {
       console.error('Failed to save user page:', err);
-      const errorMessage = err.response?.data?.error || '保存失败，请重试';
+      const errorMessage = err.response?.data?.error || t('profile.userPage.saveError');
       setError(errorMessage);
       setSuccessMessage(null);
     } finally {
@@ -96,7 +98,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
   // 取消编辑
   const handleCancel = () => {
     if (hasChanges) {
-      if (window.confirm('您有未保存的更改，确定要放弃编辑吗？')) {
+      if (window.confirm(t('profile.userPage.confirmDiscard'))) {
         setContent(originalContent);
         setHasChanges(false);
         if (onClose) {
@@ -136,7 +138,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 ${className}`}>
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <span className="ml-3 text-gray-600 dark:text-gray-400">加载编辑器中...</span>
+          <span className="ml-3 text-gray-600 dark:text-gray-400">{t('profile.userPage.loadingEditor')}</span>
         </div>
       </div>
     );
@@ -148,7 +150,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
         <div className="text-center py-12">
           <FaEdit className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            无法编辑此页面
+            {t('profile.userPage.cannotEditPage')}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             {error}
@@ -174,10 +176,10 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
           <FaEdit className="w-5 h-5 text-pink-500" />
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              编辑个人页面
+              {t('profile.userPage.editPageTitle')}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              为 {user.username} 编辑个人介绍
+              {t('profile.userPage.editPageSubtitle', { username: user.username })}
             </p>
           </div>
         </div>
@@ -185,7 +187,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
         <div className="flex items-center gap-2">
           {hasChanges && (
             <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2 py-1 rounded">
-              有未保存的更改
+              {t('profile.userPage.unsavedChanges')}
             </span>
           )}
           
@@ -193,7 +195,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
             onClick={handleCancel}
             disabled={saving}
             className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="取消编辑 (Esc)"
+            title={t('profile.userPage.cancelEditTooltip')}
           >
             <FaTimes className="w-4 h-4 text-gray-600 dark:text-gray-400" />
           </button>
@@ -203,10 +205,10 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       {/* 编辑器 */}
       <div className="p-4">
         <BBCodeEditor
-          title="个人介绍"
+          title={t('profile.userPage.title')}
           value={content}
           onChange={setContent}
-          placeholder={`为 ${user.username} 编写个人介绍...\n\n你可以使用BBCode格式化文本，比如：\n[b]粗体文本[/b]\n[i]斜体文本[/i]\n[color=red]彩色文本[/color]\n\n点击工具栏按钮或使用快捷键来快速插入格式。`}
+          placeholder={t('profile.userPage.editorPlaceholder', { username: user.username })}
           disabled={saving}
           className="min-h-[400px]"
         />
@@ -233,9 +235,9 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
         <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <span>字数: {content.length}/60000</span>
           <span>•</span>
-          <span>支持BBCode格式</span>
+          <span>{t('profile.userPage.supportsBBCode')}</span>
           <span>•</span>
-          <span>Ctrl+S 保存</span>
+          <span>{t('profile.userPage.saveShortcut')}</span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -244,7 +246,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
             disabled={saving}
             className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            取消
+            {t('profile.userPage.cancel')}
           </button>
           
           <button
@@ -255,12 +257,12 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
             {saving ? (
               <>
                 <LoadingSpinner size="sm" />
-                <span>保存中...</span>
+                <span>{t('profile.userPage.saving')}</span>
               </>
             ) : (
               <>
                 <FaSave className="w-4 h-4" />
-                <span>保存</span>
+                <span>{t('profile.userPage.save')}</span>
               </>
             )}
           </button>

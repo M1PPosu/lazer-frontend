@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaTimes, FaSave } from 'react-icons/fa';
 import type { User } from '../../types';
 import BBCodeEditor from './BBCodeEditor';
@@ -18,6 +19,7 @@ const UserPageEditModal: React.FC<UserPageEditModalProps> = ({
   user,
   onSave,
 }) => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -89,8 +91,8 @@ const UserPageEditModal: React.FC<UserPageEditModalProps> = ({
       onSave(updatedUser);
       onClose();
     } catch (error) {
-      console.error('保存失败:', error);
-      // 这里可以添加错误提示
+      console.error('Save failed:', error);
+      // Error notification can be added here
     } finally {
       setIsSaving(false);
     }
@@ -169,7 +171,7 @@ const UserPageEditModal: React.FC<UserPageEditModalProps> = ({
         {/* 头部 */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            编辑个人介绍
+            {t('profile.userPage.editTitle')}
           </h2>
           <button
             onClick={onClose}
@@ -182,10 +184,10 @@ const UserPageEditModal: React.FC<UserPageEditModalProps> = ({
         {/* 内容 */}
         <div className="p-4 md:p-6 overflow-y-auto flex-1">
           <BBCodeEditor
-            title="个人介绍"
+            title={t('profile.userPage.title')}
             value={content}
             onChange={setContent}
-            placeholder="使用 BBCode 编写你的个人介绍..."
+            placeholder={t('profile.userPage.placeholder')}
             className="min-h-[60vh] h-full"
           />
         </div>
@@ -197,7 +199,7 @@ const UserPageEditModal: React.FC<UserPageEditModalProps> = ({
             disabled={isSaving}
             className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors disabled:opacity-50"
           >
-            取消
+            {t('profile.userPage.cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -207,12 +209,12 @@ const UserPageEditModal: React.FC<UserPageEditModalProps> = ({
             {isSaving ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                保存中...
+                {t('profile.userPage.saving')}
               </>
             ) : (
               <>
                 <FaSave className="w-4 h-4" />
-                保存
+                {t('profile.userPage.save')}
               </>
             )}
           </button>

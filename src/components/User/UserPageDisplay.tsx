@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import type { User } from '../../types';
+import { useTranslation } from 'react-i18next';
+import type { User, UserPage } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { FaEdit, FaUser } from 'react-icons/fa';
 import ContentContainer from '../UI/ContentContainer';
@@ -17,6 +18,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
   onUserUpdate,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -65,21 +67,21 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
             <div className="flex items-center gap-3 mb-8">
               <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                个人介绍
+                {t('profile.userPage.title')}
               </h3>
             </div>
             
             {/* 中心内容 */}
             <div className="flex-1 flex flex-col items-center justify-center text-center">
               <p className="text-gray-600 dark:text-gray-400 mb-8">
-                还没有写个人介绍
+                {t('profile.userPage.noContent')}
               </p>
               <button
                 onClick={handleEditClick}
                 className="flex items-center gap-2 px-6 py-3 bg-osu-pink hover:bg-pink-600 text-white rounded-lg transition-colors"
               >
                 <FaEdit className="w-4 h-4" />
-                <span>编写个人介绍</span>
+                <span>{t('profile.userPage.writeButton')}</span>
               </button>
             </div>
           </div>
@@ -90,7 +92,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
             <div className="flex items-center gap-3 mb-12">
               <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                个人介绍
+                {t('profile.userPage.title')}
               </h3>
             </div>
             
@@ -98,10 +100,10 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
             <div className="flex-1 flex flex-col items-center justify-center text-center">
               <FaUser className="w-16 h-16 text-gray-400 mx-auto mb-6" />
               <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {user.username} 还没有写个人介绍
+                {user.username} {t('profile.userPage.noContent')}
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
-                这里还是空的
+                {t('profile.userPage.noContent')}
               </p>
             </div>
           </div>
@@ -126,7 +128,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            个人介绍
+            {t('profile.userPage.title')}
           </h3>
         </div>
         {canEdit && (
@@ -135,7 +137,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
             className="flex items-center gap-2 px-4 py-2 text-sm bg-osu-pink hover:bg-pink-600 text-white rounded-lg transition-colors"
           >
             <FaEdit className="w-3 h-3" />
-            <span>编辑</span>
+            <span>{t('profile.userPage.editButton')}</span>
           </button>
         )}
       </div>
@@ -150,7 +152,7 @@ const UserPageDisplay: React.FC<UserPageDisplayProps> = ({
             <div dangerouslySetInnerHTML={{ __html: parseBBCode(String(userPage.raw || '')).html }} />
           ) : (
             <div className="text-gray-500 dark:text-gray-400 italic">
-              内容正在处理中...
+              {t('profile.userPage.processing')}
             </div>
           )}
         </div>

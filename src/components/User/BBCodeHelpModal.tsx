@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaTimes } from 'react-icons/fa';
 
 interface BBCodeHelpModalProps {
@@ -7,6 +8,8 @@ interface BBCodeHelpModalProps {
 }
 
 const BBCodeHelpModal: React.FC<BBCodeHelpModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
+  
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -106,7 +109,7 @@ const BBCodeHelpModal: React.FC<BBCodeHelpModalProps> = ({ isOpen, onClose }) =>
         <div className="p-6 overflow-y-auto flex-1">
           <div className="space-y-6">
             <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              BBCode 是一种轻量级标记语言，用于格式化文本。您可以使用以下标签来美化您的个人介绍：
+              {t('profile.userPage.bbcodeDescription')}
             </div>
 
             {bbcodeTags.map((category, categoryIndex) => (
@@ -144,7 +147,7 @@ const BBCodeHelpModal: React.FC<BBCodeHelpModalProps> = ({ isOpen, onClose }) =>
                 <li>• 标签必须正确配对，开始和结束标签要对应</li>
                 <li>• 某些标签如 [color] 和 [size] 需要参数</li>
                 <li>• 可以使用工具栏按钮快速插入标签</li>
-                <li>• 使用预览功能查看最终效果</li>
+                <li>• {t('profile.userPage.usePreview')}</li>
               </ul>
             </div>
           </div>

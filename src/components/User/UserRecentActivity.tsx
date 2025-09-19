@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { userAPI } from '../../utils/api';
 import type { UserActivity } from '../../types';
 import LoadingSpinner from '../UI/LoadingSpinner';
@@ -10,28 +11,28 @@ interface UserRecentActivityProps {
 }
 
 // 时间格式化函数
-const formatTimeAgo = (dateString: string): string => {
+const formatTimeAgo = (dateString: string, t: any): string => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return '刚刚';
+    return t('profile.activities.timeAgo.justNow');
   } else if (diffInSeconds < 3600) {
     const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes}分钟前`;
+    return t('profile.activities.timeAgo.minutesAgo', { count: minutes });
   } else if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours}小时前`;
+    return t('profile.activities.timeAgo.hoursAgo', { count: hours });
   } else if (diffInSeconds < 2592000) {
     const days = Math.floor(diffInSeconds / 86400);
-    return `${days}天前`;
+    return t('profile.activities.timeAgo.daysAgo', { count: days });
   } else if (diffInSeconds < 31536000) {
     const months = Math.floor(diffInSeconds / 2592000);
-    return `${months}个月前`;
+    return t('profile.activities.timeAgo.monthsAgo', { count: months });
   } else {
     const years = Math.floor(diffInSeconds / 31536000);
-    return `${years}年前`;
+    return t('profile.activities.timeAgo.yearsAgo', { count: years });
   }
 };
 
@@ -103,12 +104,12 @@ const getActivityIcon = (type: string) => {
 };
 
 // 获取活动描述
-const getActivityDescription = (activity: UserActivity) => {
+const getActivityDescription = (activity: UserActivity, t: any) => {
   switch (activity.type) {
     case 'rank':
       return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-          <span className="text-xs sm:text-sm">在</span>
+          <span className="text-xs sm:text-sm">{t('profile.activities.types.rank.prefix')}</span>
           <a 
             href={activity.beatmap?.url}
             target="_blank"
@@ -118,7 +119,7 @@ const getActivityDescription = (activity: UserActivity) => {
           >
             {activity.beatmap?.title}
           </a>
-          <span className="text-xs sm:text-sm">中获得了</span>
+          <span className="text-xs sm:text-sm">{t('profile.activities.types.rank.middle')}</span>
           {activity.scorerank && (
             <img 
               src={getRankIcon(activity.scorerank || 'C')} 
@@ -126,10 +127,10 @@ const getActivityDescription = (activity: UserActivity) => {
               className="w-5 h-5"
             />
           )}
-          <span className="text-xs sm:text-sm">评级</span>
+          <span className="text-xs sm:text-sm">{t('profile.activities.types.rank.grade')}</span>
           {activity.rank && (
             <>
-              <span className="text-xs sm:text-sm">排名第</span>
+              <span className="text-xs sm:text-sm">{t('profile.activities.types.rank.rankPrefix')}</span>
               <span className="font-bold text-yellow-600 dark:text-yellow-400 text-xs sm:text-sm">#{activity.rank}</span>
             </>
           )}
@@ -138,7 +139,7 @@ const getActivityDescription = (activity: UserActivity) => {
     case 'rank_lost':
       return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-          <span className="text-xs sm:text-sm">在</span>
+          <span className="text-xs sm:text-sm">{t('profile.activities.types.rankLost.prefix')}</span>
           <a 
             href={activity.beatmap?.url}
             target="_blank"
@@ -148,13 +149,13 @@ const getActivityDescription = (activity: UserActivity) => {
           >
             {activity.beatmap?.title}
           </a>
-          <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">中失去了第一名</span>
+          <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('profile.activities.types.rankLost.suffix')}</span>
         </div>
       );
     case 'achievement':
       return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-          <span className="text-xs sm:text-sm">获得了成就</span>
+          <span className="text-xs sm:text-sm">{t('profile.activities.types.achievement')}</span>
           {activity.achievement && (
             <>
               <AchievementIcon 
@@ -178,7 +179,7 @@ const getActivityDescription = (activity: UserActivity) => {
     case 'beatmapset_upload':
       return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-          <span className="text-xs sm:text-sm">上传了谱面</span>
+          <span className="text-xs sm:text-sm">{t('profile.activities.types.beatmapUpload')}</span>
           {activity.beatmap && (
             <a 
               href={activity.beatmap.url}
@@ -195,7 +196,7 @@ const getActivityDescription = (activity: UserActivity) => {
     case 'beatmapset_approve':
       return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-          <span className="text-xs sm:text-sm">谱面被ranked：</span>
+          <span className="text-xs sm:text-sm">{t('profile.activities.types.beatmapRanked')}:</span>
           {activity.beatmap && (
             <a 
               href={activity.beatmap.url}
@@ -210,19 +211,20 @@ const getActivityDescription = (activity: UserActivity) => {
         </div>
       );
     case 'username_change':
-      return <span className="text-xs sm:text-sm">更改了用户名</span>;
+      return <span className="text-xs sm:text-sm">{t('profile.activities.types.usernameChange')}</span>;
     case 'user_support_again':
-      return <span className="text-xs sm:text-sm">再次成为了Supporter</span>;
+      return <span className="text-xs sm:text-sm">{t('profile.activities.types.supportAgain')}</span>;
     case 'user_support_first':
-      return <span className="text-xs sm:text-sm">首次成为了Supporter</span>;
+      return <span className="text-xs sm:text-sm">{t('profile.activities.types.supportFirst')}</span>;
     case 'user_support_gift':
-      return <span className="text-xs sm:text-sm">获得了Supporter赠送</span>;
+      return <span className="text-xs sm:text-sm">{t('profile.activities.types.supportGift')}</span>;
     default:
-      return <span className="text-xs sm:text-sm">进行了活动</span>;
+      return <span className="text-xs sm:text-sm">{t('profile.activities.types.activity')}</span>;
   }
 };
 
 const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, className = '' }) => {
+  const { t } = useTranslation();
   const [activities, setActivities] = useState<UserActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -285,7 +287,7 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
           <div className="flex items-center gap-3">
             <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              最近活动
+              {t('profile.activities.title')}
             </h3>
           </div>
         </div>
@@ -301,7 +303,7 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
           <div className="flex items-center gap-3">
             <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              最近活动
+              {t('profile.activities.title')}
             </h3>
           </div>
         </div>
@@ -318,14 +320,14 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 bg-osu-pink rounded-full"></div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            最近活动
+            {t('profile.activities.title')}
           </h3>
         </div>
       </div>
       
       {activities.length === 0 ? (
         <div className="text-center text-gray-500 dark:text-gray-400 py-6 text-sm">
-          暂无最近活动
+          {t('profile.activities.noActivities')}
         </div>
       ) : (
         <div className="space-y-2">
@@ -340,7 +342,7 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
               
               <div className="flex-grow min-w-0">
                 <div className="text-gray-900 dark:text-gray-100">
-                  {getActivityDescription(activity)}
+                  {getActivityDescription(activity, t)}
                 </div>
                 {/* 手机端时间显示在描述下方 */}
                 <div className="flex items-center gap-2 mt-1 sm:hidden">
@@ -350,7 +352,7 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
                     </span>
                   )}
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatTimeAgo(activity.createdAt)}
+                    {formatTimeAgo(activity.createdAt, t)}
                   </div>
                 </div>
               </div>
@@ -363,7 +365,7 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
                   </span>
                 )}
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatTimeAgo(activity.createdAt)}
+                  {formatTimeAgo(activity.createdAt, t)}
                 </div>
               </div>
             </div>
@@ -382,7 +384,7 @@ const UserRecentActivity: React.FC<UserRecentActivityProps> = ({ userId, classNa
                     <span>加载中...</span>
                   </>
                 ) : (
-                  <span>加载更多</span>
+                  <span>{t('profile.activities.loadMore')}</span>
                 )}
               </button>
             </div>

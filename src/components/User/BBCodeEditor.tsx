@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { BBCodeValidationResponse } from '../../types';
 import { 
   FaBold, FaItalic, FaUnderline, FaStrikethrough, FaImage, FaLink, 
@@ -31,12 +32,13 @@ interface BBCodeTool {
 const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
   value,
   onChange,
-  placeholder = '在这里输入BBCode内容...',
+  placeholder,// = t('profile.bbcodeEditor.placeholder'),
   className = '',
   maxLength = 60000,
   disabled = false,
   title, // 新增标题参数
 }) => {
+  const { t } = useTranslation();
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [validationResult, setValidationResult] = useState<BBCodeValidationResponse | null>(null);
@@ -71,7 +73,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
           });
         } catch (error) {
           console.error('BBCode validation error:', error);
-          setValidationError('验证失败，请检查网络连接');
+          setValidationError(t('profile.bbcodeEditor.validation.networkError'));
           setValidationResult(null);
         } finally {
           setValidationLoading(false);
@@ -135,115 +137,115 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
     // 基础格式化
     {
       icon: FaBold,
-      tooltip: '粗体 (Ctrl+B)',
+      tooltip: `${t('profile.bbcodeEditor.toolbar.bold')} (Ctrl+B)`,
       shortcut: 'ctrl+b',
-      action: () => insertBBCode('[b]', '[/b]', '粗体文本'),
+      action: () => insertBBCode('[b]', '[/b]', t('profile.bbcodeEditor.insertText.bold')),
     },
     {
       icon: FaItalic,
-      tooltip: '斜体 (Ctrl+I)',
+      tooltip: `${t('profile.bbcodeEditor.toolbar.italic')} (Ctrl+I)`,
       shortcut: 'ctrl+i',
-      action: () => insertBBCode('[i]', '[/i]', '斜体文本'),
+      action: () => insertBBCode('[i]', '[/i]', t('profile.bbcodeEditor.insertText.italic')),
     },
     {
       icon: FaUnderline,
-      tooltip: '下划线 (Ctrl+U)',
+      tooltip: `${t('profile.bbcodeEditor.toolbar.underline')} (Ctrl+U)`,
       shortcut: 'ctrl+u',
-      action: () => insertBBCode('[u]', '[/u]', '下划线文本'),
+      action: () => insertBBCode('[u]', '[/u]', t('profile.bbcodeEditor.insertText.underline')),
     },
     {
       icon: FaStrikethrough,
-      tooltip: '删除线',
-      action: () => insertBBCode('[strike]', '[/strike]', '删除线文本'),
+      tooltip: t('profile.bbcodeEditor.toolbar.strikethrough'),
+      action: () => insertBBCode('[strike]', '[/strike]', t('profile.bbcodeEditor.insertText.strikethrough')),
     },
     {
       icon: FaPalette,
-      tooltip: '颜色',
-      action: () => insertBBCode('[color=red]', '[/color]', '彩色文本'),
+      tooltip: t('profile.bbcodeEditor.toolbar.color'),
+      action: () => insertBBCode('[color=red]', '[/color]', t('profile.bbcodeEditor.insertText.colorText')),
     },
     {
       icon: FaFont,
-      tooltip: '字体大小',
-      action: () => insertBBCode('[size=100]', '[/size]', '文本'),
+      tooltip: t('profile.bbcodeEditor.toolbar.fontSize'),
+      action: () => insertBBCode('[size=100]', '[/size]', t('profile.bbcodeEditor.insertText.text')),
     },
     
     // 内容插入
     {
       icon: FaImage,
-      tooltip: '插入图片',
+      tooltip: t('profile.bbcodeEditor.toolbar.image'),
       action: () => insertBBCode('[img]', '[/img]', 'https://example.com/image.jpg'),
     },
     {
       icon: FaLink,
-      tooltip: '插入链接',
-      action: () => insertBBCode('[url=', ']链接文本[/url]', 'https://example.com'),
+      tooltip: t('profile.bbcodeEditor.toolbar.link'),
+      action: () => insertBBCode('[url=', `]${t('profile.bbcodeEditor.insertText.linkText')}[/url]`, 'https://example.com'),
     },
     {
       icon: FaUser,
-      tooltip: '用户主页链接',
-      action: () => insertBBCode('[profile=', ']用户名[/profile]', '123456'),
+      tooltip: t('profile.bbcodeEditor.toolbar.userProfile'),
+      action: () => insertBBCode('[profile=', `]${t('profile.bbcodeEditor.insertText.username')}[/profile]`, '123456'),
     },
     {
       icon: FaEnvelope,
-      tooltip: '邮箱链接',
-      action: () => insertBBCode('[email=', ']邮箱链接[/email]', 'example@example.com'),
+      tooltip: t('profile.bbcodeEditor.toolbar.email'),
+      action: () => insertBBCode('[email=', `]${t('profile.bbcodeEditor.insertText.emailLink')}[/email]`, 'example@example.com'),
     },
     {
       icon: FaYoutube,
-      tooltip: 'YouTube视频',
+      tooltip: t('profile.bbcodeEditor.toolbar.youtube'),
       action: () => insertBBCode('[youtube]', '[/youtube]', 'dQw4w9WgXcQ'),
     },
     {
       icon: FaMusic,
-      tooltip: '音频',
+      tooltip: t('profile.bbcodeEditor.toolbar.audio'),
       action: () => insertBBCode('[audio]', '[/audio]', 'https://example.com/audio.mp3'),
     },
     {
       icon: FaMapMarked,
-      tooltip: '图片映射',
-      action: () => insertBBCode('[imagemap]\n', '\n10.0 10.0 30.0 20.0 https://example.com 点击访问网站\n50.0 30.0 40.0 25.0 # 这是信息区域\n[/imagemap]', 'https://example.com/image.jpg'),
+      tooltip: t('profile.bbcodeEditor.toolbar.imagemap'),
+      action: () => insertBBCode('[imagemap]\n', `\n10.0 10.0 30.0 20.0 https://example.com ${t('profile.bbcodeEditor.insertText.clickToVisit')}\n50.0 30.0 40.0 25.0 # ${t('profile.bbcodeEditor.insertText.infoArea')}\n[/imagemap]`, 'https://example.com/image.jpg'),
     },
     
     // 结构化内容
     {
       icon: FaQuoteLeft,
-      tooltip: '引用',
-      action: () => insertBBCode('[quote]', '[/quote]', '引用内容'),
+      tooltip: t('profile.bbcodeEditor.toolbar.quote'),
+      action: () => insertBBCode('[quote]', '[/quote]', t('profile.bbcodeEditor.insertText.quoteContent')),
     },
     {
       icon: FaCode,
-      tooltip: '代码块',
-      action: () => insertBBCode('[code]', '[/code]', '代码内容'),
+      tooltip: t('profile.bbcodeEditor.toolbar.code'),
+      action: () => insertBBCode('[code]', '[/code]', t('profile.bbcodeEditor.insertText.codeContent')),
     },
     {
       icon: FaList,
-      tooltip: '列表',
-      action: () => insertBBCode('[list]\n[*]', '\n[*]项目2\n[/list]', '项目1'),
+      tooltip: t('profile.bbcodeEditor.toolbar.list'),
+      action: () => insertBBCode('[list]\n[*]', `\n[*]${t('profile.bbcodeEditor.insertText.item2')}\n[/list]`, t('profile.bbcodeEditor.insertText.item1')),
     },
     {
       icon: FaBox,
-      tooltip: '折叠框',
-      action: () => insertBBCode('[box=标题]', '[/box]', '折叠内容'),
+      tooltip: t('profile.bbcodeEditor.toolbar.box'),
+      action: () => insertBBCode(`[box=${t('profile.bbcodeEditor.insertText.title')}]`, '[/box]', t('profile.bbcodeEditor.insertText.collapsibleContent')),
     },
     {
       icon: FaMask,
-      tooltip: '剧透条',
-      action: () => insertBBCode('[spoiler]', '[/spoiler]', '剧透内容'),
+      tooltip: t('profile.bbcodeEditor.toolbar.spoiler'),
+      action: () => insertBBCode('[spoiler]', '[/spoiler]', t('profile.bbcodeEditor.insertText.spoilerContent')),
     },
     {
       icon: FaAlignCenter,
-      tooltip: '居中对齐',
-      action: () => insertBBCode('[centre]', '[/centre]', '居中文本'),
+      tooltip: t('profile.bbcodeEditor.toolbar.center'),
+      action: () => insertBBCode('[centre]', '[/centre]', t('profile.bbcodeEditor.insertText.centerText')),
     },
     {
       icon: FaHeading,
-      tooltip: '标题',
-      action: () => insertBBCode('[heading]', '[/heading]', '标题文本'),
+      tooltip: t('profile.bbcodeEditor.toolbar.heading'),
+      action: () => insertBBCode('[heading]', '[/heading]', t('profile.bbcodeEditor.insertText.headingText')),
     },
     {
       icon: FaExclamationTriangle,
-      tooltip: '通知框',
-      action: () => insertBBCode('[notice]', '[/notice]', '重要通知'),
+      tooltip: t('profile.bbcodeEditor.toolbar.notice'),
+      action: () => insertBBCode('[notice]', '[/notice]', t('profile.bbcodeEditor.insertText.importantNotice')),
     },
   ];
 
@@ -407,12 +409,12 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
             {isPreviewMode ? (
               <>
                 <FaEyeSlash className="w-3 h-3" />
-                <span className="hidden sm:inline">编辑</span>
+                <span className="hidden sm:inline">{t('profile.bbcodeEditor.modes.edit')}</span>
               </>
             ) : (
               <>
                 <FaEye className="w-3 h-3" />
-                <span className="hidden sm:inline">预览</span>
+                <span className="hidden sm:inline">{t('profile.bbcodeEditor.modes.preview')}</span>
               </>
             )}
           </button>
@@ -440,7 +442,7 @@ const BBCodeEditor: React.FC<BBCodeEditorProps> = ({
               />
             ) : (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
-                {value.trim() ? '无法生成预览' : '输入内容以查看预览'}
+                {value.trim() ? t('profile.bbcodeEditor.preview.generateFailed') : t('profile.bbcodeEditor.preview.noContent')}
               </div>
             )}
           </div>

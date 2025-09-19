@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Avatar from '../UI/Avatar';
 import GameModeSelector from '../UI/GameModeSelector';
 import RankHistoryChart from '../UI/RankHistoryChart';
@@ -90,6 +91,7 @@ const CoverImage: React.FC<{ src?: string; alt?: string }> = ({ src, alt = 'cove
 };
 
 const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMode, onModeChange, onUserUpdate }) => {
+  const { t } = useTranslation();
   const { refreshUser, user: currentUser } = useAuth();
   const navigate = useNavigate();
   
@@ -140,7 +142,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
         {/* 头部栏 + 模式选择（与头图同容器） */}
         <div className="relative overflow-hidden">
           <div className="bg-white/95 dark:bg-gray-900/85 text-gray-900 dark:text-gray-100 px-3 md:px-4 py-2 flex items-center justify-between md:rounded-t-2xl border-b border-gray-100/70 dark:border-white/10">
-            <div className="text-base md:text-lg font-bold">玩家信息</div>
+            <div className="text-base md:text-lg font-bold">{t('profile.info.title')}</div>
             <div className="flex items-center gap-2 md:gap-3">
               {/* 右侧模式按钮们（来自你的 GameModeSelector） */}
               <GameModeSelector
@@ -160,7 +162,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
             <button 
               onClick={handleEditClick}
               className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-7 h-7 md:w-9 md:h-9 rounded-full bg-black/50 text-white grid place-items-center edit-button-shadow text-xs md:text-sm hover:bg-black/70 transition-colors" 
-              aria-label="编辑封面"
+              aria-label={t('profile.userPage.editCover')}
             >
               <BiSolidPencil />
             </button>
@@ -241,11 +243,11 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
               {/* 排名 */}
               <div className="flex gap-8 p-3 md:rounded-lg md:rank-card-shadow mb-[20px] ml-0 md:ml-[-10px]">
                 <div className="text-center">
-                  <div className="text-gray-500 dark:text-gray-400 mb-[-5px] mb-1 text-[12px]">全球排名</div>
+                  <div className="text-gray-500 dark:text-gray-400 mb-[-5px] mb-1 text-[12px]">{t('profile.info.globalRank')}</div>
                   <div className="font-bold text-primary text-[20px]">#{stats?.global_rank ?? '—'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-gray-500 dark:text-gray-400 mb-[-5px] text-[12px]">地区排名</div>
+                  <div className="text-gray-500 dark:text-gray-400 mb-[-5px] text-[12px]">{t('profile.info.countryRank')}</div>
                   <div className="font-bold text-primary text-[20px]">#{stats?.country_rank ?? '—'}</div>
                 </div>
               </div>
@@ -320,7 +322,7 @@ const UserProfileLayout: React.FC<UserProfileLayoutProps> = ({ user, selectedMod
           <div className="flex justify-center items-center h-full">
             <p className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
               <FaTools className="text-lg" />
-              剩下数据正在努力施工中
+              {t('profile.info.underConstruction')}
             </p>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import {
   FiUserPlus,
   FiShield,
@@ -65,6 +66,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
   className = "",
   isSelf = false,
 }) => {
+  const { t } = useTranslation();
   const { isFriend, isBlocked, isMutual, followsMe, loading } = status;
   const [isOpen, setIsOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -112,7 +114,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
       return [
         {
           key: "unblock",
-          label: "取消屏蔽",
+          label: t('profile.friendActions.unblock'),
           icon: (
             <span className="relative flex items-center justify-center w-4 h-4">
               <FiShieldOff className="w-4 h-4" />
@@ -130,7 +132,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
       const items = [
         {
           key: "remove",
-          label: isMutual ? "取消互相关注" : "取消关注",
+          label: isMutual ? t('profile.friendActions.cancelMutualFollow') : t('profile.friendActions.unfollow'),
           icon: (
             <span className="relative flex items-center justify-center w-4 h-4">
               {isMutual ? (
@@ -158,7 +160,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
       // 添加屏蔽选项
       items.push({
         key: "block",
-        label: "屏蔽用户",
+        label: t('profile.friendActions.block'),
         icon: (
           <span className="relative flex items-center justify-center w-4 h-4">
             <FiShield className="w-4 h-4" />
@@ -176,7 +178,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
     const items = [
       {
         key: "add",
-        label: followsMe ? "回关 (互相关注)" : "关注",
+        label: followsMe ? t('profile.friendActions.followBack') : t('profile.friendActions.follow'),
         icon: (
           <span className="relative flex items-center justify-center w-4 h-4">
             {followsMe ? (
@@ -204,7 +206,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
     // 添加屏蔽选项
     items.push({
       key: "block",
-      label: "屏蔽用户",
+      label: t('profile.friendActions.block'),
       icon: (
         <span className="relative flex items-center justify-center w-4 h-4">
           <FiShield className="w-4 h-4" />
@@ -216,7 +218,7 @@ const FriendActions: React.FC<FriendActionsProps> = ({
     });
 
     return items;
-  }, [isSelf, isBlocked, isFriend, isMutual, followsMe, onAdd, onRemove, onBlock, onUnblock]);
+  }, [isSelf, isBlocked, isFriend, isMutual, followsMe, onAdd, onRemove, onBlock, onUnblock, t]);
 
   // 获取主按钮的图标 - osu! 单向好友系统
   const getMainIcon = () => {
@@ -282,17 +284,17 @@ const FriendActions: React.FC<FriendActionsProps> = ({
 
   // 获取按钮状态文本 - osu! 单向好友系统
   const getButtonStatusText = () => {
-    if (isSelf) return "自己的资料";
-    if (isBlocked) return "已屏蔽该用户";
+    if (isSelf) return t('profile.friendActions.selfProfile');
+    if (isBlocked) return t('profile.friendActions.blocked');
     if (isFriend) {
       if (isMutual) {
-        return "互相关注 - 你们相互关注";
+        return t('profile.friendActions.mutualFollow');
       } else {
-        return "已关注 - 你关注了此用户";
+        return t('profile.friendActions.following');
       }
     }
-    if (followsMe) return "关注你的用户 - 对方关注了你";
-    return "未关注 - 点击查看关注选项";
+    if (followsMe) return t('profile.friendActions.followsYou');
+    return t('profile.friendActions.notFollowing');
   };
 
   // 是否显示下拉箭头
