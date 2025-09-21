@@ -564,7 +564,7 @@ export const pages = {
     },
   },
   
-  {
+  
   "howToJoin": {
     "title": "如何加入服务器",
     "subtitle": "有两种方式连接到我们的服务器",
@@ -630,8 +630,7 @@ export const pages = {
         "description": "虽然 ppy 明确声明不对 ruleset 进行反作弊检测，但我们建议您尽量不要将安装 AuthLibInject 后的 osu!lazer 客户端连接到官方服务器，可能会导致账号被封禁！"
       }
     }
-  }
-},
+  },
   
   footer: {
     copyright: '© 2025 g0v0.top. 为节奏游戏玩家提供最佳体验',
