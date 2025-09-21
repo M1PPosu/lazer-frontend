@@ -564,73 +564,74 @@ export const pages = {
     },
   },
   
-  // How to join page
-  howToJoin: {
-    title: 'How to Join the Server',
-    subtitle: 'There are two ways to connect to our server',
-    copyFailed: 'Copy failed:',
-    clickToCopy: 'Click to copy',
-    
-    method1: {
-      title: 'Use our Custom Client',
-      recommended: 'Recommended',
-      description: 'This method is recommended for all users who can run osu!lazer on their platform.',
-      steps: {
-        title: 'Steps:',
-        step1: {
-          title: 'Download g0v0! Custom Client',
-          pcVersion: 'PC Version:',
-          androidVersion: 'Android Version:',
-          downloadPc: 'Download PC g0v0! Client',
-          downloadAndroidDomestic: 'Domestic Download',
-          downloadAndroidOverseas: 'Overseas Download',
+  
+  "howToJoin": {
+    "title": "How to Join the Server",
+    "subtitle": "There are two ways to connect to our server",
+    "copyFailed": "Copy failed:",
+    "clickToCopy": "Click to copy",
+    "method1": {
+      "title": "Using Our Custom Client",
+      "recommended": "Recommended",
+      "description": "This method is recommended for all users who can run osu!lazer on their platform.",
+      "steps": {
+        "title": "Steps:",
+        "step1": {
+          "title": "Download g0v0! Custom Client",
+          "pcVersion": "PC Version:",
+          "androidVersion": "Android Version:",
+          "downloadPc": "Download from GitHub Releases",
+          "downloadAndroidDomestic": "Download (China Only)",
+          "downloadAndroidOverseas": "Download (For global network)"
         },
-        step2: {
-          title: 'Launch the game, open Settings → Online, and enter in the "Custom API Server URL" field:',
-          clickToView: 'Click image to view larger:',
-          settingExample: 'Settings example',
+        "step2": {
+          "title": "Launch the game, go to Settings → Online, and enter in the \"Custom API Server URL\" field:",
+          "description": "In the osu!lazer settings, go to the “Online” section, find the “Custom API Server URL” setting, and enter the following text in the input box:",
+          "imageHint": "As shown in the image"
         },
-        step3: {
-          title: 'Restart the game and start enjoying!',
-        },
-      },
+        "step3": {
+          "title": "Restart the game and enjoy!",
+          "description": "After entering the URL, exit osu!lazer and restart it for the changes to take effect."
+        }
+      }
     },
-    
-    method2: {
-      title: 'Use Authlib Injector (for x86_64 platforms)',
-      suitableFor: 'This method is suitable for the following users:',
-      platforms: [
-        'Windows (x64 or x86 platform)',
-        'Linux (x64 or x86 platform)',
-        'Non-Apple Silicon Mac (such as MacBooks from before 2020)',
-      ],
-      steps: {
-        title: 'Steps:',
-        step1: {
-          title: 'Download LazerAuthlibInjection',
-          button: 'Download LazerAuthlibInjection',
-        },
-        step2: {
-          title: 'Install it as a ruleset in osu!lazer',
-          description: 'Install the downloaded LazerAuthlibInjection as a ruleset in osu!lazer',
-        },
-        step3: {
-          title: 'Launch the game, go to Settings → Rulesets, then fill in the following information:',
-          description: 'Configure server connection information in game settings',
-          apiUrl: 'API URL:',
-          websiteUrl: 'Website URL:',
-        },
-        step4: {
-          title: 'After seeing the "API settings changed" notification, restart the client and start enjoying the game!',
-          description: 'Restart the client after completing the setup to connect to the server',
-        },
+    "method2": {
+      "title": "Using LazerAuthlibInjection (x86_64 Platforms Only)",
+      "suitableFor": "This method is suitable for the following users:",
+      "platforms": {
+        "windows": "Windows users. (WOA Temporarily Not Supported)",
+        "linux": "Any Linux Distributions. (arm64 and any other arm devices not supported)",
+        "mac": "macOS. (Apple Silicon are not supported)"
       },
-      warning: {
-        title: 'Important Notice',
-        description: 'If you use this method\'s installation patch, please do not log in and play on the official server. Otherwise, your account may be banned. Please use with caution.',
+      "steps": {
+        "title": "Steps:",
+        "step1": {
+          "title": "Download LazerAuthlibInjection",
+          "download": "Download from GitHub Releases",
+          "button": "Download LazerAuthlibInjection"
+        },
+        "step2": {
+          "title": "Install it as a ruleset into osu!lazer",
+          "description": "Install the downloaded LazerAuthlibInjection as a ruleset into osu!lazer"
+        },
+        "step3": {
+          "title": "Launch the game, go to Settings → Game Mode, and enter the following information:",
+          "description": "Configure the server connection info in the game settings",
+          "apiUrl": "API URL:",
+          "websiteUrl": "Website URL:"
+        },
+        "step4": {
+          "title": "After seeing the 'API Settings Changed' notification, restart the client and enjoy!",
+          "description": "After completing the setup, restart the client to connect to the server"
+        }
       },
-    },
+      "warning": {
+        "title": "Important Notice",
+        "description": "Although peppy(ppy) explicitly states that rulesets are not subject to anti-cheat detection, we strongly recommend that you avoid connecting the osu!lazer client with AuthLibInject installed to the official servers, as doing so may result in your account being banned!"
+      }
+    }
   },
+
   
   footer: {
     copyright: '© 2025 g0v0.top. Crafted for rhythm game players.',
