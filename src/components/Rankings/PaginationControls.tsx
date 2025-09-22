@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 interface Props {
   total: number;
@@ -22,7 +23,7 @@ export default function PaginationControls({ total, currentPage, onPageChange }:
         onClick={() => onPageChange(currentPage - 1)}
         className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors font-medium"
       >
-        ←
+        <FiChevronLeft size={18} />
       </button>
     );
   }
@@ -50,7 +51,7 @@ export default function PaginationControls({ total, currentPage, onPageChange }:
         onClick={() => onPageChange(currentPage + 1)}
         className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors font-medium"
       >
-        →
+        <FiChevronRight size={18} />
       </button>
     );
   }
