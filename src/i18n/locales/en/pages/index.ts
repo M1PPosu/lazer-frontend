@@ -6,6 +6,7 @@ import { teamsPage } from './teams';
 import { messagesPage } from './messages';
 import { profilePage } from './profile';
 import { howToJoinPage } from './how-to-join';
+import { beatmapPage } from './beatmap';
 import { layout } from './layout';
 
 export const pages = {
@@ -17,5 +18,6 @@ export const pages = {
   ...messagesPage,
   ...profilePage,
   ...howToJoinPage,
+  ...beatmapPage,
   ...layout,
 } as const;

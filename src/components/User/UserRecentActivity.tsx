@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { userAPI } from '../../utils/api';
 import type { UserActivity } from '../../types';
 import LoadingSpinner from '../UI/LoadingSpinner';
+import BeatmapLink from '../UI/BeatmapLink';
 import { FaTrophy, FaCrown, FaUpload, FaEdit, FaHeart, FaUser } from 'react-icons/fa';
 
 interface UserRecentActivityProps {
@@ -110,15 +111,13 @@ const getActivityDescription = (activity: UserActivity, t: any) => {
       return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <span className="text-xs sm:text-sm">{t('profile.activities.types.rank.prefix')}</span>
-          <a 
-            href={activity.beatmap?.url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <BeatmapLink
+            beatmapUrl={activity.beatmap?.url}
             className="text-blue-600 dark:text-blue-400 hover:underline font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none"
             title={activity.beatmap?.title}
           >
             {activity.beatmap?.title}
-          </a>
+          </BeatmapLink>
           <span className="text-xs sm:text-sm">{t('profile.activities.types.rank.middle')}</span>
           {activity.scorerank && (
             <img 
@@ -140,15 +139,13 @@ const getActivityDescription = (activity: UserActivity, t: any) => {
       return (
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <span className="text-xs sm:text-sm">{t('profile.activities.types.rankLost.prefix')}</span>
-          <a 
-            href={activity.beatmap?.url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <BeatmapLink
+            beatmapUrl={activity.beatmap?.url}
             className="text-blue-600 dark:text-blue-400 hover:underline font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none"
             title={activity.beatmap?.title}
           >
             {activity.beatmap?.title}
-          </a>
+          </BeatmapLink>
           <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('profile.activities.types.rankLost.suffix')}</span>
         </div>
       );
@@ -181,15 +178,13 @@ const getActivityDescription = (activity: UserActivity, t: any) => {
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <span className="text-xs sm:text-sm">{t('profile.activities.types.beatmapUpload')}</span>
           {activity.beatmap && (
-            <a 
-              href={activity.beatmap.url}
-              target="_blank"
-              rel="noopener noreferrer"
+            <BeatmapLink
+              beatmapUrl={activity.beatmap.url}
               className="text-blue-600 dark:text-blue-400 hover:underline font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none"
               title={activity.beatmap.title}
             >
               {activity.beatmap.title}
-            </a>
+            </BeatmapLink>
           )}
         </div>
       );
@@ -198,15 +193,13 @@ const getActivityDescription = (activity: UserActivity, t: any) => {
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           <span className="text-xs sm:text-sm">{t('profile.activities.types.beatmapRanked')}:</span>
           {activity.beatmap && (
-            <a 
-              href={activity.beatmap.url}
-              target="_blank"
-              rel="noopener noreferrer"
+            <BeatmapLink
+              beatmapUrl={activity.beatmap.url}
               className="text-blue-600 dark:text-blue-400 hover:underline font-medium text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none"
               title={activity.beatmap.title}
             >
               {activity.beatmap.title}
-            </a>
+            </BeatmapLink>
           )}
         </div>
       );

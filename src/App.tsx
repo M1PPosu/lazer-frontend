@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider } from './contexts/AuthContext';
+import { AudioProvider } from './components/UI/AudioPlayer';
 import Layout from './components/Layout/Layout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -15,6 +16,7 @@ import TeamDetailPage from './pages/TeamDetailPage';
 import CreateTeamPage from './pages/CreateTeamPage';
 import MessagesPage from './pages/MessagesPage';
 import HowToJoinPage from './pages/HowToJoinPage';
+import BeatmapPage from './pages/BeatmapPage';
 import BBCodeTester from './components/BBCode/BBCodeTester';
 
 function App() {
@@ -22,8 +24,9 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
+      <AudioProvider>
+        <Router>
+          <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="login" element={<LoginPage />} />
@@ -38,7 +41,8 @@ function App() {
             <Route path="teams/:teamId/edit" element={<CreateTeamPage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="how-to-join" element={<HowToJoinPage />} />
-            <Route path="bbcode-test" element={<BBCodeTester />} />
+            <Route path="beatmaps/:beatmapId" element={<BeatmapPage />} />
+            <Route path="beatmapsets/:beatmapsetId" element={<BeatmapPage />} />
             <Route
               path="beatmaps"
               element={
@@ -47,6 +51,7 @@ function App() {
                 </div>
               }
             />
+            <Route path="bbcode-test" element={<BBCodeTester />} />
             <Route
               path="*"
               element={
@@ -56,8 +61,9 @@ function App() {
               }
             />
           </Route>
-        </Routes>
-      </Router>
+          </Routes>
+        </Router>
+      </AudioProvider>
     </AuthProvider>
   );
 }

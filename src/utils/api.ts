@@ -2,8 +2,8 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
 
 // API base URL - adjust this to match your osu! API server
-const API_BASE_URL = 'https://lazer-api.g0v0.top';
-//const API_BASE_URL = 'http://127.0.0.1:8000';
+//const API_BASE_URL = 'https://lazer-api.g0v0.top';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -762,6 +762,131 @@ export const notificationsAPI = {
       ...response.data,
       notifications: deduplicatedNotifications
     };
+  },
+};
+
+// Beatmap API functions
+export const beatmapAPI = {
+  // 根据 beatmap_id 查询谱面详情 (lookup)
+  getBeatmapByBeatmapId: async (beatmapId: number) => {
+    try {
+      const response = await api.get(`/api/v2/beatmapsets/lookup?beatmap_id=${beatmapId}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error('Beatmap not found');
+      }
+      throw error;
+    }
+  },
+
+  // 根据 beatmapset_id 查询谱面集详情
+  getBeatmapset: async (beatmapsetId: number) => {
+    try {
+      const response = await api.get(`/api/v2/beatmapsets/${beatmapsetId}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error('Beatmapset not found');
+      }
+      throw error;
+    }
+  },
+
+  // 从URL提取beatmap ID的工具函数
+  extractBeatmapIdFromUrl: (url: string): number | null => {
+    // 匹配 https://osu.ppy.sh/beatmaps/5124111 格式
+    // 或者 https://lazer.g0v0.top/beatmaps/5124111 格式
+    const beatmapMatch = url.match(/\/beatmaps\/(\d+)/);
+    if (beatmapMatch) {
+      return parseInt(beatmapMatch[1], 10);
+    }
+
+    // 匹配 https://osu.ppy.sh/beatmapsets/2373111#osu/5124111 格式
+    const beatmapsetMatch = url.match(/\/beatmapsets\/\d+#[^/]+\/(\d+)/);
+    if (beatmapsetMatch) {
+      return parseInt(beatmapsetMatch[1], 10);
+    }
+
+    return null;
+  },
+
+  // 从URL提取beatmapset ID的工具函数
+  extractBeatmapsetIdFromUrl: (url: string): number | null => {
+    // 匹配 https://osu.ppy.sh/beatmapsets/2373111 格式
+    const match = url.match(/\/beatmapsets\/(\d+)/);
+    if (match) {
+      return parseInt(match[1], 10);
+    }
+    return null;
+  },
+
+  // 将 osu! URL 转换为内部路由格式
+  convertToInternalBeatmapUrl: (url: string): string | null => {
+    // 提取 beatmapset ID 和 beatmap ID
+    const beatmapsetMatch = url.match(/\/beatmapsets\/(\d+)(?:#([^/]+)\/(\d+))?/);
+    if (beatmapsetMatch) {
+      const beatmapsetId = beatmapsetMatch[1];
+      const mode = beatmapsetMatch[2] || 'osu';
+      const beatmapId = beatmapsetMatch[3];
+      
+      if (beatmapId) {
+        return `/beatmapsets/${beatmapsetId}#${mode}/${beatmapId}`;
+      } else {
+        return `/beatmapsets/${beatmapsetId}`;
+      }
+    }
+
+    // 处理 /beatmaps/{id} 格式
+    const beatmapMatch = url.match(/\/beatmaps\/(\d+)/);
+    if (beatmapMatch) {
+      return `/beatmaps/${beatmapMatch[1]}`;
+    }
+
+    return null;
+  },
+
+  // 从 URL 解析 beatmap 信息
+  parseUrlBeatmapInfo: (url: string): { beatmapsetId?: number; beatmapId?: number; mode?: string } => {
+    const beatmapsetMatch = url.match(/\/beatmapsets\/(\d+)(?:#([^/]+)\/(\d+))?/);
+    const beatmapMatch = url.match(/\/beatmaps\/(\d+)/);
+
+    if (beatmapsetMatch) {
+      const [, beatmapsetId, mode, beatmapId] = beatmapsetMatch;
+      return {
+        beatmapsetId: parseInt(beatmapsetId, 10),
+        beatmapId: beatmapId ? parseInt(beatmapId, 10) : undefined,
+        mode: mode || undefined,
+      };
+    } else if (beatmapMatch) {
+      const [, beatmapId] = beatmapMatch;
+      return {
+        beatmapId: parseInt(beatmapId, 10),
+      };
+    }
+
+    return {};
+  },
+
+  // 通过 URL 直接获取 beatmap 信息
+  getBeatmapFromUrl: async (url: string): Promise<{ beatmapset: any; beatmap?: any }> => {
+    const urlInfo = beatmapAPI.parseUrlBeatmapInfo(url);
+    
+    if (urlInfo.beatmapsetId) {
+      const beatmapset = await beatmapAPI.getBeatmapset(urlInfo.beatmapsetId);
+      const beatmap = urlInfo.beatmapId 
+        ? beatmapset.beatmaps.find((b: any) => b.id === urlInfo.beatmapId)
+        : beatmapset.beatmaps[0]; // 默认第一个难度
+      
+      return { beatmapset, beatmap };
+    } else if (urlInfo.beatmapId) {
+      const beatmap = await beatmapAPI.getBeatmapByBeatmapId(urlInfo.beatmapId);
+      const beatmapset = await beatmapAPI.getBeatmapset(beatmap.beatmapset_id);
+      
+      return { beatmapset, beatmap };
+    }
+    
+    throw new Error('Invalid beatmap URL');
   },
 };
 

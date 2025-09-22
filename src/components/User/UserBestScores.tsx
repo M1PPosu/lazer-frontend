@@ -4,6 +4,7 @@ import { userAPI } from '../../utils/api';
 import type { BestScore, GameMode, User } from '../../types';
 import LoadingSpinner from '../UI/LoadingSpinner';
 import LazyBackgroundImage from '../UI/LazyBackgroundImage';
+import BeatmapLink from '../UI/BeatmapLink';
 
 interface UserBestScoresProps {
   userId: number;
@@ -125,15 +126,13 @@ const ScoreCard: React.FC<{ score: BestScore; t: any }> = ({ score, t }) => {
               <div className="flex flex-col -space-y-0.5">
                 {/* 标题和艺术家 */}
                 <div className="flex items-baseline gap-1 text-sm leading-tight">
-                  <a 
-                    href={beatmapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <BeatmapLink
+                    beatmapUrl={beatmapUrl}
                     className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate transition-colors"
                     title={title}
                   >
                     {title}
-                  </a>
+                  </BeatmapLink>
                   <span className="text-gray-600 dark:text-gray-400 text-xs flex-shrink-0">
                     {t('profile.bestScores.by')}
                   </span>
@@ -189,15 +188,13 @@ const ScoreCard: React.FC<{ score: BestScore; t: any }> = ({ score, t }) => {
             <div className="flex-1 min-w-0">
               {/* 第一行：标题和艺术家 */}
               <div className="flex items-baseline gap-1 text-sm leading-tight mb-1">
-                <a 
-                  href={beatmapUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <BeatmapLink
+                  beatmapUrl={beatmapUrl}
                   className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate transition-colors"
                   title={title}
                 >
                   {title}
-                </a>
+                </BeatmapLink>
                 <span className="text-gray-600 dark:text-gray-400 text-xs flex-shrink-0">
                   {t('profile.bestScores.by')}
                 </span>
