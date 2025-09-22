@@ -16,6 +16,7 @@ import { useNotificationContext } from '../contexts/NotificationContext';
 import { useWebSocketNotifications } from '../hooks/useWebSocketNotifications';
 import { chatAPI, teamsAPI, userAPI } from '../utils/api';
 import { apiCache } from '../utils/apiCache';
+import { useTranslation } from 'react-i18next';
 
 import MessageBubble from '../components/Chat/MessageBubble';
 import ChannelItem from '../components/Chat/ChannelItem';
@@ -43,6 +44,7 @@ type ActiveTab = 'channels' | 'notifications';
 type ChannelFilter = 'all' | 'private' | 'team' | 'public';
 
 const MessagesPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<ActiveTab>('channels');
   const [channels, _setChannels] = useState<ChatChannel[]>([]);
@@ -390,6 +392,16 @@ const MessagesPage: React.FC = () => {
     }
   });
 
+  const filterOptions = React.useMemo(
+    () => [
+      { key: 'all' as const, label: t('messages.sidebar.filters.all') },
+      { key: 'private' as const, label: t('messages.sidebar.filters.private') },
+      { key: 'team' as const, label: t('messages.sidebar.filters.team') },
+      { key: 'public' as const, label: t('messages.sidebar.filters.public') },
+    ],
+    [t]
+  );
+
   // 选择频道，加载消息，并添加新消息
   const selectChannelAndAddMessage = async (channel: ChatChannel, newMessage: ChatMessage) => {
     console.log('选择频道并添加消息:', channel.name, '频道ID:', channel.channel_id);
@@ -481,7 +493,7 @@ const MessagesPage: React.FC = () => {
       }
     } catch (error) {
       console.error('加载频道消息失败:', error);
-      toast.error('加载消息失败');
+      toast.error(t('messages.toasts.loadMessagesFailed'));
       // 即使加载失败，也要显示新消息
       setMessages(prev => {
         let allMessages = [...prev];
@@ -630,7 +642,7 @@ const MessagesPage: React.FC = () => {
       }
     } catch (error) {
       console.error('加载频道消息失败:', error);
-      toast.error('加载消息失败');
+      toast.error(t('messages.toasts.loadMessagesFailed'));
       
       // 即使加载失败，也要保留可能已经到达的消息
       setMessages(prev => {
@@ -711,7 +723,7 @@ const MessagesPage: React.FC = () => {
       
     } catch (error) {
       console.error('发送消息失败:', error);
-      toast.error('发送消息失败');
+      toast.error(t('messages.toasts.sendMessageFailed'));
     }
   };
 
@@ -1407,7 +1419,7 @@ const MessagesPage: React.FC = () => {
     console.log(`找到 ${privateNotifications.length} 个私聊通知需要处理`);
 
     if (privateNotifications.length === 0) {
-      toast('没有需要处理的私聊通知');
+      toast(t('messages.toasts.noPrivateNotifications'));
       return;
     }
 
@@ -1433,7 +1445,10 @@ const MessagesPage: React.FC = () => {
     }
 
     // 显示处理结果
-    const resultMessage = `处理完成: 成功 ${processedCount}，失败 ${errorCount}`;
+    const resultMessage = t('messages.toasts.processResult', {
+      success: processedCount,
+      fail: errorCount,
+    });
     console.log(resultMessage);
     
     if (errorCount > 0) {
@@ -1486,120 +1501,181 @@ const MessagesPage: React.FC = () => {
 
   // 获取通知标题
   const getNotificationTitle = useCallback((notification: APINotification): string => {
-    // 获取用户信息（从apiCache中）
-    let userName = '未知用户';
+    const fallback = (key: string) => t(`messages.notificationsPanel.fallbacks.${key}`);
+    const resolveTitle = (value: unknown, fallbackKey: string) =>
+      typeof value === 'string' && value.trim().length > 0 ? value : fallback(fallbackKey);
+
+    let userName = t('messages.sidebar.unknownUser');
     if (notification.source_user_id) {
       const cachedUser = apiCache.getCachedUser(notification.source_user_id);
       if (cachedUser) {
-        userName = cachedUser.username || '未知用户';
+        userName = cachedUser.username || t('messages.sidebar.unknownUser');
       }
     }
 
     switch (notification.name) {
       case 'team_application_store':
-        return `团队加入申请`;
+        return t('messages.notificationsPanel.titles.teamApplication');
       case 'team_application_accept':
-        return `团队申请已接受`;
+        return t('messages.notificationsPanel.titles.teamApplicationAccept');
       case 'team_application_reject':
-        return `团队申请已拒绝`;
+        return t('messages.notificationsPanel.titles.teamApplicationReject');
       case 'channel_message':
-        // 根据类型显示不同的标题
         if (notification.details?.type === 'pm') {
-          return `新私聊消息: ${userName}`;
-        } else if (notification.details?.type === 'team') {
-          return `新团队消息: ${notification.details.title || '团队频道'}`;
+          return t('messages.notificationsPanel.titles.privateMessage', { userName });
         }
-        return `新私聊消息: ${userName}`;
+        if (notification.details?.type === 'team') {
+          return t('messages.notificationsPanel.titles.teamMessage', {
+            title: resolveTitle(notification.details?.title, 'teamChannel'),
+          });
+        }
+        return t('messages.notificationsPanel.titles.privateMessage', { userName });
       case 'channel_team':
-        return `新团队消息: ${notification.details?.title || '团队频道'}`;
+        return t('messages.notificationsPanel.titles.teamMessage', {
+          title: resolveTitle(notification.details?.title, 'teamChannel'),
+        });
       case 'channel_public':
-        return `新公共频道消息: ${notification.details?.title || '公共频道'}`;
+        return t('messages.notificationsPanel.titles.publicMessage', {
+          title: resolveTitle(notification.details?.title, 'publicChannel'),
+        });
       case 'channel_private':
-        return `新私有频道消息: ${notification.details?.title || '私有频道'}`;
+        return t('messages.notificationsPanel.titles.privateChannelMessage', {
+          title: resolveTitle(notification.details?.title, 'privateChannel'),
+        });
       case 'channel_multiplayer':
-        return `新多人游戏消息: ${notification.details?.title || '多人游戏'}`;
+        return t('messages.notificationsPanel.titles.multiplayerMessage', {
+          title: resolveTitle(notification.details?.title, 'multiplayer'),
+        });
       case 'channel_spectator':
-        return `新观战频道消息: ${notification.details?.title || '观战频道'}`;
+        return t('messages.notificationsPanel.titles.spectatorMessage', {
+          title: resolveTitle(notification.details?.title, 'spectator'),
+        });
       case 'channel_temporary':
-        return `新临时频道消息: ${notification.details?.title || '临时频道'}`;
+        return t('messages.notificationsPanel.titles.temporaryChannelMessage', {
+          title: resolveTitle(notification.details?.title, 'temporary'),
+        });
       case 'channel_group':
-        return `新群组消息: ${notification.details?.title || '群组频道'}`;
+        return t('messages.notificationsPanel.titles.groupMessage', {
+          title: resolveTitle(notification.details?.title, 'group'),
+        });
       case 'channel_system':
-        return `新系统消息: ${notification.details?.title || '系统频道'}`;
+        return t('messages.notificationsPanel.titles.systemMessage', {
+          title: resolveTitle(notification.details?.title, 'system'),
+        });
       case 'channel_announce':
-        return `新公告: ${notification.details?.title || '公告频道'}`;
+        return t('messages.notificationsPanel.titles.announcementMessage', {
+          title: resolveTitle(notification.details?.title, 'announcement'),
+        });
       default:
         return notification.name;
     }
-  }, []);
+  }, [t]);
 
   // 获取通知内容
   const getNotificationContent = useCallback((notification: APINotification): string => {
-    // 获取用户信息（从apiCache中）
-    let userName = '未知用户';
+    const fallback = (key: string) => t(`messages.notificationsPanel.fallbacks.${key}`);
+    const resolveTitle = (value: unknown, fallbackKey: string) =>
+      typeof value === 'string' && value.trim().length > 0 ? value : fallback(fallbackKey);
+
+    let userName = t('messages.sidebar.unknownUser');
     if (notification.source_user_id) {
       const cachedUser = apiCache.getCachedUser(notification.source_user_id);
       if (cachedUser) {
-        userName = cachedUser.username || '未知用户';
+        userName = cachedUser.username || t('messages.sidebar.unknownUser');
       }
     }
 
     switch (notification.name) {
       case 'team_application_store':
-        return `${userName} 申请加入您的团队`;
+        return t('messages.notificationsPanel.contents.teamApplication', { userName });
       case 'team_application_accept':
-        return `您已成功加入团队 ${notification.details.title}`;
+        return t('messages.notificationsPanel.contents.teamApplicationAccept', {
+          teamName: resolveTitle(notification.details?.title, 'teamChannel'),
+        });
       case 'team_application_reject':
-        return `您的团队申请被拒绝`;
+        return t('messages.notificationsPanel.contents.teamApplicationReject');
       case 'channel_message':
-        // 根据类型显示不同的内容
         if (notification.details?.type === 'pm') {
-          // 尝试获取完整的消息内容
           const messageContent = notification.details.title as string;
           const messageUrl = notification.details.url as string;
-          
-          // 如果有详细的消息内容，显示它
-          if (messageContent && messageContent !== '来自用户' && messageContent !== userName) {
-            // 如果消息被截断（通常36字符），尝试显示完整内容
+          const placeholders = [
+            t('messages.notificationsPanel.contents.privateMessageSourceRaw'),
+            userName,
+            t('messages.notificationsPanel.contents.privateMessageSourceLabel'),
+          ];
+
+          if (typeof messageContent === 'string' && messageContent.trim() && !placeholders.includes(messageContent)) {
             if (messageContent.length >= 36) {
-              return `${userName}: ${messageContent}... (可能有更多内容)`;
-            } else {
-              return `${userName}: ${messageContent}`;
+              return t('messages.notificationsPanel.contents.privateMessageTruncated', {
+                userName,
+                message: messageContent,
+              });
             }
+            return t('messages.notificationsPanel.contents.privateMessage', {
+              userName,
+              message: messageContent,
+            });
           }
-          
-          // 如果有URL信息，尝试从中提取更多信息
-          if (messageUrl) {
-            return `来自 ${userName} 的私聊消息 (ID: ${notification.object_id})`;
+
+          if (typeof messageUrl === 'string' && messageUrl.trim().length > 0) {
+            return t('messages.notificationsPanel.contents.privateMessageWithId', {
+              userName,
+              id: notification.object_id,
+            });
           }
-          
-          return `来自 ${userName} 的私聊消息`;
-        } else if (notification.details?.type === 'team') {
-          return `团队频道: ${notification.details.title || '团队消息'}`;
+
+          return t('messages.notificationsPanel.contents.privateMessageFallback', { userName });
         }
-        return `来自 ${notification.details.title || '未知来源'}`;
+
+        if (notification.details?.type === 'team') {
+          return t('messages.notificationsPanel.contents.teamChannel', {
+            title: resolveTitle(notification.details?.title, 'teamMessage'),
+          });
+        }
+
+        return t('messages.notificationsPanel.contents.genericFrom', {
+          source: resolveTitle(notification.details?.title, 'unknownSource'),
+        });
       case 'channel_team':
-        return `团队频道: ${notification.details?.title || '团队消息'}`;
+        return t('messages.notificationsPanel.contents.teamChannel', {
+          title: resolveTitle(notification.details?.title, 'teamMessage'),
+        });
       case 'channel_public':
-        return `公共频道: ${notification.details?.title || '公共消息'}`;
+        return t('messages.notificationsPanel.contents.publicChannel', {
+          title: resolveTitle(notification.details?.title, 'publicMessage'),
+        });
       case 'channel_private':
-        return `私有频道: ${notification.details?.title || '私有消息'}`;
+        return t('messages.notificationsPanel.contents.privateChannel', {
+          title: resolveTitle(notification.details?.title, 'privateMessage'),
+        });
       case 'channel_multiplayer':
-        return `多人游戏: ${notification.details?.title || '游戏消息'}`;
+        return t('messages.notificationsPanel.contents.multiplayerChannel', {
+          title: resolveTitle(notification.details?.title, 'multiplayerMessage'),
+        });
       case 'channel_spectator':
-        return `观战频道: ${notification.details?.title || '观战消息'}`;
+        return t('messages.notificationsPanel.contents.spectatorChannel', {
+          title: resolveTitle(notification.details?.title, 'spectatorMessage'),
+        });
       case 'channel_temporary':
-        return `临时频道: ${notification.details?.title || '临时消息'}`;
+        return t('messages.notificationsPanel.contents.temporaryChannel', {
+          title: resolveTitle(notification.details?.title, 'temporaryMessage'),
+        });
       case 'channel_group':
-        return `群组频道: ${notification.details?.title || '群组消息'}`;
+        return t('messages.notificationsPanel.contents.groupChannel', {
+          title: resolveTitle(notification.details?.title, 'groupMessage'),
+        });
       case 'channel_system':
-        return `系统频道: ${notification.details?.title || '系统消息'}`;
+        return t('messages.notificationsPanel.contents.systemChannel', {
+          title: resolveTitle(notification.details?.title, 'systemMessage'),
+        });
       case 'channel_announce':
-        return `公告频道: ${notification.details?.title || '公告消息'}`;
+        return t('messages.notificationsPanel.contents.announcementChannel', {
+          title: resolveTitle(notification.details?.title, 'announcementMessage'),
+        });
       default:
         return JSON.stringify(notification.details);
     }
-  }, []);
+  }, [t]);
 
   // 辅助函数：检查用户信息是否在apiCache中
   const hasUserInfoInCache = useCallback((userId: number): boolean => {
@@ -1618,23 +1694,27 @@ const MessagesPage: React.FC = () => {
       const userId = notification.source_user_id;
       
       if (!userId) {
-        toast.error('无法获取用户信息');
+        toast.error(t('messages.toasts.teamRequestMissingUser'));
         return;
       }
 
       if (action === 'accept') {
         await teamsAPI.acceptJoinRequest(teamId, userId);
-        toast.success('已接受加入请求');
+        toast.success(t('messages.toasts.teamRequestAcceptSuccess'));
       } else {
         await teamsAPI.rejectJoinRequest(teamId, userId);
-        toast.success('已拒绝加入请求');
+        toast.success(t('messages.toasts.teamRequestRejectSuccess'));
       }
 
       // 标记通知为已读
       await markAsRead(notification.id);
     } catch (error) {
       console.error('处理团队请求失败:', error);
-      toast.error(`${action === 'accept' ? '接受' : '拒绝'}请求失败`);
+      toast.error(
+        t('messages.toasts.teamRequestActionFailed', {
+          action: action === 'accept' ? t('messages.actions.accept') : t('messages.actions.reject'),
+        })
+      );
     }
   };
 
@@ -1643,10 +1723,10 @@ const MessagesPage: React.FC = () => {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            需要登录
+            {t('messages.loginRequired.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            请登录后查看消息
+            {t('messages.loginRequired.description')}
           </p>
         </div>
       </div>
@@ -1674,7 +1754,7 @@ const MessagesPage: React.FC = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                    消息中心
+                    {t('messages.sidebar.title')}
                   </h1>
                   {/* WebSocket连接状态 */}
                   {/* <div className="flex items-center space-x-1">
@@ -1684,6 +1764,7 @@ const MessagesPage: React.FC = () => {
                 {isMobile && (
                   <button
                     onClick={() => setShowSidebar(false)}
+                    aria-label={t('common.close')}
                     className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                   >
                     <FiX size={20} />
@@ -1705,7 +1786,7 @@ const MessagesPage: React.FC = () => {
                   `}
                 >
                   <FiMessageCircle size={16} />
-                  <span>消息</span>
+                  <span>{t('messages.sidebar.tabs.channels')}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('notifications')}
@@ -1719,7 +1800,7 @@ const MessagesPage: React.FC = () => {
                   `}
                 >
                   <FiBell size={16} />
-                  <span>通知</span>
+                  <span>{t('messages.sidebar.tabs.notifications')}</span>
                   {unreadCount.total > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {unreadCount.total > 99 ? '99+' : unreadCount.total}
@@ -1736,12 +1817,7 @@ const MessagesPage: React.FC = () => {
                   {/* 频道过滤器和新建按钮 */}
                   <div className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
                     <div className="grid grid-cols-2 gap-1 text-xs">
-                      {[
-                        { key: 'all' as const, label: '全部' },
-                        { key: 'private' as const, label: '私聊' },
-                        { key: 'team' as const, label: '团队' },
-                        { key: 'public' as const, label: '公共' },
-                      ].map(filter => (
+                      {filterOptions.map(filter => (
                         <button
                           key={filter.key}
                           onClick={() => setChannelFilter(filter.key)}
@@ -1799,26 +1875,32 @@ const MessagesPage: React.FC = () => {
                             cleanupDuplicatePrivateChannels();
                           }, 100);
                           
-                          toast.success(`频道列表已刷新，共 ${channels.length} 个频道，其中私聊 ${pmChannels.length} 个`);
+                          toast.success(
+                            t('messages.toasts.refreshChannelsSuccess', {
+                              total: channels.length,
+                              privateCount: pmChannels.length,
+                            })
+                          );
                         } catch (error) {
                           console.error('手动刷新失败:', error);
-                          toast.error('刷新失败');
+                          toast.error(t('messages.toasts.refreshFailed'));
                         }
                       }}
                       className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-green-500/10 text-green-500 hover:bg-green-500/20 rounded-lg transition-colors text-sm font-medium"
-                      title="刷新频道列表"
+                      title={t('messages.sidebar.tooltips.refreshChannels')}
+                      aria-label={t('messages.sidebar.tooltips.refreshChannels')}
                     >
                       <FiRefreshCw size={16} />
-                      <span>刷新频道</span>
+                      <span>{t('messages.sidebar.actions.refreshChannels')}</span>
                     </button>
-                    
+
                     {/* 新建私聊按钮 */}
                     <button
                       onClick={() => setShowNewPMModal(true)}
                       className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-osu-pink/10 text-osu-pink hover:bg-osu-pink/20 rounded-lg transition-colors text-sm font-medium"
                     >
                       <FiPlus size={16} />
-                      <span>新建私聊</span>
+                      <span>{t('messages.sidebar.actions.newPrivateChat')}</span>
                     </button>
                   </div>
 
@@ -1826,11 +1908,11 @@ const MessagesPage: React.FC = () => {
                   <div className="flex-1 overflow-y-auto">
                     {isLoading ? (
                       <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                        加载中...
+                        {t('messages.sidebar.states.loading')}
                       </div>
                     ) : filteredChannels.length === 0 ? (
                       <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                        暂无频道
+                        {t('messages.sidebar.states.noChannels')}
                       </div>
                     ) : (
                       <div className="space-y-1 p-2">
@@ -1857,27 +1939,29 @@ const MessagesPage: React.FC = () => {
                         refresh(); // 调用通知刷新函数
                       }}
                       className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 rounded-lg transition-colors text-sm font-medium"
-                      title="刷新通知列表"
+                      title={t('messages.sidebar.tooltips.refreshNotifications')}
+                      aria-label={t('messages.sidebar.tooltips.refreshNotifications')}
                     >
                       <FiRefreshCw size={16} />
-                      <span>刷新通知</span>
+                      <span>{t('messages.sidebar.actions.refreshNotifications')}</span>
                     </button>
                     
                     {/* 批量标记私聊已读按钮 */}
                     <button
                       onClick={batchMarkPrivateNotificationsAsRead}
                       className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 rounded-lg transition-colors text-sm font-medium"
-                      title="批量标记私聊消息为已读"
+                      title={t('messages.sidebar.tooltips.markPrivateRead')}
+                      aria-label={t('messages.sidebar.tooltips.markPrivateRead')}
                     >
                       <FiCheck size={16} />
-                      <span>标记私聊已读</span>
+                      <span>{t('messages.sidebar.actions.markPrivateRead')}</span>
                     </button>
                   </div>
                   
                   <div className="flex-1 overflow-y-auto min-h-0">
                     {notifications.length === 0 ? (
                       <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                        暂无通知
+                        {t('messages.sidebar.states.noNotifications')}
                       </div>
                     ) : (
                       <div className="space-y-1 p-2">
@@ -1892,7 +1976,7 @@ const MessagesPage: React.FC = () => {
                                 {notification.source_user_id && hasUserInfoInCache(notification.source_user_id) ? (
                                   <img
                                     src={userAPI.getAvatarUrl(notification.source_user_id)}
-                                    alt="用户头像"
+                                    alt={t('messages.sidebar.avatarAlt')}
                                     className="w-10 h-10 rounded-lg object-cover"
                                     onError={(e) => {
                                       // 如果头像加载失败，显示默认图标
@@ -1935,12 +2019,14 @@ const MessagesPage: React.FC = () => {
                                 {/* 显示发送者信息 */}
                                 {notification.source_user_id && hasUserInfoInCache(notification.source_user_id) && (
                                   <div className="flex items-center space-x-2 mt-2">
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">来自:</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {t('messages.sidebar.from')}
+                                    </span>
                                     <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
                                       {(() => {
                                         // 从缓存获取用户名
                                         const cachedUser = getUserInfoFromCache(notification.source_user_id!);
-                                        return cachedUser?.username || '未知用户';
+                                        return cachedUser?.username || t('messages.sidebar.unknownUser');
                                       })()}
                                     </span>
                                   </div>
@@ -1957,24 +2043,24 @@ const MessagesPage: React.FC = () => {
                                       className="flex items-center space-x-1 px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
                                     >
                                       <FiCheck size={14} />
-                                      <span>接受</span>
+                                      <span>{t('messages.actions.accept')}</span>
                                     </button>
                                     <button
                                       onClick={() => handleTeamRequest(notification, 'reject')}
                                       className="flex items-center space-x-1 px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 transition-colors"
                                     >
                                       <FiX size={14} />
-                                      <span>拒绝</span>
+                                      <span>{t('messages.actions.reject')}</span>
                                     </button>
                                   </div>
                                 )}
-                                
+
                                 {!notification.is_read && (
                                   <button
                                     onClick={() => handleNotificationMarkAsRead(notification)}
                                     className="text-xs text-osu-pink hover:text-osu-pink/80 mt-2"
                                   >
-                                    标记为已读
+                                    {t('messages.sidebar.markAsRead')}
                                   </button>
                                 )}
                               </div>
@@ -2011,8 +2097,11 @@ const MessagesPage: React.FC = () => {
                     {selectedChannel.name}
                   </h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {selectedChannel.type === 'PM' ? '私聊' : 
-                     selectedChannel.type === 'TEAM' ? '团队频道' : '公共频道'}
+                    {selectedChannel.type === 'PM'
+                      ? t('messages.sidebar.channelTypes.private')
+                      : selectedChannel.type === 'TEAM'
+                        ? t('messages.sidebar.channelTypes.team')
+                        : t('messages.sidebar.channelTypes.public')}
                   </p>
                 </div>
               </div>
@@ -2051,8 +2140,8 @@ const MessagesPage: React.FC = () => {
                 onSendMessage={sendMessage}
                 disabled={!selectedChannel?.current_user_attributes?.can_message}
                 placeholder={
-                  selectedChannel?.current_user_attributes?.can_message_error || 
-                  "输入消息..."
+                  selectedChannel?.current_user_attributes?.can_message_error ||
+                  t('messages.chat.placeholder')
                 }
                 maxLength={selectedChannel?.message_length_limit || 1000}
               />
@@ -2066,15 +2155,16 @@ const MessagesPage: React.FC = () => {
                 <button
                   onClick={() => setShowSidebar(true)}
                   className="mb-4 p-3 bg-osu-pink text-white rounded-lg"
+                  aria-label={t('messages.sidebar.openSidebar')}
                 >
                   <FiMessageCircle size={24} />
                 </button>
               )}
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                选择一个频道开始聊天
+                {t('messages.sidebar.selectPromptTitle')}
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                从左侧选择一个频道或私聊开始对话
+                {t('messages.sidebar.selectPromptDescription')}
               </p>
             </div>
           </div>
@@ -2129,7 +2219,7 @@ const MessagesPage: React.FC = () => {
               console.log('私聊频道选择完成，开始加载消息');
             } catch (error) {
               console.error('处理新私聊频道失败:', error);
-              toast.error('加载私聊频道失败');
+              toast.error(t('messages.toasts.loadPrivateChannelFailed'));
             }
           }
         }}
