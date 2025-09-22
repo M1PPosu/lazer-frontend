@@ -252,6 +252,8 @@ const UserBestScores: React.FC<UserBestScoresProps> = ({ userId, selectedMode, u
       if (reset) {
         setLoading(true);
         setError(null);
+        // 重置时先重置 hasMore 状态
+        setHasMore(true);
       } else {
         setLoadingMore(true);
       }
@@ -261,15 +263,19 @@ const UserBestScores: React.FC<UserBestScoresProps> = ({ userId, selectedMode, u
       // 处理 API 响应 - 根据 osu! API，应该直接返回 SoloScoreInfo[] 数组
       const newScores = Array.isArray(response) ? response : [];
       
-      // 根据总成绩数量判断是否还有更多数据
-      const totalScores = user?.scores_best_count || 0;
-      const currentTotal = reset ? newScores.length : scores.length + newScores.length;
-      const hasMoreData = currentTotal < totalScores && newScores.length === 6;
-
+      // 判断是否还有更多数据的逻辑
+      let hasMoreData: boolean;
+      
       if (reset) {
+        // 重置时：如果返回的数据数量等于请求的数量(6)，说明可能还有更多数据
+        hasMoreData = newScores.length === 6;
         setScores(newScores);
         setOffset(newScores.length);
       } else {
+        // 加载更多时：检查返回数据数量和总数量
+        const totalScores = user?.scores_best_count || 0;
+        const currentTotal = scores.length + newScores.length;
+        hasMoreData = newScores.length === 6 && currentTotal < totalScores;
         setScores(prev => [...prev, ...newScores]);
         setOffset(prev => prev + newScores.length);
       }
@@ -278,6 +284,8 @@ const UserBestScores: React.FC<UserBestScoresProps> = ({ userId, selectedMode, u
     } catch (err) {
       console.error('Failed to load user best scores:', err);
       setError(t('profile.bestScores.loadFailed'));
+      // 出错时也重置 hasMore 状态
+      setHasMore(false);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -286,7 +294,11 @@ const UserBestScores: React.FC<UserBestScoresProps> = ({ userId, selectedMode, u
 
   useEffect(() => {
     if (userId) {
+      // 重置所有相关状态
       setOffset(0);
+      setScores([]);
+      setError(null);
+      setHasMore(true);
       loadScores(true);
     }
   }, [userId, selectedMode]);

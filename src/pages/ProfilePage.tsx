@@ -10,6 +10,13 @@ const ProfilePage: React.FC = () => {
   const { user, isAuthenticated, isLoading, updateUserMode, updateUser } = useAuth();
   const [selectedMode, setSelectedMode] = useState<GameMode>('osu');
 
+  // 当用户数据加载后，根据用户的 playmode 设置初始模式
+  useEffect(() => {
+    if (user?.playmode && user.playmode !== selectedMode) {
+      setSelectedMode(user.playmode as GameMode);
+    }
+  }, [user?.playmode]);
+
   useEffect(() => {
     if (isAuthenticated) {
       updateUserMode(selectedMode).catch(() => {});
