@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FiMessageCircle, FiUsers, FiLock, FiHash } from 'react-icons/fi';
 import Avatar from '../UI/Avatar';
 import type { ChatChannel } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 interface ChannelItemProps {
   channel: ChatChannel;
@@ -11,6 +12,8 @@ interface ChannelItemProps {
 }
 
 const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick }) => {
+  const { t } = useTranslation();
+
   // 改进未读消息检测逻辑
   const hasUnreadMessages = React.useMemo(() => {
     // 如果有last_read_id和last_message_id，直接比较
@@ -86,10 +89,10 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
 
   const formatLastMessage = () => {
     if (!lastMessage) {
-      return channel.description || '暂无消息';
+      return channel.description || t('messages.sidebar.noMessage');
     }
-    
-    const senderName = lastMessage.sender?.username || '未知用户';
+
+    const senderName = lastMessage.sender?.username || t('messages.sidebar.unknownUser');
     const content = lastMessage.content;
     
     if (lastMessage.is_action) {
@@ -161,22 +164,22 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
           <div className="flex items-center space-x-1 mt-1">
             {channel.type === 'PM' && (
               <span className="text-xs px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded">
-                私聊
+                {t('messages.sidebar.channelTypes.private')}
               </span>
             )}
             {channel.type === 'TEAM' && (
               <span className="text-xs px-1.5 py-0.5 bg-osu-pink/10 text-osu-pink rounded">
-                团队
+                {t('messages.sidebar.channelTypes.team')}
               </span>
             )}
             {channel.type === 'PUBLIC' && (
               <span className="text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded">
-                公共
+                {t('messages.sidebar.channelTypes.public')}
               </span>
             )}
             {channel.moderated && (
               <span className="text-xs px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded">
-                管制
+                {t('messages.sidebar.channelTypes.moderated')}
               </span>
             )}
           </div>

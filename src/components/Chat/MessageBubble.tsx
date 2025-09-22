@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Avatar from '../UI/Avatar';
 import type { ChatMessage, User } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -10,14 +11,16 @@ interface MessageBubbleProps {
   isGrouped?: boolean;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ 
-  message, 
-  currentUser, 
+const MessageBubble: React.FC<MessageBubbleProps> = ({
+  message,
+  currentUser,
   showAvatar = true,
-  isGrouped = false 
+  isGrouped = false
 }) => {
+  const { t, i18n } = useTranslation();
   const isOwnMessage = message.sender_id === currentUser?.id;
   const timestamp = new Date(message.timestamp);
+  const locale = i18n.language || (typeof navigator !== 'undefined' ? navigator.language : 'en');
 
   return (
     <motion.div
@@ -31,7 +34,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         <div className="flex-shrink-0">
           <Avatar
             userId={message.sender_id}
-            username={message.sender?.username || '未知用户'}
+            username={message.sender?.username || t('messages.sidebar.unknownUser')}
             avatarUrl={message.sender?.avatar_url}
             size="sm"
           />
@@ -44,12 +47,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         {!isGrouped && (
           <div className={`flex items-center space-x-2 mb-1 ${isOwnMessage ? 'justify-end' : ''}`}>
             <span className="font-medium text-gray-900 dark:text-white text-sm">
-              {isOwnMessage ? '你' : message.sender?.username}
+              {isOwnMessage ? t('messages.chat.you') : message.sender?.username}
             </span>
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              {timestamp.toLocaleTimeString('zh-CN', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+              {timestamp.toLocaleTimeString(locale, {
+                hour: '2-digit',
+                minute: '2-digit'
               })}
             </span>
           </div>

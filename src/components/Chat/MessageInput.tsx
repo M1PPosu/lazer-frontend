@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiSend } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
@@ -9,14 +10,16 @@ interface MessageInputProps {
   maxLength?: number;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ 
-  onSendMessage, 
+const MessageInput: React.FC<MessageInputProps> = ({
+  onSendMessage,
   disabled = false,
-  placeholder = "输入消息...",
+  placeholder,
   maxLength = 1000
 }) => {
+  const { t } = useTranslation();
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const resolvedPlaceholder = placeholder ?? t('messages.chat.placeholder');
 
   // 自动调整输入框高度
   useEffect(() => {
@@ -76,7 +79,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             onPaste={handlePaste}
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             disabled={disabled}
             maxLength={maxLength}
             className={`
@@ -130,7 +133,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
       {/* 简化的提示文字 */}
       {disabled && (
         <div className="mt-2 text-xs text-red-400">
-          无法发送消息
+          {t('messages.chat.cannotSend')}
         </div>
       )}
     </div>
