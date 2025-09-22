@@ -33,9 +33,10 @@ export const messagesPage = {
     },
     privateMessage: {
       title: 'Private Message',
-      newMessage: 'Send private message',
+      newMessage: 'New Message', // from main; keeps concise wording
       sendTo: 'Send to',
       close: 'Close',
+      // merged additions from codex branch:
       searchPlaceholder: 'Search username...',
       messageLabel: 'Message',
       messagePlaceholder: 'Enter your message...',

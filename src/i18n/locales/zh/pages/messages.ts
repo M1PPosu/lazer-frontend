@@ -33,9 +33,10 @@ export const messagesPage = {
     },
     privateMessage: {
       title: '私信',
-      newMessage: '发送私聊',
+      newMessage: '新消息', // 保留 main 的更简洁表述
       sendTo: '发送给',
       close: '关闭',
+      // 合并 codex 的新增字段
       searchPlaceholder: '搜索用户名...',
       messageLabel: '消息内容',
       messagePlaceholder: '输入你的消息...',
