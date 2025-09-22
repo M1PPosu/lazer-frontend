@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 
 interface AudioState {
   isPlaying: boolean;
@@ -301,7 +301,6 @@ export const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({ classN
     toggleMute,
   } = useAudio();
 
-  const [isDragging, setIsDragging] = useState(false);
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
 
