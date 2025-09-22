@@ -256,13 +256,6 @@ const MobileMenuDropdown = memo<{
                   >
                     {IconComponent && <IconComponent size={16} className="mr-3" />}
                     <span>{item.title}</span>
-                    {isActive && (
-                      <motion.div 
-                        className="ml-auto w-2 h-2 bg-osu-pink rounded-full"
-                        layoutId="mobileDropdownActiveIndicator"
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )}
                   </Link>
                 );
               })}
@@ -288,13 +281,6 @@ const MobileMenuDropdown = memo<{
                       >
                         {IconComponent && <IconComponent size={16} className="mr-3" />}
                         <span>{item.title}</span>
-                        {isActive && (
-                          <motion.div 
-                            className="ml-auto w-2 h-2 bg-osu-pink rounded-full"
-                            layoutId="mobileDropdownActiveIndicator"
-                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          />
-                        )}
                       </Link>
                     );
                   })}
@@ -316,13 +302,6 @@ const MobileMenuDropdown = memo<{
                   >
                     <FiSettings size={16} className="mr-3" />
                     <span>{t('nav.settings')}</span>
-                    {location.pathname === '/settings' && (
-                      <motion.div
-                        className="ml-auto w-2 h-2 bg-osu-pink rounded-full"
-                        layoutId="mobileDropdownActiveIndicator"
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )}
                   </Link>
                 </>
               )}
