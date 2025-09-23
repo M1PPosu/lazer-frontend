@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider } from './contexts/AuthContext';
 import { AudioProvider } from './components/UI/AudioPlayer';
+import { VerificationProvider } from './contexts/VerificationContext';
 import Layout from './components/Layout/Layout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -24,8 +25,9 @@ function App() {
 
   return (
     <AuthProvider>
-      <AudioProvider>
-        <Router>
+      <VerificationProvider>
+        <AudioProvider>
+          <Router>
           <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
@@ -62,8 +64,9 @@ function App() {
             />
           </Route>
           </Routes>
-        </Router>
-      </AudioProvider>
+          </Router>
+        </AudioProvider>
+      </VerificationProvider>
     </AuthProvider>
   );
 }

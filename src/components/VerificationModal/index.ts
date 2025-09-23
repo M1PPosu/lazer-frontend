@@ -1,0 +1,2 @@
+export { VerificationModal } from './VerificationModal';
+

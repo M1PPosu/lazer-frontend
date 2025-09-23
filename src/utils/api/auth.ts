@@ -18,6 +18,7 @@ export const authAPI = {
       const response = await axios.post(`${API_BASE_URL}/oauth/token`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'x-api-version': '20250913',
         },
       });
       return response.data;
@@ -40,6 +41,7 @@ export const authAPI = {
       const response = await axios.post(`${API_BASE_URL}/users`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'x-api-version': '20250913',
         },
       });
       return response.data;
@@ -60,6 +62,7 @@ export const authAPI = {
     const response = await axios.post(`${API_BASE_URL}/oauth/token`, formData, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        'x-api-version': '20250913',
       },
     });
     return response.data;

@@ -2,6 +2,19 @@ import type { AxiosRequestConfig } from 'axios';
 
 import { API_BASE_URL, api } from './client';
 
+// TOTP 相关类型定义
+export interface TOTPStatus {
+  enabled: boolean;
+  created_at?: string;
+}
+
+export interface TOTPCreateStart {
+  secret: string;
+  uri: string;
+}
+
+export type TOTPBackupCodes = string[];
+
 export const userAPI = {
   getMe: async (ruleset?: string) => {
     const url = ruleset ? `/api/v2/me/${ruleset}` : '/api/v2/me/';
@@ -210,5 +223,35 @@ export const userAPI = {
       },
     });
     return response.data;
+  },
+
+  // TOTP 相关接口
+  totp: {
+    // 检查 TOTP 状态
+    getStatus: async (): Promise<TOTPStatus> => {
+      console.log('检查 TOTP 状态');
+      const response = await api.get('/api/private/totp/status');
+      return response.data;
+    },
+
+    // 开始 TOTP 创建流程
+    createStart: async (): Promise<TOTPCreateStart> => {
+      console.log('开始 TOTP 创建流程');
+      const response = await api.post('/api/private/totp/create');
+      return response.data;
+    },
+
+    // 完成 TOTP 创建流程
+    createComplete: async (code: string): Promise<TOTPBackupCodes> => {
+      console.log('完成 TOTP 创建流程:', { code });
+      const response = await api.put('/api/private/totp/create', { code });
+      return response.data;
+    },
+
+    // 禁用 TOTP 双因素验证
+    disable: async (code: string): Promise<void> => {
+      console.log('禁用 TOTP 双因素验证:', { code });
+      await api.delete('/api/private/totp', { data: { code } });
+    },
   },
 };

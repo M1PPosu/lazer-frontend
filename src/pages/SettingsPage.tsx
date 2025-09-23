@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiUser, FiCheck, FiX, FiImage, FiCamera } from 'react-icons/fi';
+import { FiUser, FiCheck, FiX, FiImage, FiCamera, FiShield } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { userAPI } from '../utils/api';
+import { userAPI, type TOTPStatus } from '../utils/api';
 import EditableCover from '../components/UI/EditableCover';
 import Avatar from '../components/UI/Avatar';
 import AvatarUpload from '../components/UI/AvatarUpload';
+import TotpSetupModal from '../components/TOTP/TotpSetupModal';
+import TotpDisableModal from '../components/TOTP/TotpDisableModal';
 
 const SettingsPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -17,6 +19,45 @@ const SettingsPage: React.FC = () => {
   const [newUsername, setNewUsername] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAvatarUpload, setShowAvatarUpload] = useState(false);
+  
+  // TOTP 相关状态
+  const [totpStatus, setTotpStatus] = useState<TOTPStatus | null>(null);
+  const [isLoadingTotpStatus, setIsLoadingTotpStatus] = useState(true);
+  const [showTotpSetup, setShowTotpSetup] = useState(false);
+  const [showTotpDisable, setShowTotpDisable] = useState(false);
+
+  // 获取TOTP状态
+  const fetchTotpStatus = async () => {
+    try {
+      const status = await userAPI.totp.getStatus();
+      setTotpStatus(status);
+    } catch (error) {
+      console.error('获取TOTP状态失败:', error);
+      // 如果获取失败，假设未启用
+      setTotpStatus({ enabled: false });
+    } finally {
+      setIsLoadingTotpStatus(false);
+    }
+  };
+
+  // TOTP设置成功处理
+  const handleTotpSetupSuccess = () => {
+    setTotpStatus({ enabled: true, created_at: new Date().toISOString() });
+    toast.success(t('settings.totp.setupSuccess'));
+  };
+
+  // TOTP禁用成功处理
+  const handleTotpDisableSuccess = () => {
+    setTotpStatus({ enabled: false });
+    toast.success(t('settings.totp.disableSuccess'));
+  };
+
+  // 初始化时获取TOTP状态
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchTotpStatus();
+    }
+  }, [isAuthenticated, user]);
 
   if (isLoading) {
     return (
@@ -275,11 +316,91 @@ const SettingsPage: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* 用户信息 */}
+      {/* TOTP双因素验证设置 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <FiShield className="w-6 h-6 text-osu-pink" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {t('settings.totp.title')}
+          </h2>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('settings.totp.status')}
+            </label>
+            {isLoadingTotpStatus ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-osu-pink"></div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {t('settings.totp.checking')}
+                </span>
+              </div>
+            ) : totpStatus ? (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${totpStatus.enabled ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                  <div>
+                    <span className={`font-medium ${totpStatus.enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                      {totpStatus.enabled ? t('settings.totp.enabled') : t('settings.totp.disabled')}
+                    </span>
+                    {totpStatus.enabled && totpStatus.created_at && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {t('settings.totp.enabledSince', {
+                          date: new Date(totpStatus.created_at).toLocaleDateString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  {!totpStatus.enabled ? (
+                    <button
+                      onClick={() => setShowTotpSetup(true)}
+                      className="btn-primary !px-4 !py-2 text-sm"
+                    >
+                      {t('settings.totp.enable')}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowTotpDisable(true)}
+                      className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+                    >
+                      {t('settings.totp.disable')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-red-500">
+                {t('settings.totp.loadError')}
+              </div>
+            )}
+          </div>
+          
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              {t('settings.totp.description')}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* 用户信息 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
       >
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
@@ -363,6 +484,22 @@ const SettingsPage: React.FC = () => {
           onClose={() => setShowAvatarUpload(false)}
         />
       )}
+
+      {/* TOTP设置模态框 */}
+      <div>
+      <TotpSetupModal
+        isOpen={showTotpSetup}
+        onClose={() => setShowTotpSetup(false)}
+        onSuccess={handleTotpSetupSuccess}
+      />
+       </div>
+
+      {/* TOTP禁用模态框 */}
+      <TotpDisableModal
+        isOpen={showTotpDisable}
+        onClose={() => setShowTotpDisable(false)}
+        onSuccess={handleTotpDisableSuccess}
+      />
     </div>
   );
 };
