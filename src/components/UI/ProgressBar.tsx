@@ -49,12 +49,12 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           style={{ 
             backgroundColor: color,
             width: useTransform(animatedProgress, (value) => `${value}%`),
-            boxShadow: showGlow ? `0 0 10px ${color}40` : 'none'
+            boxShadow: showGlow ? `0 0 10px ${color}40` : 'none',
+            transformOrigin: "left"
           }}
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          transformOrigin="left"
         >
           {/* 光泽效果 */}
           {animated && (
