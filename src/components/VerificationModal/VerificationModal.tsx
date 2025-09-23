@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Smartphone, RefreshCw, X } from 'lucide-react';
+import { Mail, Smartphone, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface VerificationModalProps {
