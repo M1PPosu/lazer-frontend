@@ -43,7 +43,7 @@ export type LevelProgressProps = {
 export default function LevelProgress({
   levelCurrent,
   levelProgress,
-  tint = "#60a5fa", // Tailwind sky-400 as a nice default
+  tint = "#ED8EA6", // osu-pink as default color
   className = "",
   barHeight,
   barWidth,
