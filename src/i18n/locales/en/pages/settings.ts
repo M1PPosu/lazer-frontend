@@ -68,6 +68,7 @@ export const settingsPage = {
       manualEntry: 'Manual Entry Secret Key',
       enterCode: 'Enter Verification Code',
       codeHint: 'Enter the 6-digit code from your authenticator app',
+      codeExpireHint: 'TOTP codes expire every 30 seconds. Make sure to use a fresh code.',
       
       // Backup codes
       setupComplete: 'TOTP Setup Complete!',

@@ -68,6 +68,7 @@ export const settingsPage = {
       manualEntry: '手动输入密钥',
       enterCode: '输入验证码',
       codeHint: '输入身份验证器应用显示的6位数字',
+      codeExpireHint: 'TOTP代码每30秒过期一次，请确保使用最新的代码。',
       
       // 备份码
       setupComplete: 'TOTP 设置完成！',

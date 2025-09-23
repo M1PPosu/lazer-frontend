@@ -61,8 +61,19 @@ const TotpSetupModal: React.FC<TotpSetupModalProps> = ({
       toast.success(t('settings.totp.setupSuccess'));
     } catch (error: any) {
       console.error('TOTP验证失败:', error);
-      if (error.response?.data?.error === 'Invalid TOTP code') {
-        setVerificationError(t('settings.totp.errors.invalidCode'));
+      console.error('错误详情:', error.response?.data);
+      
+      // 处理不同类型的错误
+      if (error.response?.status === 400) {
+        const errorDetail = error.response?.data?.detail;
+        if (Array.isArray(errorDetail) && errorDetail.length > 0) {
+          // 处理验证错误
+          setVerificationError(t('settings.totp.errors.invalidCode'));
+        } else if (error.response?.data?.error === 'Invalid TOTP code') {
+          setVerificationError(t('settings.totp.errors.invalidCode'));
+        } else {
+          setVerificationError(t('settings.totp.errors.invalidCode'));
+        }
       } else {
         setVerificationError(t('settings.totp.errors.verificationFailed'));
       }
@@ -265,6 +276,9 @@ const TotpSetupModal: React.FC<TotpSetupModalProps> = ({
                 )}
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {t('settings.totp.codeHint')}
+                </p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                  {t('settings.totp.codeExpireHint')}
                 </p>
               </div>
 
