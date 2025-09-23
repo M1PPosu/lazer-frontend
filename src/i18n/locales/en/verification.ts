@@ -35,12 +35,18 @@ export const verification = {
     invalidCode: 'Invalid verification code, please try again',
     verificationFailed: 'Verification failed, please try again later',
     resendFailed: 'Failed to resend verification code',
-    switchFailed: 'Failed to switch verification method'
+    switchFailed: 'Failed to switch verification method',
+    // TOTP specific errors
+    totpInvalidOrExpired: 'Invalid verification code, please enter the correct code again',
+    totpGenericError: 'Verification failed, please check if the verification code is correct'
   },
   
   // Warning messages
   warning: {
     title: 'Important Notice:',
     message: 'This verification step is required and you cannot continue using the service until verification is complete. This is to protect your account security.'
-  }
+  },
+  
+  // Security notice
+  securityNotice: '🔒 For your account security, please complete verification'
 } as const;

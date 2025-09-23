@@ -35,12 +35,18 @@ export const verification = {
     invalidCode: '验证码错误，请重试',
     verificationFailed: '验证失败，请稍后重试',
     resendFailed: '重新发送验证码失败',
-    switchFailed: '切换验证方式失败'
+    switchFailed: '切换验证方式失败',
+    // TOTP 特定错误
+    totpInvalidOrExpired: '验证码错误，请重新输入正确的验证码',
+    totpGenericError: '验证失败，请检查验证码是否正确'
   },
   
   // 警告信息
   warning: {
     title: '重要提醒：',
     message: '此验证步骤是必需的，您无法在完成验证前继续使用服务。这是为了保护您的账户安全。'
-  }
+  },
+  
+  // 安全提示
+  securityNotice: '🔒 为了您的账户安全，请完成身份验证'
 } as const;

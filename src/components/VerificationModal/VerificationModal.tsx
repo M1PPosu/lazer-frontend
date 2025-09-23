@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Smartphone, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface VerificationModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
   onSwitchMethod,
   onResendCode,
 }) => {
+  const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,12 +69,12 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
       // 检查多种可能的错误格式
       if (errorMessage === 'No TOTP setup in progress or invalid data' || 
           errorString.includes('No TOTP setup in progress or invalid data')) {
-        setError('验证码错误，请重新输入正确的验证码');
+        setError(t('verification.errors.totpInvalidOrExpired'));
       } else if (errorDetail && typeof errorDetail === 'string' && 
                  errorDetail.includes('No TOTP setup in progress or invalid data')) {
-        setError('验证码错误，请重新输入正确的验证码');
+        setError(t('verification.errors.totpInvalidOrExpired'));
       } else {
-        setError('验证失败，请检查验证码是否正确');
+        setError(t('verification.errors.totpGenericError'));
       }
     } finally {
       setIsLoading(false);
@@ -87,7 +89,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
     try {
       await onSwitchMethod();
     } catch (err) {
-      setError('切换验证方式失败，请重试');
+      setError(t('verification.errors.switchFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -102,22 +104,22 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
 
     try {
       await onResendCode();
-      setResendMessage('验证码已重新发送');
+      setResendMessage(t('verification.codeResent'));
     } catch (err) {
-      setError('重新发送验证码失败，请重试');
+      setError(t('verification.errors.resendFailed'));
     } finally {
       setResendLoading(false);
     }
   };
 
   const getTitle = () => {
-    return method === 'totp' ? 'TOTP 身份验证' : '邮箱验证';
+    return method === 'totp' ? t('verification.totpTitle') : t('verification.mailTitle');
   };
 
   const getDescription = () => {
     return method === 'totp' 
-      ? '请输入您的 TOTP 验证器中显示的 6 位验证码'
-      : '请输入发送到您邮箱的 8 位验证码';
+      ? t('verification.totpDescription')
+      : t('verification.mailDescription');
   };
 
   const getIcon = () => {
@@ -173,7 +175,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="verification-code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    验证码
+                    {method === 'totp' ? t('verification.enterTotpCode') : t('verification.enterMailCode')}
                   </label>
                   <input
                     id="verification-code"
@@ -183,7 +185,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
                       const value = e.target.value.replace(/\D/g, '').slice(0, getCodeLength());
                       setCode(value);
                     }}
-                    placeholder={`请输入 ${getCodeLength()} 位验证码`}
+                    placeholder={t('verification.codeHint', { length: getCodeLength() })}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-center text-lg tracking-[0.3em] bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-osu-pink focus:border-transparent transition-colors"
                     maxLength={getCodeLength()}
                     disabled={isLoading}
@@ -215,10 +217,10 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
                   {isLoading ? (
                     <>
                       <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      验证中...
+                      {t('verification.verifying')}
                     </>
                   ) : (
-                    '验证'
+                    t('verification.verify')
                   )}
                 </button>
               </form>
@@ -233,7 +235,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
                   disabled={isLoading}
                   className="w-full text-osu-pink hover:text-osu-pink/80 text-sm font-medium py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {method === 'totp' ? '使用邮箱验证' : '使用 TOTP 验证'}
+                  {method === 'totp' ? t('verification.switchToMail') : t('verification.totpTitle')}
                 </button>
 
                 {method === 'mail' && onResendCode && (
@@ -245,10 +247,10 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
                     {resendLoading ? (
                       <>
                         <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        发送中...
+                        {t('verification.resending')}
                       </>
                     ) : (
-                      '重新发送验证码'
+                      t('verification.resendCode')
                     )}
                   </button>
                 )}
@@ -257,7 +259,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
               {/* 安全提示 */}
               <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                  🔒 为了您的账户安全，请完成身份验证
+                  {t('verification.securityNotice')}
                 </p>
               </div>
             </div>
