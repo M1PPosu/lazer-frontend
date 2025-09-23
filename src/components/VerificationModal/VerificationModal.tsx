@@ -56,8 +56,24 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({
     try {
       await onVerify(code.trim());
       setCode('');
-    } catch (err) {
-      setError('验证失败，请检查验证码是否正确');
+    } catch (err: any) {
+      console.error('验证失败:', err);
+      
+      // 处理特定的 TOTP 错误
+      const errorMessage = err?.response?.data?.error;
+      const errorDetail = err?.response?.data?.detail;
+      const errorString = err?.message || JSON.stringify(err?.response?.data || err);
+      
+      // 检查多种可能的错误格式
+      if (errorMessage === 'No TOTP setup in progress or invalid data' || 
+          errorString.includes('No TOTP setup in progress or invalid data')) {
+        setError('验证码错误，请重新输入正确的验证码');
+      } else if (errorDetail && typeof errorDetail === 'string' && 
+                 errorDetail.includes('No TOTP setup in progress or invalid data')) {
+        setError('验证码错误，请重新输入正确的验证码');
+      } else {
+        setError('验证失败，请检查验证码是否正确');
+      }
     } finally {
       setIsLoading(false);
     }
