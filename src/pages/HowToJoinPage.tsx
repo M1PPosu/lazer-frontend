@@ -34,7 +34,7 @@ const HowToJoinPage: React.FC = () => {
 
   return (
     <PhotoProvider>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8 sm:py-12 lg:py-16">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8 sm:py-12 lg:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 页面标题 */}
           <div className="text-center mb-12 sm:mb-16">
@@ -47,7 +47,7 @@ const HowToJoinPage: React.FC = () => {
           </div>
 
         {/* 方法一：自定义客户端 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-osu-pink text-white rounded-full flex items-center justify-center text-lg font-bold">
               1
@@ -131,7 +131,7 @@ const HowToJoinPage: React.FC = () => {
                   <p className="text-gray-700 dark:text-gray-300 mb-2">
                     {t('howToJoin.method1.steps.step2.description')}
                   </p>
-                  <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center mb-4">
+                  <div className="bg-gray-100/70 dark:bg-gray-700/70 backdrop-blur-sm p-4 rounded-lg flex items-center mb-4">
                     <code className="bg-osu-pink/10 dark:bg-osu-pink/20 text-osu-pink dark:text-pink-300 px-2 py-1 rounded flex-1">
                       lazer-api.g0v0.top
                     </code>
@@ -168,7 +168,7 @@ const HowToJoinPage: React.FC = () => {
         </div>
 
         {/* 方法二：Authlib Injector */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-osu-blue text-white rounded-full flex items-center justify-center text-lg font-bold">
               2
@@ -235,7 +235,7 @@ const HowToJoinPage: React.FC = () => {
                   <p className="text-gray-700 dark:text-gray-300 mb-2">
                     {t('howToJoin.method2.steps.step3.description')}
                   </p>
-                  <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg space-y-2">
+                  <div className="bg-gray-100/70 dark:bg-gray-700/70 backdrop-blur-sm p-4 rounded-lg space-y-2">
                     <div className="flex items-center">
                       <span className="font-semibold text-gray-800 dark:text-gray-200">{t('howToJoin.method2.steps.step3.apiUrl')}</span>
                       <code className="bg-osu-blue/10 dark:bg-osu-blue/20 text-osu-blue dark:text-blue-300 px-2 py-1 rounded ml-2 flex-1">

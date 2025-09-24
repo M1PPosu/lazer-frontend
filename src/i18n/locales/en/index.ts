@@ -3,6 +3,7 @@ import { navigation } from './navigation';
 import { pages } from './pages';
 import { auth } from './auth';
 import { verification } from './verification';
+import { privacy } from './privacy';
 
 export const en = {
   translation: {
@@ -11,5 +12,6 @@ export const en = {
     ...pages,
     auth,
     verification,
+    privacy,
   },
 } as const;

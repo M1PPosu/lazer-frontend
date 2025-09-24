@@ -18,6 +18,7 @@ import CreateTeamPage from './pages/CreateTeamPage';
 import MessagesPage from './pages/MessagesPage';
 import HowToJoinPage from './pages/HowToJoinPage';
 import BeatmapPage from './pages/BeatmapPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import BBCodeTester from './components/BBCode/BBCodeTester';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
             <Route path="teams/:teamId/edit" element={<CreateTeamPage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="how-to-join" element={<HowToJoinPage />} />
+            <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="beatmaps/:beatmapId" element={<BeatmapPage />} />
             <Route path="beatmapsets/:beatmapsetId" element={<BeatmapPage />} />
             <Route

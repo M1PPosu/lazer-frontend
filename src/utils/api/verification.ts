@@ -60,3 +60,4 @@ export const getVerificationMethod = (error: any): 'totp' | 'mail' | null => {
   return null;
 };
 
+
