@@ -17,7 +17,7 @@ export type LevelProgressProps = {
   levelCurrent: number;
   /** Progress percentage for the current level (0-100) */
   levelProgress: number;
-  /** Bar fill color. Accepts any valid CSS color string */
+  /** Bar fill color. Accepts any valid CSS color string or a CSS gradient string */
   tint?: string;
   /** Add or override container classes (width/spacing etc.) */
   className?: string;
@@ -43,7 +43,7 @@ export type LevelProgressProps = {
 export default function LevelProgress({
   levelCurrent,
   levelProgress,
-  tint = "#ED8EA6", // osu-pink as default color
+  tint = "#60a5fa", // default
   className = "",
   barHeight,
   barWidth,
@@ -59,17 +59,21 @@ export default function LevelProgress({
     [levelProgress]
   );
 
-  // A stable, unique tooltip id per component instance
+  // A stable, unique tooltip/gradient id per component instance
   const tooltipId = useId();
+  const gradId = useId();
+
+  const isGradient = typeof tint === "string" && tint.toLowerCase().includes("gradient");
 
   // Inline styles for height/width overrides if provided
   const barContainerStyle: React.CSSProperties = {};
   if (barHeight) barContainerStyle.height = barHeight;
   if (barWidth) barContainerStyle.width = barWidth;
 
+  // Use `background` (not backgroundColor) so gradients work
   const progressStyle: React.CSSProperties = {
     width: `${clamped}%`,
-    backgroundColor: tint,
+    ...(isGradient ? { background: tint } : { backgroundColor: tint }),
   };
 
   // Circular progress calculations
@@ -82,9 +86,7 @@ export default function LevelProgress({
   const ariaLabel = `Level ${levelCurrent}, ${clamped}% complete`;
 
   // Default label content
-  const labelContent = renderLabel ? renderLabel(levelCurrent, clamped) : (
-    <>Lv.{levelCurrent}</>
-  );
+  const labelContent = renderLabel ? renderLabel(levelCurrent, clamped) : <>Lv.{levelCurrent}</>;
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
@@ -118,11 +120,20 @@ export default function LevelProgress({
         data-tooltip-id={tooltipId}
         data-tooltip-content={`${clamped}%`}
       >
-        <svg
-          width={circleSize}
-          height={circleSize}
-          className="transform -rotate-90"
-        >
+        <svg width={circleSize} height={circleSize} className="transform -rotate-90">
+          {/* Gradient defs only if tint is a gradient */}
+          {isGradient && (
+            <defs>
+              {/* Horizontal gradient to mirror the linear bar look */}
+              <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+                {/* Stops chosen to match your rank line vibe */}
+                <stop offset="0%" stopColor="#6f13f0" />
+                <stop offset="50%" stopColor="#8B5CF6" />
+                <stop offset="100%" stopColor="#ED8EA6" />
+              </linearGradient>
+            </defs>
+          )}
+
           {/* Background circle */}
           <circle
             cx={numericSize / 2}
@@ -138,7 +149,7 @@ export default function LevelProgress({
             cx={numericSize / 2}
             cy={numericSize / 2}
             r={radius}
-            stroke={tint}
+            stroke={isGradient ? `url(#${gradId})` : tint}
             strokeWidth={circleStrokeWidth}
             fill="none"
             strokeLinecap="round"
@@ -149,12 +160,8 @@ export default function LevelProgress({
         </svg>
         {/* Center label for mobile */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-            Lv.{levelCurrent}
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            {clamped}%
-          </span>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Lv.{levelCurrent}</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{clamped}%</span>
         </div>
       </div>
 
@@ -165,7 +172,7 @@ export default function LevelProgress({
         </span>
       )}
 
-      {/* Tooltip (render once per component instance) */}
+      {/* Tooltip */}
       <Tooltip id={tooltipId} place={tooltipPlace} />
     </div>
   );

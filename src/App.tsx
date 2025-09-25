@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider } from './contexts/AuthContext';
 import { AudioProvider } from './components/UI/AudioPlayer';
-import { VerificationProvider } from './contexts/VerificationContext';
 import Layout from './components/Layout/Layout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -18,7 +17,6 @@ import CreateTeamPage from './pages/CreateTeamPage';
 import MessagesPage from './pages/MessagesPage';
 import HowToJoinPage from './pages/HowToJoinPage';
 import BeatmapPage from './pages/BeatmapPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import BBCodeTester from './components/BBCode/BBCodeTester';
 
 function App() {
@@ -26,9 +24,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <VerificationProvider>
-        <AudioProvider>
-          <Router>
+      <AudioProvider>
+        <Router>
           <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
@@ -44,7 +41,6 @@ function App() {
             <Route path="teams/:teamId/edit" element={<CreateTeamPage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="how-to-join" element={<HowToJoinPage />} />
-            <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="beatmaps/:beatmapId" element={<BeatmapPage />} />
             <Route path="beatmapsets/:beatmapsetId" element={<BeatmapPage />} />
             <Route
@@ -66,9 +62,8 @@ function App() {
             />
           </Route>
           </Routes>
-          </Router>
-        </AudioProvider>
-      </VerificationProvider>
+        </Router>
+      </AudioProvider>
     </AuthProvider>
   );
 }

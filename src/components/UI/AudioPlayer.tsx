@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import { motion, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 
 interface AudioState {
@@ -234,80 +233,51 @@ export const AudioPlayButton: React.FC<AudioPlayButtonProps> = ({
   };
 
   return (
-    <motion.button
+    <button
       onClick={handleClick}
       className={`
         relative flex items-center justify-center rounded-full
-        bg-osu-pink hover:bg-osu-pink/80 text-white shadow-lg
-        transition-colors duration-200
+        bg-blue-600 hover:bg-blue-700 text-white
+        transition-all duration-200 hover:scale-105
         ${sizeClasses[size]} ${className}
       `}
       disabled={isLoading}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       {/* 进度环 */}
       {showProgress && isCurrentTrack && (
-        <motion.svg
+        <svg
           className="absolute inset-0 w-full h-full transform -rotate-90"
           viewBox="0 0 36 36"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
         >
           <path
-            className="text-white/20"
+            className="text-blue-200 opacity-30"
             stroke="currentColor"
             strokeWidth="2"
             fill="none"
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
           />
-          <motion.path
+          <path
             className="text-white"
             stroke="currentColor"
             strokeWidth="2"
             fill="none"
             strokeDasharray={`${progress}, 100`}
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-            initial={{ strokeDasharray: "0, 100" }}
-            animate={{ strokeDasharray: `${progress}, 100` }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
           />
-        </motion.svg>
+        </svg>
       )}
       
       {/* 播放/暂停图标 */}
       <div className="relative z-10">
-        <AnimatePresence mode="wait">
-          {isLoading && isCurrentTrack ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0, rotate: -180 }}
-              animate={{ opacity: 1, rotate: 0 }}
-              exit={{ opacity: 0, rotate: 180 }}
-              transition={{ duration: 0.2 }}
-            >
-              <RotateCcw size={iconSizes[size]} className="animate-spin" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key={isCurrentlyPlaying ? 'pause' : 'play'}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.15 }}
-            >
-              {isCurrentlyPlaying ? (
-                <Pause size={iconSizes[size]} />
-              ) : (
-                <Play size={iconSizes[size]} className="ml-0.5" />
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isLoading && isCurrentTrack ? (
+          <RotateCcw size={iconSizes[size]} className="animate-spin" />
+        ) : isCurrentlyPlaying ? (
+          <Pause size={iconSizes[size]} />
+        ) : (
+          <Play size={iconSizes[size]} className="ml-0.5" />
+        )}
       </div>
-    </motion.button>
+    </button>
   );
 };
 
@@ -333,28 +303,6 @@ export const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({ classN
 
   const progressRef = useRef<HTMLDivElement>(null);
   const volumeRef = useRef<HTMLDivElement>(null);
-  const [isDraggingProgress, setIsDraggingProgress] = useState(false);
-  const [isDraggingVolume, setIsDraggingVolume] = useState(false);
-
-  // 使用 framer-motion 的 useSpring 来创建平滑的递增动画
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-  const volumeProgress = volume * 100;
-  
-  const animatedProgress = useSpring(progress, {
-    stiffness: 100,
-    damping: 30,
-    mass: 0.8
-  });
-  
-  const animatedVolumeProgress = useSpring(volumeProgress, {
-    stiffness: 150,
-    damping: 25,
-    mass: 0.5
-  });
-
-  // 将 useTransform 移到组件顶层
-  const progressWidth = useTransform(animatedProgress, (value) => `${value}%`);
-  const volumeWidth = useTransform(animatedVolumeProgress, (value) => `${value}%`);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -362,76 +310,24 @@ export const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({ classN
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // 进度条拖动处理
-  const updateProgressFromMouse = (e: MouseEvent | React.MouseEvent) => {
+  const handleProgressClick = (e: React.MouseEvent) => {
     if (!progressRef.current || !duration) return;
     
     const rect = progressRef.current.getBoundingClientRect();
-    const progress = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const progress = (e.clientX - rect.left) / rect.width;
     seek(progress * duration);
   };
 
-  const handleProgressMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDraggingProgress(true);
-    updateProgressFromMouse(e);
-  };
-
-  const handleProgressClick = (e: React.MouseEvent) => {
-    if (!isDraggingProgress) {
-      updateProgressFromMouse(e);
-    }
-  };
-
-  // 音量条拖动处理
-  const updateVolumeFromMouse = (e: MouseEvent | React.MouseEvent) => {
+  const handleVolumeClick = (e: React.MouseEvent) => {
     if (!volumeRef.current) return;
     
     const rect = volumeRef.current.getBoundingClientRect();
-    const volume = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    setVolume(volume);
+    const volume = (e.clientX - rect.left) / rect.width;
+    setVolume(Math.max(0, Math.min(1, volume)));
   };
 
-  const handleVolumeMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDraggingVolume(true);
-    updateVolumeFromMouse(e);
-  };
-
-  const handleVolumeClick = (e: React.MouseEvent) => {
-    if (!isDraggingVolume) {
-      updateVolumeFromMouse(e);
-    }
-  };
-
-  // 全局鼠标事件处理
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDraggingProgress) {
-        updateProgressFromMouse(e);
-      }
-      if (isDraggingVolume) {
-        updateVolumeFromMouse(e);
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDraggingProgress(false);
-      setIsDraggingVolume(false);
-    };
-
-    if (isDraggingProgress || isDraggingVolume) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.body.style.userSelect = 'none'; // 防止拖动时选中文本
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.userSelect = '';
-    };
-  }, [isDraggingProgress, isDraggingVolume, duration]);
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const volumeProgress = volume * 100;
 
   if (!currentUrl) return null;
 
@@ -443,25 +339,12 @@ export const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({ classN
       ${className}
     `}>
       {/* 播放/暂停按钮 */}
-      <motion.button
+      <button
         onClick={isPlaying ? pause : () => currentUrl && play(currentUrl)}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-osu-pink hover:bg-osu-pink/80 text-white transition-colors shadow-lg"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors"
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={isPlaying ? 'pause' : 'play'}
-            initial={{ opacity: 0, rotate: -90 }}
-            animate={{ opacity: 1, rotate: 0 }}
-            exit={{ opacity: 0, rotate: 90 }}
-            transition={{ duration: 0.15 }}
-          >
-            {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
-          </motion.div>
-        </AnimatePresence>
-      </motion.button>
+        {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
+      </button>
 
       {/* 进度条 */}
       <div className="flex-1 flex items-center gap-3">
@@ -469,47 +352,18 @@ export const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({ classN
           {formatTime(currentTime)}
         </span>
         
-        <motion.div
+        <div
           ref={progressRef}
           onClick={handleProgressClick}
-          onMouseDown={handleProgressMouseDown}
-          className={`flex-1 h-3 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer group overflow-hidden ${
-            isDraggingProgress ? 'cursor-grabbing' : 'cursor-pointer'
-          }`}
-          whileHover={{ height: 12 }}
-          transition={{ duration: 0.2 }}
+          className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer group"
         >
-          <motion.div
-            className="h-full bg-osu-pink rounded-full relative group-hover:bg-osu-pink/90 shadow-sm"
-            style={{ 
-              width: progressWidth,
-              transformOrigin: "left"
-            }}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+          <div
+            className="h-full bg-blue-600 rounded-full relative group-hover:bg-blue-700 transition-colors"
+            style={{ width: `${progress}%` }}
           >
-            {/* 进度条光泽效果 */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full"
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-                repeatDelay: 1
-              }}
-            />
-            
-            {/* 悬停时的拖拽点 */}
-            <motion.div 
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-osu-pink rounded-full shadow-lg border-2 border-white"
-              initial={{ opacity: 0, scale: 0 }}
-              whileHover={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            />
-          </motion.div>
-        </motion.div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+        </div>
         
         <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[40px]">
           {formatTime(duration)}
@@ -518,54 +372,25 @@ export const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({ classN
 
       {/* 音量控制 */}
       <div className="flex items-center gap-2">
-        <motion.button
+        <button
           onClick={toggleMute}
-          className="p-2 text-gray-600 dark:text-gray-400 hover:text-osu-pink transition-colors rounded-lg"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
         >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={isMuted || volume === 0 ? 'muted' : 'unmuted'}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.15 }}
-            >
-              {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
-            </motion.div>
-          </AnimatePresence>
-        </motion.button>
+          {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        </button>
         
-        <motion.div
+        <div
           ref={volumeRef}
           onClick={handleVolumeClick}
-          onMouseDown={handleVolumeMouseDown}
-          className={`w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full group overflow-hidden ${
-            isDraggingVolume ? 'cursor-grabbing' : 'cursor-pointer'
-          }`}
-          whileHover={{ height: 8 }}
-          transition={{ duration: 0.2 }}
+          className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer group"
         >
-          <motion.div
-            className="h-full bg-osu-pink rounded-full relative group-hover:bg-osu-pink/90"
-            style={{ 
-              width: volumeWidth,
-              transformOrigin: "left"
-            }}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+          <div
+            className="h-full bg-blue-600 rounded-full relative group-hover:bg-blue-700 transition-colors"
+            style={{ width: `${volumeProgress}%` }}
           >
-            <motion.div 
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-osu-pink rounded-full shadow-md border border-white"
-              initial={{ opacity: 0, scale: 0 }}
-              whileHover={{ opacity: 1, scale: 1 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            />
-          </motion.div>
-        </motion.div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(userData);
       setIsAuthenticated(true);
 
-      toast.success(`欢迎回来，${userData.username}！`);
+      toast.success(`Welcome back，${userData.username}！`);
       return true;
     } catch (error) {
       handleApiError(error);

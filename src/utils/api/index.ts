@@ -1,7 +1,7 @@
 export { API_BASE_URL, api } from './client';
 export { CLIENT_CONFIG } from './config';
 export { authAPI } from './auth';
-export { userAPI, type TOTPStatus, type TOTPCreateStart, type TOTPBackupCodes } from './user';
+export { userAPI } from './user';
 export { friendsAPI } from './friends';
 export { handleApiError } from './errors';
 export { rankingsAPI } from './rankings';

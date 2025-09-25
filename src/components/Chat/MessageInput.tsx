@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiSend } from 'react-icons/fi';
-import { useTranslation } from 'react-i18next';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
@@ -10,26 +9,24 @@ interface MessageInputProps {
   maxLength?: number;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({
-  onSendMessage,
+const MessageInput: React.FC<MessageInputProps> = ({ 
+  onSendMessage, 
   disabled = false,
-  placeholder,
+  placeholder = "Enter a message...",
   maxLength = 1000
 }) => {
-  const { t } = useTranslation();
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const resolvedPlaceholder = placeholder ?? t('messages.chat.placeholder');
 
-  // 自动调整输入框高度
+  // Automatically adjust the input box height
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      // 先重置高度以获取正确的 scrollHeight
+      // Reset the height first to get the correct one scrollHeight
       textarea.style.height = '48px';
       const newHeight = Math.min(Math.max(textarea.scrollHeight, 48), 120);
       textarea.style.height = `${newHeight}px`;
-      // 确保没有滚动条
+      // Make sure there are no scroll bars
       textarea.style.overflowY = newHeight >= 120 ? 'auto' : 'hidden';
     }
   }, [message]);
@@ -40,10 +37,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
     onSendMessage(message.trim());
     setMessage('');
     
-    // 重置输入框高度
+    // Reset input box height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = '48px'; // 回到最小高度
+      textareaRef.current.style.height = '48px'; // Return to minimum height
       textareaRef.current.style.overflowY = 'hidden';
     }
   };
@@ -56,7 +53,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
-    // 处理粘贴事件，确保不超过最大长度
+    // Handle paste events to ensure that the maximum length is not exceeded
     const pastedText = e.clipboardData.getData('text');
     const currentLength = message.length;
     const remainingLength = maxLength - currentLength;
@@ -71,7 +68,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <div className=" px-3 pt-3 pb-2 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
       <div className="mb-3 flex items-end space-x-3">
-        {/* 消息输入区域 */}
+        {/* Message input area */}
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
@@ -79,7 +76,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             onPaste={handlePaste}
-            placeholder={resolvedPlaceholder}
+            placeholder={placeholder}
             disabled={disabled}
             maxLength={maxLength}
             className={`
@@ -101,7 +98,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             }}
           />
           
-          {/* 字符计数 */}
+          {/* Character Count */}
           {message.length > maxLength * 0.8 && (
             <div className={`
               absolute right-3 top-1 text-xs
@@ -112,7 +109,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           )}
         </div>
 
-        {/* 发送按钮 */}
+        {/* Send button */}
         <motion.button
           whileHover={{ scale: disabled ? 1 : 1.05 }}
           whileTap={{ scale: disabled ? 1 : 0.95 }}
@@ -130,10 +127,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
         </motion.button>
       </div>
       
-      {/* 简化的提示文字 */}
+      {/* Simplified prompt text */}
       {disabled && (
         <div className="mt-2 text-xs text-red-400">
-          {t('messages.chat.cannotSend')}
+          Unable to send a message.
         </div>
       )}
     </div>

@@ -54,7 +54,7 @@ const BeatmapUrlLoader: React.FC<BeatmapUrlLoaderProps> = ({ onLoad, className =
   };
 
   const isValidOsuUrl = (url: string) => {
-    return url.includes('osu.ppy.sh') && (url.includes('/beatmaps/') || url.includes('/beatmapsets/'));
+    return url.includes('catboy.best') && (url.includes('/beatmaps/') || url.includes('/beatmapsets/'));
   };
 
   return (
@@ -75,7 +75,7 @@ const BeatmapUrlLoader: React.FC<BeatmapUrlLoaderProps> = ({ onLoad, className =
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://osu.ppy.sh/beatmapsets/123456#osu/789012"
+              placeholder="https://catboy.best/beatmapsets/123456#osu/789012"
               className="w-full px-4 py-2 pl-10 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg 
                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                         focus:ring-2 focus:ring-blue-500 focus:border-transparent
@@ -115,9 +115,9 @@ const BeatmapUrlLoader: React.FC<BeatmapUrlLoaderProps> = ({ onLoad, className =
       <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
         <p className="mb-2">{t('beatmap.supportedUrls')}:</p>
         <ul className="list-disc list-inside space-y-1 text-xs">
-          <li>https://osu.ppy.sh/beatmapsets/123456</li>
-          <li>https://osu.ppy.sh/beatmapsets/123456#osu/789012</li>
-          <li>https://osu.ppy.sh/beatmaps/789012</li>
+          <li>https://catboy.best/beatmapsets/123456</li>
+          <li>https://catboy.best/beatmapsets/123456#osu/789012</li>
+          <li>https://catboy.best/beatmaps/789012</li>
         </ul>
       </div>
     </div>

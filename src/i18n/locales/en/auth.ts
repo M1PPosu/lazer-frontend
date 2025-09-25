@@ -1,7 +1,7 @@
 export const auth = {
   login: {
     title: 'Sign in',
-    subtitle: 'Sign in to your g0v0! account',
+    subtitle: 'Sign in to your M1Lazer account',
     username: 'Username',
     password: 'Password',
     usernamePlaceholder: 'Enter username',
@@ -12,7 +12,7 @@ export const auth = {
   },
   register: {
     title: 'Sign up',
-    subtitle: 'Create your g0v0! account',
+    subtitle: 'Create your M1Lazer account',
     username: 'Username',
     email: 'Email',
     password: 'Password',

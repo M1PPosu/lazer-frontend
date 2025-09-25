@@ -15,18 +15,18 @@ interface RankHistoryChartProps {
   delay?: number;
   height?: string | number;
   showTitle?: boolean;
-  fullBleed?: boolean; // 是否左右顶满
+  fullBleed?: boolean; // whether to stretch edge-to-edge horizontally
 }
 
 const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
   rankHistory,
   isUpdatingMode = false,
-  selectedModeColor = '#e91e63',
+//selectedModeColor = '#6f13f0',
   delay = 0.4,
   height = '16rem',
   fullBleed = true,
 }) => {
-  // 数据预处理：去除 0（视为缺失），保留时间顺序
+  // Preprocess data: treat 0 as missing, keep chronological order
   const chartData = React.useMemo(() => {
     const src = rankHistory?.data ?? [];
     if (src.length === 0) return [];
@@ -46,14 +46,13 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
 
   const total = chartData.length;
 
-  // === 关键修复：为 Y 轴增加上下缓冲，避免极值处被裁半 ===
+  // Add top/bottom padding to Y domain so extreme values aren't clipped
   const yDomain = React.useMemo<[number | 'auto', number | 'auto']>(() => {
     if (chartData.length === 0) return ['auto', 'auto'];
     const values = chartData.map(d => d.rank as number);
     const dataMin = Math.min(...values);
     const dataMax = Math.max(...values);
-    // 按范围的 5% 取整做缓冲，至少 1
-    const pad = Math.max(1, Math.round((dataMax - dataMin) * 0.05));
+    const pad = Math.max(1, Math.round((dataMax - dataMin) * 0.05)); // at least 1
     return [dataMin - pad, dataMax + pad];
   }, [chartData]);
 
@@ -62,26 +61,34 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="bg-white/95 dark:bg-gray-900/85 rounded-2xl p-6 outline-none focus:outline-none ring-0 focus:ring-0"
+      className="rounded-xl p-4 outline-none focus:outline-none ring-0 focus:ring-0 bg-transparent"
       style={{ outline: 'none' }}
     >
-      <div className={fullBleed ? '-mx-6' : ''} style={{ height }}>
+      <div className={fullBleed ? '-mx-4' : ''} style={{ height }}>
         {isUpdatingMode ? (
           <div className="h-full flex items-center justify-center">
             <div className="animate-pulse text-gray-400 dark:text-gray-500 text-center">
               <FiBarChart2 className="mx-auto text-4xl mb-2" />
-              <p>数据加载中...</p>
+              <p>Loading data...</p>
             </div>
           </div>
         ) : chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
-              // 上下给一点额外 margin，配合 yDomain 的缓冲更稳
+              // Small vertical margins; works together with yDomain padding
               margin={{ top: 12, right: 0, left: 0, bottom: 12 }}
             >
+              <defs>
+                <linearGradient id="rankLineGrad" x1="0" y1="0" x2="1" y2="0">
+                  {/* lavender → pink, like your sample */}
+                  <stop offset="0%" stopColor="#8b5cf6" />
+                  <stop offset="100%" stopColor="#ed8ea6" />
+                </linearGradient>
+              </defs>
+
               <XAxis dataKey="idx" hide />
-              {/* 上小下大：反转 Y 轴；并使用带缓冲的 domain */}
+              {/* Smaller value on top: reverse Y axis; use padded domain */}
               <YAxis
                 type="number"
                 dataKey="rank"
@@ -89,7 +96,7 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
                 reversed
                 domain={yDomain}
                 allowDecimals={false}
-                // 如果数据突变导致临时越界，也能先画出来不被裁
+                // In case of sudden spikes, allow temporary overflow to render
                 allowDataOverflow
               />
               <Tooltip
@@ -101,20 +108,20 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
                 }}
                 labelFormatter={(label) => {
                   const idx = Number(label);
-                  const daysAgo = total - 1 - idx; // 最右是最新
-                  return daysAgo === 0 ? '刚刚' : `${daysAgo} 天前`;
+                  const daysAgo = total - 1 - idx; // rightmost is latest
+                  return daysAgo === 0 ? 'Just now' : `${daysAgo} days ago`;
                 }}
-                formatter={(value) => [`#${value}`, '全球排名']}
+                formatter={(value) => [`#${value}`, 'Global Rank']}
               />
               <Line
                 type="monotone"
                 dataKey="rank"
-                stroke={selectedModeColor}
+                stroke="url(#rankLineGrad)"
                 strokeWidth={3}
                 dot={false}
                 activeDot={false}
                 connectNulls={false}
-                // 线端圆角，边缘看起来更自然
+                // Rounded line caps look nicer at edges
                 strokeLinecap="round"
               />
             </LineChart>
@@ -123,7 +130,7 @@ const RankHistoryChart: React.FC<RankHistoryChartProps> = ({
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <FiBarChart2 className="mx-auto text-4xl mb-2 text-gray-400 dark:text-gray-500" />
-              <p className="text-gray-500 dark:text-gray-400">暂无排名历史数据</p>
+              <p className="text-gray-500 dark:text-gray-400">No rank history yet</p>
             </div>
           </div>
         )}

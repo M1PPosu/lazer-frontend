@@ -18,37 +18,37 @@ const GameStatsCard: React.FC<GameStatsCardProps> = ({ statistics, isUpdatingMod
   >
     <div className="grid grid-cols-2 gap-4">
       <div className="text-center">
-        <p className="text-lg font-bold text-gray-900 dark:text白">
+        <p className="text-lg font-bold text-gray-900 dark:textwhite">
           {isUpdatingMode || !statistics ? (
             <TextSkeleton>{statistics?.play_count?.toLocaleString() || '999,999'}</TextSkeleton>
           ) : (
             statistics.play_count?.toLocaleString() || '0'
           )}
         </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">游戏次数</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Playcount</p>
       </div>
       <div className="text-center">
-        <p className="text-lg font-bold text-gray-900 dark:text白">
+        <p className="text-lg font-bold text-gray-900 dark:textwhite">
           {isUpdatingMode || !statistics ? (
             <TextSkeleton>{statistics?.total_score?.toLocaleString() || '99,999,999'}</TextSkeleton>
           ) : (
             statistics.total_score?.toLocaleString() || '0'
           )}
         </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">总分</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Total points</p>
       </div>
       <div className="text-center">
-        <p className="text-lg font-bold text-gray-900 dark:text白">
+        <p className="text-lg font-bold text-gray-900 dark:textwhite">
           {isUpdatingMode || !statistics ? (
             <TextSkeleton>{statistics?.ranked_score?.toLocaleString() || '99,999,999'}</TextSkeleton>
           ) : (
             statistics.ranked_score?.toLocaleString() || '0'
           )}
         </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">排名分数</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Ranking score</p>
       </div>
       <div className="text-center">
-        <p className="text-lg font-bold text-gray-900 dark:text白">
+        <p className="text-lg font-bold text-gray-900 dark:textwhite">
           {isUpdatingMode || !statistics ? (
             <TextSkeleton>
               {statistics?.play_time
@@ -59,11 +59,10 @@ const GameStatsCard: React.FC<GameStatsCardProps> = ({ statistics, isUpdatingMod
             `${Math.round((statistics.play_time || 0) / 3600).toLocaleString()}h`
           )}
         </p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">游戏时间</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Playtime</p>
       </div>
     </div>
   </motion.div>
 );
 
 export default GameStatsCard;
-

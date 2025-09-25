@@ -8,13 +8,13 @@ export default function FriendStats({ user, selfId }: { user: User; selfId?: num
   const { user: self } = useAuth();
   const resolvedSelfId = selfId ?? self?.id;
   
-  // 如果没有有效的用户ID，不显示好友操作
+  // If there is no valid userID, no friend operation is displayed
   if (!resolvedSelfId || !user?.id) {
     console.log('Missing user IDs:', { resolvedSelfId, userId: user?.id });
     return (
       <div className="flex gap-3">
         <div className="bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded-full flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <span>加载中...</span>
+          <span>loading...</span>
         </div>
         <div className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-full flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 friend-button-shadow">
           <FaBell className="w-4 h-4" />
@@ -23,7 +23,7 @@ export default function FriendStats({ user, selfId }: { user: User; selfId?: num
       </div>
     );
   }
-  // 直接检查是否为自己
+  // Check directly whether it is yourself
   const isCurrentUserSelf = resolvedSelfId === user.id;
   
   const {
@@ -35,7 +35,7 @@ export default function FriendStats({ user, selfId }: { user: User; selfId?: num
     unblock,
   } = useFriendRelationship(user.id, resolvedSelfId);
 
-  // 优先使用直接比较的结果，只有当无法确定时才使用 hook 的结果
+  // Priority is given to the results of direct comparison, only if it is impossible to determine hook Results
   const finalIsSelf = isCurrentUserSelf;
 
   console.log('FriendStats debug:', { 

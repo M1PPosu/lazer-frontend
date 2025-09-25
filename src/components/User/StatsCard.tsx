@@ -1,5 +1,4 @@
 import React from "react";
-import { useTranslation } from 'react-i18next';
 
 interface Stats {
   hit_accuracy?: number;
@@ -17,80 +16,48 @@ interface StatsCardProps {
 }
 
 const StatsCard: React.FC<StatsCardProps> = ({ stats }) => {
-  const { t } = useTranslation();
-  // 每次游玩击打数 = 总命中次数 / 游戏次数
+  // Hits per game = total_hits / play_count
   const avgHitsPerPlay =
-    stats?.play_count && stats?.play_count > 0
+    stats?.play_count && stats.play_count > 0
       ? Math.round((stats.total_hits ?? 0) / stats.play_count)
       : 0;
 
+  // Compact labels + subtle underline (doesn't affect layout)
+  const labelClass =
+    "relative text-[10px] md:text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400/90 " +
+    "after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-8 after:rounded " +
+    "after:bg-white/20 dark:after:bg-white/10";
+  const valueClass =
+    "text-xs md:text-sm font-extrabold text-transparent bg-clip-text " +
+    "bg-gradient-to-r from-[#8b5cf6] to-[#ed8ea6] tabular-nums";
+
+  const fmt = (n?: number) => (n ?? 0).toLocaleString();
+
+  const rows: { label: string; value: React.ReactNode }[] = [
+    { label: "Total score", value: fmt(stats?.total_score) },
+    { label: "Accuracy", value: `${(stats?.hit_accuracy ?? 0).toFixed(2)}%` },
+    { label: "Playcount", value: fmt(stats?.play_count) },
+    { label: "Ranked score", value: fmt(stats?.ranked_score) },
+    { label: "Total hits", value: fmt(stats?.total_hits) },
+    { label: "Hits per game", value: avgHitsPerPlay.toLocaleString() },
+    { label: "Maximum combo", value: fmt(stats?.maximum_combo) },
+    { label: "Replays watched", value: fmt(stats?.replays_watched_by_others) },
+  ];
+
   return (
-    <div>
-      <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 text-xs">
-        {/* 计分成绩总分 */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 dark:text-gray-300">{t('profile.stats.rankedScore')}</span>
-          <span className="text-gray-800 dark:text-gray-100 font-bold">
-            {stats?.ranked_score?.toLocaleString() ?? 0}
-          </span>
-        </div>
-
-        {/* 准确率 */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 dark:text-gray-300">{t('profile.stats.accuracy')}</span>
-          <span className="text-gray-800 dark:text-gray-100 font-bold">
-            {(stats?.hit_accuracy ?? 0).toFixed(2)}%
-          </span>
-        </div>
-
-        {/* 游戏次数 */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 dark:text-gray-300">{t('profile.stats.playCount')}</span>
-          <span className="text-gray-800 dark:text-gray-100 font-bold">
-            {stats?.play_count?.toLocaleString() ?? 0}
-          </span>
-        </div>
-
-        {/* 总分 */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 dark:text-gray-300">{t('profile.stats.totalScore')}</span>
-          <span className="text-gray-800 dark:text-gray-100 font-bold">
-            {stats?.total_score?.toLocaleString() ?? 0}
-          </span>
-        </div>
-
-        {/* 总命中次数 */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 dark:text-gray-300">{t('profile.stats.totalHits')}</span>
-          <span className="text-gray-800 dark:text-gray-100 font-bold">
-            {stats?.total_hits?.toLocaleString() ?? 0}
-          </span>
-        </div>
-
-        {/* 每次游玩击打数 */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 dark:text-gray-300">{t('profile.stats.hitsPerPlay')}</span>
-          <span className="text-gray-800 dark:text-gray-100 font-bold">
-            {avgHitsPerPlay.toLocaleString()}
-          </span>
-        </div>
-
-        {/* 最大连击 */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 dark:text-gray-300">{t('profile.stats.maxCombo')}</span>
-          <span className="text-gray-800 dark:text-gray-100 font-bold">
-            {stats?.maximum_combo?.toLocaleString() ?? 0}
-          </span>
-        </div>
-
-        {/* 回放被观看次数 */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 dark:text-gray-300">{t('profile.stats.replaysWatched')}</span>
-          <span className="text-gray-800 dark:text-gray-100 font-bold">
-            {stats?.replays_watched_by_others?.toLocaleString() ?? 0}
-          </span>
-        </div>
-      </div>
+    <div className="h-full">
+      {/* Stretch to full height and distribute rows evenly */}
+      <ul className="h-full my-0 flex flex-col justify-between gap-1.5 sm:gap-2">
+        {rows.map((r) => (
+          <li
+            key={r.label}
+            className="flex items-center justify-between rounded-md px-1 py-0.5 first:pt-0 last:pb-0 transition-colors hover:bg-white/25 dark:hover:bg-white/5"
+          >
+            <span className={labelClass}>{r.label}</span>
+            <span className={valueClass}>{r.value}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

@@ -6,7 +6,7 @@ export const beatmapPage = {
   'beatmap.actions': 'Actions',
   'beatmap.download': 'Download',
   'beatmap.preview': 'Preview',
-  'beatmap.viewOnOsu': 'View on osu!',
+  'beatmap.viewOnOsu': 'Check on mirror',
   'beatmap.creator': 'Creator',
   'beatmap.source': 'Source',
   'beatmap.submitted': 'Submitted',

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { FiMessageCircle, FiUsers, FiLock, FiHash } from 'react-icons/fi';
 import Avatar from '../UI/Avatar';
 import type { ChatChannel } from '../../types';
-import { useTranslation } from 'react-i18next';
 
 interface ChannelItemProps {
   channel: ChatChannel;
@@ -12,19 +11,17 @@ interface ChannelItemProps {
 }
 
 const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick }) => {
-  const { t } = useTranslation();
-
-  // 改进未读消息检测逻辑
+  // Improve unread message detection logic
   const hasUnreadMessages = React.useMemo(() => {
-    // 如果有last_read_id和last_message_id，直接比较
+    // If there islast_read_idandlast_message_id, directly compare
     if (channel.last_read_id !== undefined && channel.last_message_id !== undefined) {
       return channel.last_read_id < channel.last_message_id;
     }
     
-    // 如果没有这些字段，检查recent_messages中是否有未读消息
+    // If these fields are not available, checkrecent_messagesIs there any unread messages in
     if (channel.recent_messages && channel.recent_messages.length > 0) {
-      // 这里可以根据需要添加更复杂的未读检测逻辑
-      return false; // 暂时返回false，因为recent_messages可能不包含未读状态
+      // Here you can add more complex unread detection logic as needed
+      return false; // Return temporarilyfalse,becauserecent_messagesUnread state may not be included
     }
     
     return false;
@@ -35,7 +32,7 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
   const getChannelIcon = () => {
     switch (channel.type) {
       case 'PM':
-        // 对于私聊频道，优先使用 user_info 中的头像信息
+        // For private chat channels, priority is given user_info Avatar information in
         if (channel.user_info) {
           return (
             <div className="w-10 h-10 rounded-lg overflow-hidden">
@@ -44,14 +41,14 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
                 alt={channel.user_info.username}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  // 如果头像加载失败，显示默认头像
+                  // If the avatar fails to load, the default avatar is displayed
                   (e.target as HTMLImageElement).src = `/default.jpg`;
                 }}
               />
             </div>
           );
         }
-        // 如果没有用户信息，使用默认的头像组件
+        // If there is no user information, use the default avatar component
         const targetUserId = channel.users.find(id => id !== 0) || channel.users[0] || 0;
         return (
           <Avatar 
@@ -89,10 +86,10 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
 
   const formatLastMessage = () => {
     if (!lastMessage) {
-      return channel.description || t('messages.sidebar.noMessage');
+      return channel.description || 'No news yet';
     }
-
-    const senderName = lastMessage.sender?.username || t('messages.sidebar.unknownUser');
+    
+    const senderName = lastMessage.sender?.username || 'Unknown user';
     const content = lastMessage.content;
     
     if (lastMessage.is_action) {
@@ -117,7 +114,7 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
       `}
     >
       <div className="flex items-center space-x-3">
-        {/* 频道图标 */}
+        {/* Channel icon */}
         <div className="flex-shrink-0 relative">
           {getChannelIcon()}
           {hasUnreadMessages && (
@@ -125,7 +122,7 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
           )}
         </div>
         
-        {/* 频道信息 */}
+        {/* Channel information */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <h3 className={`
@@ -139,7 +136,7 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
               {channel.name}
             </h3>
             
-            {/* 未读消息指示器 */}
+            {/* Unread message indicator */}
             {hasUnreadMessages && (
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
@@ -149,7 +146,7 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
             )}
           </div>
           
-          {/* 最后一条消息 */}
+          {/* The last message */}
           <p className={`
             text-sm truncate
             ${hasUnreadMessages 
@@ -160,26 +157,26 @@ const ChannelItem: React.FC<ChannelItemProps> = ({ channel, isSelected, onClick 
             {formatLastMessage()}
           </p>
           
-          {/* 频道类型标签 */}
+          {/* Channel Type Tag */}
           <div className="flex items-center space-x-1 mt-1">
             {channel.type === 'PM' && (
               <span className="text-xs px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded">
-                {t('messages.sidebar.channelTypes.private')}
+                Private chat
               </span>
             )}
             {channel.type === 'TEAM' && (
               <span className="text-xs px-1.5 py-0.5 bg-osu-pink/10 text-osu-pink rounded">
-                {t('messages.sidebar.channelTypes.team')}
+                team
               </span>
             )}
             {channel.type === 'PUBLIC' && (
               <span className="text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded">
-                {t('messages.sidebar.channelTypes.public')}
+                public
               </span>
             )}
             {channel.moderated && (
               <span className="text-xs px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded">
-                {t('messages.sidebar.channelTypes.moderated')}
+                control
               </span>
             )}
           </div>

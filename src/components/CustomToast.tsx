@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { useTranslation } from 'react-i18next';
 import { userAPI } from '../utils/api';
 import { FiMessageCircle, FiUsers, FiBell, FiX } from 'react-icons/fi';
 
@@ -23,11 +22,10 @@ export const CustomToast: React.FC<CustomToastProps> = ({
   username,
   onDismiss
 }) => {
-  const { t } = useTranslation();
   const [userInfo, setUserInfo] = useState<{ username: string; avatar_url: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 获取用户信息
+  // Get user information
   useEffect(() => {
     if (sourceUserId && !username && !avatar) {
       setIsLoading(true);
@@ -39,9 +37,9 @@ export const CustomToast: React.FC<CustomToastProps> = ({
           });
         })
         .catch(error => {
-          console.error(t('common.fetchUserInfoFailed'), error);
+          console.error('Get user informationfail:', error);
           setUserInfo({
-            username: t('common.unknownUser'),
+            username: 'Unknown user',
             avatar_url: userAPI.getAvatarUrl(sourceUserId)
           });
         })
@@ -76,7 +74,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
   const getDisplayUsername = () => {
     if (username) return username;
     if (userInfo?.username) return userInfo.username;
-    return t('common.loadingUser');
+    return 'loading...';
   };
 
   const avatarUrl = getAvatarUrl();
@@ -84,7 +82,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
 
   return (
     <div className="flex items-start space-x-3 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-w-sm min-w-[300px] relative">
-      {/* 关闭按钮 */}
+      {/* Close button */}
       {onDismiss && (
         <button
           onClick={onDismiss}
@@ -94,7 +92,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
         </button>
       )}
 
-      {/* 头像或图标 */}
+      {/* Avatar or icon */}
       <div className="flex-shrink-0">
         {avatarUrl && !isLoading ? (
           <img
@@ -102,7 +100,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
             alt={displayUsername}
             className="w-12 h-12 rounded-lg object-cover border-2 border-gray-200 dark:border-gray-600"
             onError={(e) => {
-              // {t('common.avatarLoadFailed')}
+              // If the avatar fails to load, the default icon is displayed
               e.currentTarget.style.display = 'none';
               const iconContainer = e.currentTarget.nextElementSibling as HTMLElement;
               if (iconContainer) {
@@ -131,7 +129,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
         </div>
       </div>
       
-      {/* 内容 */}
+      {/* content */}
       <div className="flex-1 min-w-0 pt-1">
         <div className="flex items-center space-x-2 mb-2">
           <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
@@ -139,17 +137,17 @@ export const CustomToast: React.FC<CustomToastProps> = ({
           </h4>
         </div>
         
-        {/* 用户名 */}
+        {/* username */}
         {(username || userInfo?.username) && (
           <div className="flex items-center space-x-1 mb-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.from')}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">From:</span>
             <span className="text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
               {displayUsername}
             </span>
           </div>
         )}
         
-        {/* 消息内容 */}
+        {/* informationcontent */}
         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           {message}
         </p>
@@ -158,7 +156,7 @@ export const CustomToast: React.FC<CustomToastProps> = ({
   );
 };
 
-// 自定义 toast 显示函数
+// Customize toast Display functions
 export const showCustomToast = (props: CustomToastProps) => {
   return toast.custom(
     (t: any) => (

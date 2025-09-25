@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { userAPI } from '../../utils/api';
 import type { UserPage, User } from '../../types';
 import BBCodeEditor from './BBCodeEditor';
@@ -20,7 +19,6 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
   onSaved,
   className = '',
 }) => {
-  const { t } = useTranslation();
   const { user: currentUser } = useAuth();
   
   const [content, setContent] = useState('');
@@ -31,33 +29,33 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // 检查是否有权限编辑
+  // Check if you have permissions to edit
   const canEdit = currentUser?.id === user.id;
 
-  // 加载用户页面内容
+  // Load user page content
   useEffect(() => {
     if (canEdit) {
       setLoading(true);
       setError(null);
       
-      // 直接从用户对象获取页面内容
+      // Get page content directly from user objects
       const initialContent = user.page?.raw || '';
       setContent(initialContent);
       setOriginalContent(initialContent);
       setHasChanges(false);
       setLoading(false);
     } else {
-      setError(t('profile.userPage.noEditPermission'));
+      setError('You do not have permission to edit this user page');
       setLoading(false);
     }
   }, [user, canEdit]);
 
-  // 监听内容变化
+  // Listening content changes
   useEffect(() => {
     setHasChanges(content !== originalContent);
   }, [content, originalContent]);
 
-  // 保存用户页面
+  // Save the user page
   const handleSave = async () => {
     if (!canEdit || saving) return;
 
@@ -70,7 +68,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       setOriginalContent(content);
       setHasChanges(false);
       setError(null);
-      setSuccessMessage(t('profile.userPage.saveSuccess'));
+      setSuccessMessage('The personal page has been saved successfully!');
 
       if (onSaved) {
         onSaved({
@@ -79,7 +77,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
         });
       }
 
-      // 延迟关闭以显示成功消息
+      // Delayed closing to display success message
       setTimeout(() => {
         if (onClose) {
           onClose();
@@ -87,7 +85,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       }, 1500);
     } catch (err: any) {
       console.error('Failed to save user page:', err);
-      const errorMessage = err.response?.data?.error || t('profile.userPage.saveError');
+      const errorMessage = err.response?.data?.error || 'Saving failed, please try again';
       setError(errorMessage);
       setSuccessMessage(null);
     } finally {
@@ -95,10 +93,10 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
     }
   };
 
-  // 取消编辑
+  // Cancel Edit
   const handleCancel = () => {
     if (hasChanges) {
-      if (window.confirm(t('profile.userPage.confirmDiscard'))) {
+      if (window.confirm('You have unsaved changes, are you sure you want to give up editing?')) {
         setContent(originalContent);
         setHasChanges(false);
         if (onClose) {
@@ -112,7 +110,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
     }
   };
 
-  // 快捷键处理
+  // Shortcut key processing
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -138,7 +136,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
       <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 ${className}`}>
         <div className="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
-          <span className="ml-3 text-gray-600 dark:text-gray-400">{t('profile.userPage.loadingEditor')}</span>
+          <span className="ml-3 text-gray-600 dark:text-gray-400">Loading in the editor...</span>
         </div>
       </div>
     );
@@ -150,7 +148,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
         <div className="text-center py-12">
           <FaEdit className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            {t('profile.userPage.cannotEditPage')}
+            This page cannot be edited
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             {error}
@@ -160,7 +158,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
               onClick={onClose}
               className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
             >
-              关闭
+              closure
             </button>
           )}
         </div>
@@ -170,16 +168,16 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden ${className}`}>
-      {/* 头部 */}
+      {/* head */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
         <div className="flex items-center gap-3">
           <FaEdit className="w-5 h-5 text-pink-500" />
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {t('profile.userPage.editPageTitle')}
+              Edit Player page
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('profile.userPage.editPageSubtitle', { username: user.username })}
+              for {user.username} Editor for About Me
             </p>
           </div>
         </div>
@@ -187,7 +185,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
         <div className="flex items-center gap-2">
           {hasChanges && (
             <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2 py-1 rounded">
-              {t('profile.userPage.unsavedChanges')}
+              There are unsaved changes
             </span>
           )}
           
@@ -195,20 +193,20 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
             onClick={handleCancel}
             disabled={saving}
             className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title={t('profile.userPage.cancelEditTooltip')}
+            title="Cancel Edit (Esc)"
           >
             <FaTimes className="w-4 h-4 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
       </div>
 
-      {/* 编辑器 */}
+      {/* Editor */}
       <div className="p-4">
         <BBCodeEditor
-          title={t('profile.userPage.title')}
+          title="About Me"
           value={content}
           onChange={setContent}
-          placeholder={t('profile.userPage.editorPlaceholder', { username: user.username })}
+          placeholder={`for ${user.username} Write your About Me...\n\nYou can useBBCodeFormat text, such as:\n[b]Bold text[/b]\n[i]Italic text[/i]\n[color=red]Colorful text[/color]\n\nClick the toolbar button or use shortcut keys to quickly insert the format.`}
           disabled={saving}
           className="min-h-[400px]"
         />
@@ -230,14 +228,14 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
         )}
       </div>
 
-      {/* 底部操作栏 */}
+      {/* Bottom Action Bar */}
       <div className="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
         <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-          <span>字数: {content.length}/60000</span>
+          <span>Word count: {content.length}/60000</span>
           <span>•</span>
-          <span>{t('profile.userPage.supportsBBCode')}</span>
+          <span>supportBBCodeFormat</span>
           <span>•</span>
-          <span>{t('profile.userPage.saveShortcut')}</span>
+          <span>Ctrl+S save</span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -246,7 +244,7 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
             disabled={saving}
             className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('profile.userPage.cancel')}
+            Cancel
           </button>
           
           <button
@@ -257,12 +255,12 @@ const UserPageEditor: React.FC<UserPageEditorProps> = ({
             {saving ? (
               <>
                 <LoadingSpinner size="sm" />
-                <span>{t('profile.userPage.saving')}</span>
+                <span>savemiddle...</span>
               </>
             ) : (
               <>
                 <FaSave className="w-4 h-4" />
-                <span>{t('profile.userPage.save')}</span>
+                <span>save</span>
               </>
             )}
           </button>

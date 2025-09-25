@@ -424,7 +424,7 @@ const BeatmapPage: React.FC = () => {
               </h3>
               <div className="space-y-3">
                 <a
-                  href={`https://osu.ppy.sh/beatmapsets/${beatmapset.id}/download`}
+                  href={`https://catboy.best/beatmapsets/${beatmapset.id}/download`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full text-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
@@ -444,7 +444,7 @@ const BeatmapPage: React.FC = () => {
                   </a>
                 )}
                 <a
-                  href={`https://osu.ppy.sh/beatmapsets/${beatmapset.id}`}
+                  href={`https://catboy.best/beatmapsets/${beatmapset.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full text-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"

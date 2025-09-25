@@ -18,8 +18,8 @@ const Layout: React.FC = () => {
         <Toaster
         position="top-right"
         containerStyle={{
-          top: '80px', // 在顶栏下面显示，顶栏高度约为64px，留一些间距
-          right: '16px', // 右侧留一些边距
+          top: '80px', // It is displayed below the top bar, the height of the top bar is approximately64px, leave some spacing
+          right: '16px', // Leave some margins on the right
         }}
         toastOptions={{
           duration: 4000,

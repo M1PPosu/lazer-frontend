@@ -75,7 +75,7 @@ const TeamRankingCard: React.FC<Props> = ({
   // 过滤掉默认封面URL
   const rawCoverUrl = team.cover_url;
   const defaultCoverUrls = [
-    'https://assets-ppy.g0v0.top/user-profile-covers/default.jpeg',
+    'https://assets-ppy.m1pposu.dev/user-profile-covers/default.jpeg',
     'https://assets.ppy.sh/user-profile-covers/default.jpeg',
     // 其他可能的默认URL变体
   ];
