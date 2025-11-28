@@ -1,0 +1,58 @@
+export const features = [
+  {
+    id: 1,
+    titleKey: 'features.items.0.title',
+    contentKey: 'features.items.0.content',
+    image: '/image/ui/card-image1.svg',
+    imageAltKey: 'features.items.0.imageAlt',
+  },
+  {
+    id: 2,
+    titleKey: 'features.items.1.title',
+    contentKey: 'features.items.1.content',
+    image: '/image/ui/card-image2.svg',
+    imageAltKey: 'features.items.1.imageAlt',
+  },
+  {
+    id: 3,
+    titleKey: 'features.items.2.title',
+    contentKey: 'features.items.2.content',
+    image: '/image/ui/card-image3.svg',
+    imageAltKey: 'features.items.2.imageAlt',
+  },
+  {
+    id: 4,
+    titleKey: 'features.items.3.title',
+    contentKey: 'features.items.3.content',
+    image: '/image/ui/card-image4.svg',
+    imageAltKey: 'features.items.3.imageAlt',
+  },
+  {
+    id: 5,
+    titleKey: 'features.items.4.title',
+    contentKey: 'features.items.4.content',
+    image: '/image/ui/card-image5.svg',
+    imageAltKey: 'features.items.4.imageAlt',
+  },
+  {
+    id: 6,
+    titleKey: 'features.items.5.title',
+    contentKey: 'features.items.5.content',
+    image: '/image/ui/card-image6.svg',
+    imageAltKey: 'features.items.5.imageAlt',
+  },
+  {
+    id: 7,
+    titleKey: 'features.items.6.title',
+    contentKey: 'features.items.6.content',
+    image: '/image/ui/card-image7.svg',
+    imageAltKey: 'features.items.6.imageAlt',
+  },
+  {
+    id: 8,
+    titleKey: 'features.items.7.title',
+    contentKey: 'features.items.7.content',
+    image: '/image/ui/card-image8.svg',
+    imageAltKey: 'features.items.7.imageAlt',
+  },
+] as const;
